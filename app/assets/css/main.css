@@ -5,8 +5,9 @@
 
 /* Tailwind v4 theme tokens */
 @theme {
-  --color-primary: #0ea5e9; /* sky-500 */
-  --color-primary-foreground: white;
+  /* Align tokens with CSS variables for consistent usage */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
   --radius: 0.5rem;
 }
 
@@ -68,15 +69,15 @@ body {
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* Brand primary: teal-600 */
-  --primary: #0f766e;
-  --primary-foreground: white;
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  /* Primary as text color, Secondary teal brand, Accent orange */
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
+  --secondary: #0f766e;
+  --secondary-foreground: white;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: #FF9500;
+  --accent-foreground: black;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -103,15 +104,15 @@ body {
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  /* Keep brand primary consistent in dark mode */
-  --primary: #0f766e;
-  --primary-foreground: white;
+  /* Primary mirrors text color; Secondary teal; Accent orange */
+  --primary: var(--foreground);
+  --primary-foreground: var(--background);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: #FF9500;
+  --accent-foreground: black;
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);

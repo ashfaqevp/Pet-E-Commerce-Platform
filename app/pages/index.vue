@@ -2,13 +2,13 @@
   <div>
     <!-- Hero banner -->
     <section class="container mx-auto px-4 py-8">
-      <div class="bg-gradient-to-r from-teal-500 to-teal-700 rounded-2xl p-8 text-white flex items-center justify-between">
+      <div class="bg-secondary rounded-2xl p-8 text-secondary-foreground flex items-center justify-between">
         <div>
           <p class="uppercase tracking-wide">Christmas Offer</p>
           <h2 class="text-4xl md:text-5xl font-bold mt-1">25% OFF</h2>
           <p class="text-sm mt-1">Nov 16 – Dec 22</p>
           <NuxtLink to="/browse">
-            <Button class="mt-6 rounded-full bg-yellow-400 text-black hover:bg-yellow-500">Shop Now</Button>
+            <Button class="mt-6 rounded-full bg-accent text-accent-foreground hover:bg-accent/90">Shop Now</Button>
           </NuxtLink>
         </div>
         <div class="hidden md:block w-56 h-40 rounded-xl bg-white/10"></div>

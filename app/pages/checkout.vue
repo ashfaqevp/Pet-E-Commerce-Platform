@@ -30,7 +30,7 @@
       </div>
 
       <div class="bg-white rounded-xl border p-6 h-fit">
-        <h3 class="text-lg font-bold mb-4">Order Summary</h3>
+        <h3 class="text-lg font-bold mb-4 text-secondary">Order Summary</h3>
         <div class="space-y-3">
           <div class="flex justify-between"><span>Subtotal:</span><span>${{ subtotal.toFixed(2) }}</span></div>
           <div class="flex justify-between"><span>Shipping & Tax:</span><span>${{ shipping.toFixed(2) }}</span></div>

@@ -13,7 +13,7 @@
             <img :src="item.image || '/images/placeholder.svg'" class="w-20 h-20 rounded-lg object-cover" />
             <div class="flex-1">
               <h4 class="font-semibold">{{ item.name }}</h4>
-              <p class="text-xs text-teal-700">{{ item.brand }}</p>
+              <p class="text-xs text-secondary">{{ item.brand }}</p>
               <p class="text-xs text-gray-500">Size: {{ item.size }} lbs</p>
               <div class="flex items-center gap-3 mt-2">
                 <Button variant="outline" class="w-8 h-8 rounded-full grid place-items-center" @click="dec(i)"><Icon name="lucide:minus"/></Button>
@@ -22,7 +22,7 @@
               </div>
             </div>
             <div class="text-right">
-              <p class="font-bold text-teal-700">${{ (item.price * (item.quantity ?? 1)).toFixed(2) }}</p>
+              <p class="font-bold text-secondary">${{ (item.price * (item.quantity ?? 1)).toFixed(2) }}</p>
               <Button variant="ghost" class="mt-2 text-gray-500" @click="remove(i)"><Icon name="lucide:trash"/></Button>
             </div>
           </div>

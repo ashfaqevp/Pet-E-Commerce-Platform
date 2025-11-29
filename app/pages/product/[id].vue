@@ -1,6 +1,6 @@
 <template>
   <div class="container mx-auto px-4 py-8">
-    <NuxtLink to="/" class="text-teal-700 mb-6 inline-flex items-center gap-2">
+    <NuxtLink to="/" class="text-secondary mb-6 inline-flex items-center gap-2">
       <Icon name="lucide:arrow-left" /> Back
     </NuxtLink>
 
@@ -11,14 +11,14 @@
 
       <div>
         <h1 class="text-2xl font-bold">{{ product.name }}</h1>
-        <p class="text-sm text-teal-700">By {{ product.brand }}</p>
+        <p class="text-sm text-secondary">By {{ product.brand }}</p>
         <div class="flex items-center gap-2 mt-2 text-yellow-500">
           <Icon name="lucide:star" />
           <span class="text-gray-700">{{ product.rating }} (2.2k)</span>
         </div>
 
       <div class="flex items-center gap-3 mt-4">
-        <span class="text-3xl font-bold text-teal-700">${{ product.price.toFixed(2) }}</span>
+        <span class="text-3xl font-bold text-secondary">${{ product.price.toFixed(2) }}</span>
           <span v-if="product.compareAt != null" class="line-through text-gray-400">${{ product.compareAt?.toFixed(2) }}</span>
       </div>
 

@@ -4,7 +4,7 @@
     <header class="bg-white/90 backdrop-blur border-b">
       <div class="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
         <div class="flex items-center gap-3">
-          <Icon name="lucide:map-pin" class="text-primary" />
+          <Icon name="lucide:map-pin" class="text-secondary" />
           <div class="text-sm">
             <p class="font-semibold">Zurich, love road</p>
             <p class="text-gray-500">Switzerland</p>
@@ -20,10 +20,10 @@
 
         <div class="flex items-center gap-3">
           <NuxtLink to="/cart" class="relative">
-            <Icon name="lucide:shopping-cart" class="text-gray-800" />
+            <Icon name="lucide:shopping-cart" class="text-foreground" />
           </NuxtLink>
           <NuxtLink to="/profile">
-            <Icon name="lucide:user-round" class="text-gray-800" />
+            <Icon name="lucide:user-round" class="text-foreground" />
           </NuxtLink>
         </div>
       </div>
@@ -35,7 +35,7 @@
 
     <footer class="mt-16 py-10 border-t bg-white">
       <div class="container mx-auto px-4 text-center text-sm text-gray-600">
-        © {{ new Date().getFullYear() }} Blackhorse PetShop
+        © {{ new Date().getFullYear() }} <span class="text-secondary">Blackhorse PetShop</span>
       </div>
     </footer>
   </div>

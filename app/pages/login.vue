@@ -77,7 +77,7 @@ const errorMessage = ref('')
 
       <p class="mt-4 text-center text-sm text-gray-600">
         Don’t have an account?
-        <NuxtLink to="/signup" class="text-blue-600 hover:underline">Sign up</NuxtLink>
+        <NuxtLink to="/signup" class="text-primary hover:underline">Sign up</NuxtLink>
       </p>
     </div>
   </div>

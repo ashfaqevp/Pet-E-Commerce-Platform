@@ -11,6 +11,10 @@ export default defineNuxtConfig({
     'shadcn-nuxt',
   ],
 
+  supabase: {
+    redirect: false, // This disables the default redirect
+  },
+
 
   runtimeConfig: {
     public: {
@@ -52,6 +56,10 @@ export default defineNuxtConfig({
 
   build: {
     transpile: ['shadcn-vue', 'radix-vue'],
+  },
+
+  supabase: {
+    redirect: false,
   },
 
   // Tailwind v4 PostCSS adapter for Nuxt

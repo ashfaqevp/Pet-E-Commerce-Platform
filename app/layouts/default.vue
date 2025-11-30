@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, computed } from "vue";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -56,6 +56,8 @@ const isActive = (path: string) => {
   return route.path.startsWith(path);
 };
 
+const isProductDetail = computed(() => route.path.startsWith('/product/'));
+
 function handleSearch() {
   if (searchQuery.value.trim()) {
     router.push(`/search?q=${searchQuery.value}`);
@@ -76,12 +78,23 @@ function handleSearch() {
         class="container mx-auto px-2 md:px-4 flex h-16 items-center justify-between gap-6"
       >
         <!-- Mobile: Logo + optional search input (shown on the right) -->
-        <div class="md:hidden flex-1 flex items-center gap-2 w-full">
+        <div v-if="isMobile && !isProductDetail" class="md:hidden flex-1 flex items-center gap-2 w-full">
           <Logo />
         </div>
 
+        <!-- Mobile: product detail header -->
+        <div v-if="isMobile && isProductDetail" class="md:hidden flex items-center justify-between w-full">
+          <NuxtLink to="/" class="rounded-full border bg-background shadow-sm h-9 w-9 grid place-items-center">
+            <Icon name="lucide:arrow-left" class="h-5 w-5 text-foreground" />
+          </NuxtLink>
+          <h2 class="text-lg font-semibold text-foreground">Details</h2>
+          <Button variant="ghost" size="icon" class="rounded-full border bg-background shadow-sm">
+            <Icon name="lucide:heart" class="h-5 w-5 text-foreground" />
+          </Button>
+        </div>
+
         <!-- Mobile searchbar: rounded pill with inline icon and Cancel button -->
-        <div v-show="isSearchFocused" class="md:hidden flex items-center gap-2 w-full">
+        <div v-show="isSearchFocused && !isProductDetail" class="md:hidden flex items-center gap-2 w-full">
           <div class="relative flex-1">
             <Input
               v-model="searchQuery"
@@ -96,7 +109,7 @@ function handleSearch() {
           </div>
           <Button
             variant="ghost"
-            size="xs"
+            size="icon-sm"
             class="text-foreground px-1"
             @click="isSearchFocused = false"
             ><Icon name="lucide:x" class="h-5 w-5"
@@ -122,7 +135,7 @@ function handleSearch() {
         </div>
 
         <Button
-          v-if="!isSearchFocused "
+          v-if="!isProductDetail && !isSearchFocused"
           variant="ghost"
           size="icon"
           class="md:hidden rounded-full border bg-background/80 shadow-sm hover:bg-secondary/10 text-foreground"

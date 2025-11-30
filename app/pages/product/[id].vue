@@ -1,15 +1,6 @@
 <template>
   <div class="container mx-auto px-4 py-6 md:py-8">
-    <!-- Mobile header: back + Details + wishlist -->
-    <div class="md:hidden mb-4 flex items-center justify-between">
-      <NuxtLink to="/" class="rounded-full border bg-background shadow-sm h-9 w-9 grid place-items-center">
-        <Icon name="lucide:arrow-left" class="h-5 w-5 text-foreground" />
-      </NuxtLink>
-      <h2 class="text-lg font-semibold text-foreground">Details</h2>
-      <Button variant="ghost" size="icon" class="rounded-full border bg-background shadow-sm">
-        <Icon name="lucide:heart" class="h-5 w-5 text-foreground" />
-      </Button>
-    </div>
+    
 
     <!-- Desktop breadcrumbs -->
     <div class="hidden md:block mb-4">

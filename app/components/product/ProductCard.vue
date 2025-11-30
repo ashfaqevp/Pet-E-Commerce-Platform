@@ -1,25 +1,30 @@
 <template>
-  <Card class="overflow-hidden hover:shadow-md transition-shadow">
+  <Card class="border-none rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white py-3 md:py-4 md:pb-0">
     <div class="relative">
-      <img :src="product.image || placeholder" alt="" class="w-full h-48 object-cover" />
+      <img :src="product.image || placeholder" alt="" class="w-full h-30 sm:h-48 object-contain bg-white rounded-t-2xl" />
       <span
         v-if="product.discount && product.discount > 0"
-        class="absolute left-3 top-3 bg-accent text-accent-foreground text-xs font-bold px-2 py-1 rounded"
+        class="absolute left-3 top-0 bg-yellow-200 text-secondary text-[11px] font-bold px-2.5 py-1 rounded-sm"
       >
         {{ product.discount }}% OFF
       </span>
     </div>
-    <CardContent class="p-4">
-      <CardTitle class="text-base font-semibold">{{ product.name }}</CardTitle>
-      <CardDescription class="text-xs">{{ product.brand }}</CardDescription>
+    <CardContent class="p-3 pt-2 sm:p-5 py-0 h-full flex flex-col justify-between">
+      <CardTitle class="text-sm sm:text-lg font-medium leading-snug text-foreground">{{ product.name }}</CardTitle>
+      <!-- <CardDescription class="text-xs sm:text-sm text-muted-foreground">{{ product.brand }}</CardDescription> -->
+
       <div class="flex items-center gap-1 mt-2 text-yellow-500 text-sm">
         <Icon name="lucide:star" />
-        <span class="text-gray-700">{{ product.rating }}</span>
+        <span class="text-muted-foreground">{{ product.rating }}</span>
       </div>
-      <div class="flex items-center justify-between mt-3">
-        <span class="font-bold text-lg text-secondary">${{ product.price.toFixed(2) }}</span>
-        <Button class="w-9 h-9 p-0 rounded-full" @click="$emit('add', product)">
-          <Icon name="lucide:plus" />
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-baseline gap-1">
+          <span class="font-medium text-sm sm:text-xl text-secondary">OMR {{ product.price.toFixed(2) }}</span>
+          <span v-if="product.discount && product.discount > 0" class="text-muted-foreground line-through text-[10px]">{{ originalPrice.toFixed(2) }}</span>
+        </div>
+        <Button class="size-7 md:size-8 p-0 rounded-full bg-accent text-accent-foreground hover:bg-accent/90" @click="$emit('add', product)">
+          <Icon name="lucide:plus" color="white" />
         </Button>
       </div>
     </CardContent>
@@ -29,6 +34,24 @@
 <script setup lang="ts">
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-const props = defineProps<{ product: any }>()
+
+interface Product {
+  id: string
+  name: string
+  brand: string
+  price: number
+  rating: number
+  discount?: number
+  image?: string
+}
+
+const props = defineProps<{ product: Product }>()
 const placeholder = '/images/placeholder.svg'
+
+const originalPrice = computed(() => {
+  const discount = props.product.discount || 0
+  if (discount <= 0) return props.product.price
+  const factor = 1 - discount / 100
+  return factor > 0 ? props.product.price / factor : props.product.price
+})
 </script>

@@ -6,6 +6,7 @@ import Autoplay from 'embla-carousel-autoplay'
 import type { UnwrapRefCarouselApi } from '@/components/ui/carousel/interface'
 // Carousel banners from public folder
 const banners: string[] = [
+  'https://img.pikbest.com/backgrounds/20210612/pet-store-product-promotion-poster_6011205.jpg!bwr800',
   '/images/banners/1.png',
   '/images/banners/2.png',
 ]
@@ -18,10 +19,14 @@ const categories = [
 ]
 
 const products = [
-  { id: '1', name: 'Chicken & Green Pea Recipe', brand: 'Natural Balance', price: 28.99, rating: 4.8, image: '/images/products/cat-food-1.jpg', discount: 0 },
-  { id: '2', name: 'Whitefish & Potato Recipe', brand: 'Blue Buffalo', price: 28.99, rating: 4.8, image: '/images/products/cat-food-2.jpg', discount: 25 },
-  { id: '3', name: "Nature's Evolutionary Diet", brand: 'Blue Buffalo', price: 42.99, rating: 4.9, image: '/images/products/cat-food-3.jpg', discount: 0 },
-  { id: '4', name: 'Grain‑Free Turkey Recipe', brand: 'Wellness CORE', price: 32.50, rating: 4.7, image: '/images/products/cat-food-4.jpg', discount: 15 },
+  { id: '1', name: 'Chicken & Green Pea Recipe', brand: 'Natural Balance', price: 28.99, rating: 4.8, image: 'https://www.wiggles.in/cdn/shop/products/Untitled-1-01_2.png?v=1706864479', discount: 0 },
+  { id: '2', name: 'Whitefish & Potato Recipe', brand: 'Blue Buffalo', price: 28.99, rating: 4.8, image: 'https://petstrong.in/cdn/shop/files/FOP_CV.webp?v=1732613363', discount: 25 },
+  { id: '3', name: "Nature's Evolutionary Diet", brand: 'Blue Buffalo', price: 42.99, rating: 4.9, image: 'https://images.apollo247.in/pub/media/catalog/product/p/e/ped0079_111_2_.jpg?tr=q-80,f-webp,w-100,dpr-3,c-at_max%20100w', discount: 0 },
+  { id: '4', name: 'Grain‑Free Turkey Recipe', brand: 'Wellness CORE', price: 32.50, rating: 4.7, image: 'https://m.media-amazon.com/images/I/61V-CvhDMwL._AC_UF1000,1000_QL80_.jpg', discount: 15 },
+  { id: '5', name: 'Chicken & Green Pea Recipe', brand: 'Natural Balance', price: 28.99, rating: 4.8, image: 'https://www.wiggles.in/cdn/shop/products/Untitled-1-01_2.png?v=1706864479', discount: 0 },
+  { id: '6', name: 'Whitefish & Potato Recipe', brand: 'Blue Buffalo', price: 28.99, rating: 4.8, image: 'https://petstrong.in/cdn/shop/files/FOP_CV.webp?v=1732613363', discount: 25 },
+  { id: '7', name: "Nature's Evolutionary Diet", brand: 'Blue Buffalo', price: 42.99, rating: 4.9, image: 'https://images.apollo247.in/pub/media/catalog/product/p/e/ped0079_111_2_.jpg?tr=q-80,f-webp,w-100,dpr-3,c-at_max%20100w', discount: 0 },
+  { id: '8', name: 'Grain‑Free Turkey Recipe', brand: 'Wellness CORE', price: 32.50, rating: 4.7, image: 'https://m.media-amazon.com/images/I/61V-CvhDMwL._AC_UF1000,1000_QL80_.jpg', discount: 15 },
 ]
 
 const router = useRouter()
@@ -94,7 +99,7 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
         <h3 class="text-xl font-semibold">Products</h3>
         <!-- <NuxtLink to="/browse"><Button variant="ghost">See All</Button></NuxtLink> -->
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         <ProductCard
           v-for="product in products"
           :key="product.id"

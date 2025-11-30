@@ -1,6 +1,6 @@
 # Blackhorse — Pet E‑Commerce
 
-Nuxt 4 + Vue 3 + shadcn‑vue + Supabase. Mobile‑first, TypeScript‑strict, and pnpm‑only.
+Nuxt 4 + Vue 3 + shadcn‑vue + Supabase. Mobile‑first, TypeScript‑strict, and pnpm‑only..
 
 ## Overview
 - UI: `shadcn-vue` components only, Tailwind v4 tokens

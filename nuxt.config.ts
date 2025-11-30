@@ -66,8 +66,11 @@ export default defineNuxtConfig({
     transpile: ['shadcn-vue', 'radix-vue'],
   },
 
-  supabase: {
-    redirect: false,
+  // Nitro bundling tweaks to avoid ESM subpath resolution issues during preview
+  nitro: {
+    externals: {
+      inline: ['@supabase/supabase-js', '@supabase/ssr'],
+    },
   },
 
   // Tailwind v4 PostCSS adapter for Nuxt

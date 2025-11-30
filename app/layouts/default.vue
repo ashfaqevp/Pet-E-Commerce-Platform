@@ -84,10 +84,13 @@ function handleSearch() {
 
         <!-- Mobile: product detail header -->
         <div v-if="isMobile && isProductDetail" class="md:hidden flex items-center justify-between w-full">
-          <NuxtLink to="/" class="rounded-full border bg-background shadow-sm h-9 w-9 grid place-items-center">
-            <Icon name="lucide:arrow-left" class="h-5 w-5 text-foreground" />
-          </NuxtLink>
-          <h2 class="text-lg font-semibold text-foreground">Details</h2>
+          <div class="flex items-center gap-2">
+            <NuxtLink to="/" class="rounded-full border bg-background shadow-sm h-9 w-9 grid place-items-center">
+              <Icon name="lucide:arrow-left" class="h-5 w-5 text-foreground" />
+            </NuxtLink>
+            <h2 class="text-lg font-semibold text-foreground">Details</h2>
+          </div>
+
           <Button variant="ghost" size="icon" class="rounded-full border bg-background shadow-sm">
             <Icon name="lucide:heart" class="h-5 w-5 text-foreground" />
           </Button>
@@ -221,7 +224,7 @@ function handleSearch() {
           <div class="w-full md:hidden">
             <Accordion type="single" collapsible class="w-full">
               <AccordionItem value="shop">
-                <AccordionTrigger class="text-base font-semibold text-foreground"
+                <AccordionTrigger class="text-base font-medium text-foreground"
                   >Shop</AccordionTrigger
                 >
                 <AccordionContent>
@@ -349,7 +352,7 @@ function handleSearch() {
           <!-- Desktop: 4 columns -->
           <div class="hidden md:grid grid-cols-4 gap-8">
             <div>
-              <h3 class="font-semibold text-foreground">Shop</h3>
+              <h3 class="font-medium text-foreground">Shop</h3>
               <ul class="mt-4 space-y-2 text-sm">
                 <li>
                   <NuxtLink
@@ -382,7 +385,7 @@ function handleSearch() {
               </ul>
             </div>
             <div>
-              <h3 class="font-semibold text-foreground">About</h3>
+              <h3 class="font-medium text-foreground">About</h3>
               <ul class="mt-4 space-y-2 text-sm">
                 <li>
                   <NuxtLink to="/about" class="text-muted-foreground hover:text-secondary"
@@ -404,7 +407,7 @@ function handleSearch() {
               </ul>
             </div>
             <div>
-              <h3 class="font-semibold text-foreground">Support</h3>
+              <h3 class="font-medium text-foreground">Support</h3>
               <ul class="mt-4 space-y-2 text-sm">
                 <li>
                   <NuxtLink
@@ -428,7 +431,7 @@ function handleSearch() {
               </ul>
             </div>
             <div>
-              <h3 class="font-semibold text-foreground">Legal</h3>
+              <h3 class="font-medium text-foreground">Legal</h3>
               <ul class="mt-4 space-y-2 text-sm">
                 <li>
                   <NuxtLink to="/terms" class="text-muted-foreground hover:text-secondary"
@@ -446,7 +449,7 @@ function handleSearch() {
             </div>
           </div>
         </div>
-        <div class="mt-8 pt-8 border-t text-center text-sm text-muted-foreground">
+        <div class="my-8 md:mb-0 pt-8 border-t text-center text-sm text-muted-foreground">
           © {{ new Date().getFullYear() }} BlackHorse. All Rights Reserved.
         </div>
       </div>

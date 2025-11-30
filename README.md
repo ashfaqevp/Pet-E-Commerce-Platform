@@ -1,75 +1,102 @@
-# Nuxt Minimal Starter
+# Blackhorse — Pet E‑Commerce
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Nuxt 4 + Vue 3 + shadcn‑vue + Supabase. Mobile‑first, TypeScript‑strict, and pnpm‑only.
+
+## Overview
+- UI: `shadcn-vue` components only, Tailwind v4 tokens
+- Style: Antfu pattern (script setup → template → style)
+- Data: Supabase (`useSupabaseClient()`), SSR‑safe `useLazyAsyncData`
+- Design: Primary black (`text-foreground`), Secondary teal `#0f766e`, Accent orange `#FF9500`
+- Auto‑imports: Use Nuxt auto‑imports from `app/` (no manual app imports)
+
+## Prerequisites
+- Node 18+ and `pnpm` 9+
+- Supabase project with anon key
 
 ## Setup
-
-Make sure to install dependencies:
-
+- Install dependencies (pnpm only):
 ```bash
-# npm
-npm install
-
-# pnpm
 pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
-
-Start the development server on `http://localhost:3000`:
-
+- Create `.env.local` and set runtime values:
 ```bash
-# npm
-npm run dev
+SUPABASE_URL=https://<your-project>.supabase.co
+SUPABASE_ANON_KEY=<your-anon-key>
+# Fallback also supported: SUPABASE_KEY=<your-anon-key>
 
-# pnpm
+# Optional integrations
+RAZORPAY_KEY_ID=<your-razorpay-key-id>
+SUPABASE_FUNCTION_URL=https://<your-project>.functions.supabase.co
+```
+
+## Run
+- Dev server:
+```bash
 pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
-
-## Production
-
-Build the application for production:
-
+- Build:
 ```bash
-# npm
-npm run build
-
-# pnpm
 pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
-
-Locally preview production build:
-
+- Preview production build:
 ```bash
-# npm
-npm run preview
-
-# pnpm
 pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Project Structure
+- `app/components/ui/` shadcn‑vue components (auto‑added via CLI)
+- `app/pages/` Nuxt pages and routes
+- `app/stores/` Pinia stores
+- `app/composables/` shared logic (auto‑imported)
+- `app/assets/css/` Tailwind v4 tokens and theme variables
+
+## shadcn‑vue Components
+- Components are managed in `app/components/ui/` and auto‑imported.
+- Add new components with the CLI:
+```bash
+pnpm exec shadcn-vue add @shadcn/<component>
+# Example
+pnpm exec shadcn-vue add @shadcn/button @shadcn/card @shadcn/accordion @shadcn/breadcrumb
+```
+
+## Data Fetching (SSR‑safe)
+- Always use `useLazyAsyncData` with Supabase:
+```ts
+const { data, pending, error, refresh } = await useLazyAsyncData(
+  'products',
+  async () => {
+    const supabase = useSupabaseClient()
+    const { data, error } = await supabase.from('products').select('*')
+    if (error) throw error
+    return data
+  },
+  { server: true }
+)
+```
+- Real‑time refresh:
+```ts
+const supabase = useSupabaseClient()
+supabase.from('products').on('*', () => refresh()).subscribe()
+```
+
+## Coding Guidelines
+- Antfu style: script setup → template → style (no custom CSS)
+- Mobile‑first: default mobile, add `md:` and `lg:` for larger screens
+- Colors: `text-foreground`, `bg-secondary`, `text-accent`, `bg-accent-foreground`
+- Types: TypeScript strict, no `any`
+- Imports: do not manually import from `app/`; rely on Nuxt auto‑imports
+
+## Common Scripts
+- Lint/Typecheck (if configured):
+```bash
+pnpm typecheck
+pnpm lint
+```
+
+## Troubleshooting
+- shadcn component resolution issues: ensure files match export case (e.g., `Input.vue` vs `index.ts` export).
+- Supabase env: either `SUPABASE_ANON_KEY` or `SUPABASE_KEY` must be present.
+
+## Deployment
+- Build with `pnpm build` and deploy the `.output` per Nuxt documentation.

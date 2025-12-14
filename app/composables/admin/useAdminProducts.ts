@@ -6,6 +6,7 @@ export interface AdminProduct {
   retail_price: number | null
   stock_quantity: number
   created_at: string
+  is_active: boolean
   thumbnail_url?: string | null
   image_urls?: string[] | null
 }
@@ -16,6 +17,7 @@ export interface AdminProductInput {
   product_type: string
   retail_price?: number | null
   stock_quantity?: number
+  is_active?: boolean
   thumbnail_url?: string | null
   image_urls?: string[] | null
 }
@@ -42,8 +44,8 @@ export const useAdminProducts = () => {
       if (params.search) q = q.ilike('name', `%${params.search}%`)
       if (params.petType) q = q.eq('pet_type', params.petType)
       if (params.productType) q = q.eq('product_type', params.productType)
-      if (params.status === 'active') q = q.gt('stock_quantity', 0)
-      if (params.status === 'inactive') q = q.eq('stock_quantity', 0)
+      if (params.status === 'active') q = q.eq('is_active', true)
+      if (params.status === 'inactive') q = q.eq('is_active', false)
       if (params.sortBy) q = q.order(params.sortBy as string, { ascending: params.ascending ?? true })
       const page = params.page ?? 1
       const pageSize = params.pageSize ?? 10

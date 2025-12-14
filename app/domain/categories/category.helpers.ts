@@ -18,7 +18,11 @@ export const getCategoryOptions = (
   }
 
   const dependsValue = context[config.dependsOn]
-  if (!dependsValue || !config.rules) return []
+  if (!config.rules) return []
+  if (!dependsValue) {
+    const all = config.rules.flatMap(rule => rule.options)
+    return all.filter((o, i, arr) => arr.findIndex(x => x.id === o.id) === i)
+  }
 
   const matchedRule = config.rules.find(rule =>
     rule.when.values.includes(dependsValue),

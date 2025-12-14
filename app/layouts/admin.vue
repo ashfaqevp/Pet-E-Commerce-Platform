@@ -1,20 +1,38 @@
 <script setup lang="ts">
+import Logo from "@/components/common/Logo.vue";
+
 interface MenuItem {
   label: string
   href: string
   icon: string
 }
 
-const menu: MenuItem[] = [
-  { label: 'Dashboard', href: '/admin', icon: 'lucide:layout-dashboard' },
-  { label: 'Products', href: '/admin/products', icon: 'lucide:package' },
-  { label: 'Categories', href: '/admin/categories', icon: 'lucide:layers' },
-  { label: 'Subcategories', href: '/admin/categories/subcategories', icon: 'lucide:indent-increase' },
-  { label: 'Orders', href: '/admin/orders', icon: 'lucide:shopping-cart' },
-  { label: 'Payments', href: '/admin/payments', icon: 'lucide:credit-card' },
-  { label: 'Users', href: '/admin/users', icon: 'lucide:users' },
-  { label: 'Settings', href: '/admin/settings', icon: 'lucide:settings' },
+interface SidebarChild { label: string; href: string }
+interface SidebarSection { label: string; icon: string; href?: string; children?: SidebarChild[] }
+
+const route = useRoute()
+const menu: SidebarSection[] = [
+  { label: 'Dashboard', icon: 'lucide:layout-dashboard', href: '/admin' },
+  {
+    label: 'Products', icon: 'lucide:package', children: [
+      { label: 'All Products', href: '/admin/products' },
+      { label: 'Categories', href: '/admin/categories' },
+      { label: 'Subcategories', href: '/admin/categories/subcategories' },
+    ],
+  },
+  { label: 'Orders', icon: 'lucide:shopping-cart', href: '/admin/orders' },
+  { label: 'Payments', icon: 'lucide:credit-card', href: '/admin/payments' },
+  { label: 'Customers', icon: 'lucide:users', href: '/admin/users' },
 ]
+
+const openSections = ref<Record<string, boolean>>({ Products: true })
+const hasActiveChild = (item: SidebarSection) => Array.isArray(item.children) && item.children.some(c => route.path === c.href)
+const isActiveItem = (item: SidebarSection) => {
+  const own = item.href ? (item.href === '/admin' ? route.path === '/admin' : route.path.startsWith(item.href)) : false
+  return own || hasActiveChild(item)
+}
+const isOpen = (item: SidebarSection) => hasActiveChild(item) || !!openSections.value[item.label]
+const toggle = (label: string) => { openSections.value[label] = !openSections.value[label] }
 
 const mobileOpen = ref(false)
 
@@ -33,35 +51,55 @@ const logout = async () => {
 <template>
   <SidebarProvider>
     <Sidebar side="left" variant="sidebar" collapsible="offcanvas" class="bg-white text-foreground">
-      <SidebarHeader>
-        <NuxtLink to="/admin" class="font-semibold tracking-wide px-3 py-2">BLACKHORSE Admin</NuxtLink>
+      <SidebarHeader class="bg-white px-4 py-5">
+        <NuxtLink to="/admin" class="font-semibold tracking-wide">
+          <Logo />
+        </NuxtLink>
       </SidebarHeader>
-      <SidebarSeparator class="my-2" />
-      <SidebarContent>
-        <SidebarMenu class="gap-2">
-          <SidebarMenuItem v-for="item in menu" :key="item.href">
-            <SidebarMenuButton :data-active="useRoute().path === item.href" as-child>
-              <NuxtLink :to="item.href">
-                <Icon :name="item.icon" />
-                <span>{{ item.label }}</span>
-              </NuxtLink>
-            </SidebarMenuButton>
+      <SidebarContent class="bg-white px-3 py-3">
+        <SidebarMenu class="gap-2.5">
+          <SidebarMenuItem v-for="item in menu" :key="item.label">
+            <template v-if="item.children && item.children.length">
+              <SidebarMenuButton class="rounded-md justify-between py-5" :isActive="isActiveItem(item)" @click="toggle(item.label)">
+                <div class="flex items-center gap-2">
+                  <Icon :name="item.icon" />
+                  <span>{{ item.label }}</span>
+                </div>
+                <Icon :name="isOpen(item) ? 'lucide:chevron-down' : 'lucide:chevron-right'" class="h-4 w-4" />
+              </SidebarMenuButton>
+              <SidebarMenuSub v-if="isOpen(item)">
+                <SidebarMenuSubItem v-for="child in item.children" :key="child.href">
+                  <SidebarMenuSubButton as-child :isActive="route.path === child.href">
+                    <NuxtLink :to="child.href">
+                      <span>{{ child.label }}</span>
+                    </NuxtLink>
+                  </SidebarMenuSubButton>
+                </SidebarMenuSubItem>
+              </SidebarMenuSub>
+            </template>
+            <template v-else>
+              <SidebarMenuButton as-child class="rounded-md !py-5" :isActive="isActiveItem(item)">
+                <NuxtLink :to="item.href!">
+                  <Icon :name="item.icon" />
+                  <span>{{ item.label }}</span>
+                </NuxtLink>
+              </SidebarMenuButton>
+            </template>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarContent>
-      <SidebarSeparator class="my-2" />
-      <SidebarFooter>
-        <SidebarMenu>
+      <SidebarFooter class="bg-white px-3 py-3">
+        <SidebarMenu class="gap-2.5">
           <SidebarMenuItem>
-            <SidebarMenuButton as-child>
-              <button type="button" @click="navigateTo('/admin/settings')">
+            <SidebarMenuButton as-child class="rounded-md py-5" :isActive="route.path.startsWith('/admin/settings')">
+              <NuxtLink to="/admin/settings">
                 <Icon name="lucide:settings" />
                 <span>Settings</span>
-              </button>
+              </NuxtLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton as-child>
+            <SidebarMenuButton as-child class="rounded-md py-5">
               <button type="button" @click="logout">
                 <Icon name="lucide:log-out" />
                 <span>Logout</span>
@@ -72,13 +110,15 @@ const logout = async () => {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-    <SidebarInset class="bg-muted">
+    <SidebarInset class="bg-green-50/20">
       <div class="min-h-dvh text-foreground">
         <header class="sticky top-0 z-30 bg-white border-b border-border">
           <div class="flex items-center justify-between px-4 py-3 md:px-6">
             <div class="flex items-center gap-2">
               <SidebarTrigger class="md:hidden" />
-              <NuxtLink to="/admin" class="font-semibold tracking-wide">BLACKHORSE Admin</NuxtLink>
+              <!-- <NuxtLink to="/admin" class="font-semibold tracking-wide md:hidden">
+                 <Logo />
+              </NuxtLink> -->
             </div>
             <div class="flex items-center gap-3">
               <div class="hidden md:flex items-center gap-2">

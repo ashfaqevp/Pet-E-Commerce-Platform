@@ -137,10 +137,10 @@ const onSubmitSheet = async (payload: { name: string; pet_type: string; product_
   const { create, update } = useAdminProducts()
   try {
     if (editProduct.value?.id) {
-      await update(editProduct.value.id, { ...payload, wholesale_price: null })
+      await update(editProduct.value.id, { ...payload})
       toast.success('Product updated')
     } else {
-      await create({ ...payload, wholesale_price: null })
+      await create({ ...payload})
       toast.success('Product created')
     }
     sheetOpen.value = false

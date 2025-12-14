@@ -4,7 +4,6 @@ export interface AdminProduct {
   pet_type: string
   product_type: string
   retail_price: number | null
-  wholesale_price: number | null
   stock_quantity: number
   created_at: string
 }
@@ -14,7 +13,6 @@ export interface AdminProductInput {
   pet_type: string
   product_type: string
   retail_price?: number | null
-  wholesale_price?: number | null
   stock_quantity?: number
 }
 

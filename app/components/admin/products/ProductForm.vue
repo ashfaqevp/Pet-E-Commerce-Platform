@@ -10,7 +10,6 @@ interface Props {
     pet_type?: string
     product_type?: string
     retail_price?: number | null
-    wholesale_price?: number | null
     stock_quantity?: number
   }
   submitText?: string
@@ -27,7 +26,6 @@ const schema = toTypedSchema(
     pet_type: z.string().min(1),
     product_type: z.string().min(1),
     retail_price: z.number().min(0).optional(),
-    wholesale_price: z.number().min(0).optional(),
     stock_quantity: z.number().min(0).default(0),
   })
 )
@@ -39,7 +37,6 @@ const { handleSubmit, isSubmitting } = useForm({
     pet_type: props.initial?.pet_type ?? '',
     product_type: props.initial?.product_type ?? '',
     retail_price: props.initial?.retail_price ?? undefined,
-    wholesale_price: props.initial?.wholesale_price ?? undefined,
     stock_quantity: props.initial?.stock_quantity ?? 0,
   },
 })
@@ -48,7 +45,6 @@ const { value: name, errorMessage: nameError } = useField<string>('name')
 const { value: petType, errorMessage: petTypeError } = useField<string>('pet_type')
 const { value: productType, errorMessage: productTypeError } = useField<string>('product_type')
 const { value: retailPrice, errorMessage: retailPriceError } = useField<number | undefined>('retail_price')
-const { value: wholesalePrice, errorMessage: wholesalePriceError } = useField<number | undefined>('wholesale_price')
 const { value: stockQty, errorMessage: stockQtyError } = useField<number>('stock_quantity')
 
 const emit = defineEmits<{ submit: [{
@@ -56,7 +52,6 @@ const emit = defineEmits<{ submit: [{
   pet_type: string
   product_type: string
   retail_price?: number | null
-  wholesale_price?: number | null
   stock_quantity?: number
 }] }>()
 

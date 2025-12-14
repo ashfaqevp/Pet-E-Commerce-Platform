@@ -3,7 +3,9 @@ import { toTypedSchema } from '@vee-validate/zod'
 import { useForm, useField } from 'vee-validate'
 import { z } from 'zod'
 import type { AdminProduct } from '@/composables/admin/useAdminProducts'
-import { useCategories } from '@/domain/categories'
+import type { Ref, ComputedRef } from 'vue'
+import type { CategoryKey, CategoryContext, CategoryOption } from '@/domain/categories'
+import { useCategories, isCategoryRequired, getCategoryLabel } from '@/domain/categories'
 
 interface Emits {
   (e: 'update:open', v: boolean): void
@@ -13,13 +15,16 @@ interface Emits {
 const props = defineProps<{ open?: boolean; initial?: AdminProduct | null }>()
 const emit = defineEmits<Emits>()
 
-const { options, setCategory, clearCategory, getCategoryLabel } = useCategories()
-const petOptions = options('pet')
-const typeOptions = options('type')
-const ageOptions = options('age')
-const unitOptions = options('unit')
-const sizeOptions = options('size')
-const flavourOptions = options('flavour')
+const { options, setCategory, clearCategory, getVisibleKeys: getVisibleKeysFromCtx, getDependents, context } = useCategories()
+const optionMap: Record<CategoryKey, ComputedRef<CategoryOption[]>> = {
+  pet: options('pet'),
+  type: options('type'),
+  age: options('age'),
+  unit: options('unit'),
+  size: options('size'),
+  flavour: options('flavour'),
+}
+const optsFor = (key: CategoryKey) => optionMap[key].value
 
 const schema = toTypedSchema(
   z
@@ -36,14 +41,18 @@ const schema = toTypedSchema(
       stock_quantity: z.number().min(0).default(0),
     })
     .superRefine((val, ctx) => {
-      if (['cat', 'dog'].includes(val.pet) && !val.age) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Age is required', path: ['age'] })
+      const catCtx: CategoryContext = {
+        pet: val.pet,
+        type: val.type,
+        age: val.age,
+        unit: val.unit,
+        size: val.size,
+        flavour: val.flavour,
       }
-      if (['food', 'treats'].includes(val.type) && !val.flavour) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Flavour is required', path: ['flavour'] })
-      }
-      if (val.unit && !val.size) {
-        ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Size is required for selected unit', path: ['size'] })
+      for (const key of ['pet', 'type', 'age', 'unit', 'size', 'flavour'] as const) {
+        if (isCategoryRequired(key, catCtx) && !catCtx[key]) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${getCategoryLabel(key)} is required`, path: [key] })
+        }
       }
     })
 )
@@ -89,9 +98,35 @@ watch(() => props.open, (open) => {
   }
 })
 
-watch(pet, (v) => { if (v) setCategory('pet', v); clearCategory('age') })
-watch(type, (v) => { if (v) setCategory('type', v); clearCategory('flavour') })
-watch(unit, (v) => { if (v) setCategory('unit', v); clearCategory('size') })
+const categoryKeys = ['pet','type','age','unit','size','flavour'] as const
+const valueMap: Record<CategoryKey, Ref<string | undefined>> = {
+  pet: pet as unknown as Ref<string | undefined>,
+  type: type as unknown as Ref<string | undefined>,
+  age, unit, size, flavour,
+}
+const errorMap: Record<CategoryKey, Ref<string | undefined>> = {
+  pet: petError as Ref<string | undefined>,
+  type: typeError as Ref<string | undefined>,
+  age: ageError, unit: unitError, size: sizeError, flavour: flavourError,
+}
+
+const clearField = (k: CategoryKey) => { valueMap[k].value = undefined }
+
+const attachWatcher = (k: CategoryKey) => {
+  watch(valueMap[k], (v) => {
+    if (v) setCategory(k, v)
+    for (const dep of getDependents(k)) {
+      clearCategory(dep)
+      clearField(dep)
+    }
+  })
+}
+
+attachWatcher('pet')
+attachWatcher('type')
+attachWatcher('unit')
+
+const visibleKeys = computed(() => getVisibleKeysFromCtx())
 
 const onSubmit = handleSubmit(async (values) => {
   emit('submit', {
@@ -120,65 +155,15 @@ const onSubmit = handleSubmit(async (values) => {
                 <Input id="name" v-model="name" placeholder="Product name" class="w-full" />
                 <p v-if="nameError" class="text-destructive text-xs">{{ nameError }}</p>
                 </div>
-                <div class="flex flex-col gap-1.5">
-                <Label for="pet">{{ getCategoryLabel('pet') }}</Label>
-                <Select v-model="pet">
-                    <SelectTrigger id="pet" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
+                <div v-for="k in visibleKeys" :key="k" class="flex flex-col gap-1.5">
+                  <Label :for="k">{{ getCategoryLabel(k) }}</Label>
+                  <Select :model-value="valueMap[k]?.value" @update:modelValue="(v) => (valueMap[k].value = v as string)">
+                    <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
-                    <SelectItem v-for="opt in petOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
+                      <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
                     </SelectContent>
-                </Select>
-                <p v-if="petError" class="text-destructive text-xs">{{ petError }}</p>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                <Label for="type">{{ getCategoryLabel('type') }}</Label>
-                <Select v-model="type">
-                    <SelectTrigger id="type" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                    <SelectItem v-for="opt in typeOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
-                    </SelectContent>
-                </Select>
-                <p v-if="typeError" class="text-destructive text-xs">{{ typeError }}</p>
-                </div>
-                <div v-if="['cat','dog'].includes(pet || '')" class="flex flex-col gap-1.5">
-                <Label for="age">{{ getCategoryLabel('age') }}</Label>
-                <Select v-model="age">
-                    <SelectTrigger id="age" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                    <SelectItem v-for="opt in ageOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
-                    </SelectContent>
-                </Select>
-                <p v-if="ageError" class="text-destructive text-xs">{{ ageError }}</p>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                <Label for="unit">{{ getCategoryLabel('unit') }}</Label>
-                <Select v-model="unit">
-                    <SelectTrigger id="unit" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                    <SelectItem v-for="opt in unitOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
-                    </SelectContent>
-                </Select>
-                <p v-if="unitError" class="text-destructive text-xs">{{ unitError }}</p>
-                </div>
-                <div v-if="!!unit" class="flex flex-col gap-1.5">
-                <Label for="size">{{ getCategoryLabel('size') }}</Label>
-                <Select v-model="size">
-                    <SelectTrigger id="size" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                    <SelectItem v-for="opt in sizeOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
-                    </SelectContent>
-                </Select>
-                <p v-if="sizeError" class="text-destructive text-xs">{{ sizeError }}</p>
-                </div>
-                <div v-if="['food','treats'].includes(type || '')" class="flex flex-col gap-1.5">
-                <Label for="flavour">{{ getCategoryLabel('flavour') }}</Label>
-                <Select v-model="flavour">
-                    <SelectTrigger id="flavour" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                    <SelectItem v-for="opt in flavourOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
-                    </SelectContent>
-                </Select>
-                <p v-if="flavourError" class="text-destructive text-xs">{{ flavourError }}</p>
+                  </Select>
+                  <p v-if="errorMap[k]?.value" class="text-destructive text-xs">{{ errorMap[k]?.value }}</p>
                 </div>
                 <div class="flex flex-col gap-1.5">
                 <Label for="price">Price</Label>

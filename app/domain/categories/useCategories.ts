@@ -1,5 +1,5 @@
 import { computed, reactive } from 'vue'
-import { getCategoryOptions, getCategoryLabel } from './category.helpers'
+import { getCategoryOptions, getCategoryLabel, isCategoryVisible, isCategoryRequired, getVisibleKeys, getDependents, collectCategoryIssues } from './category.helpers'
 import type { CategoryContext, CategoryKey } from './category.types'
 
 export const useCategories = () => {
@@ -22,6 +22,10 @@ export const useCategories = () => {
     clearCategory,
     options,
     getCategoryLabel,
+    isCategoryVisible: (key: CategoryKey) => isCategoryVisible(key, context),
+    isCategoryRequired: (key: CategoryKey) => isCategoryRequired(key, context),
+    getVisibleKeys: () => getVisibleKeys(context),
+    getDependents,
+    collectCategoryIssues: () => collectCategoryIssues(context),
   }
 }
-

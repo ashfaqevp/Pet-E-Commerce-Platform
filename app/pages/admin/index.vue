@@ -92,7 +92,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
 <template>
   <div class="space-y-6">
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-      <Card>
+      <Card class="bg-white rounded-sm">
         <CardHeader>
           <CardTitle class="text-sm">Total Sales</CardTitle>
         </CardHeader>
@@ -101,7 +101,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
           <p v-else class="text-2xl font-semibold">{{ formatCurrency(metrics?.totalSales || 0) }}</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card class="bg-white rounded-sm">
         <CardHeader>
           <CardTitle class="text-sm">Total Customers</CardTitle>
         </CardHeader>
@@ -110,7 +110,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
           <p v-else class="text-2xl font-semibold">{{ metrics?.customers || 0 }}</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card class="bg-white rounded-sm">
         <CardHeader>
           <CardTitle class="text-sm">Total Products</CardTitle>
         </CardHeader>
@@ -119,7 +119,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
           <p v-else class="text-2xl font-semibold">{{ metrics?.products || 0 }}</p>
         </CardContent>
       </Card>
-      <Card>
+      <Card class="bg-white rounded-sm">
         <CardHeader>
           <CardTitle class="text-sm">Total Orders</CardTitle>
         </CardHeader>
@@ -136,7 +136,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
     </Alert>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <Card class="lg:col-span-2">
+      <Card class="lg:col-span-2 bg-white rounded-sm">
         <CardHeader class="flex items-center justify-between">
           <CardTitle>Recent Orders</CardTitle>
           <Badge variant="outline">Last 10</Badge>
@@ -189,7 +189,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
         </CardContent>
       </Card>
 
-      <Card>
+      <Card class="bg-white rounded-sm">
         <CardHeader>
           <CardTitle>Sales Overview</CardTitle>
         </CardHeader>

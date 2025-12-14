@@ -24,6 +24,8 @@ export interface CategoryConfigItem {
   options?: CategoryOption[]
   dependsOn?: CategoryKey
   rules?: CategoryRule[]
+  required?: boolean
+  requiredWhen?: Array<{ category: CategoryKey; values: string[] }>
 }
 
 export type CategoryConfig = Record<CategoryKey, CategoryConfigItem>

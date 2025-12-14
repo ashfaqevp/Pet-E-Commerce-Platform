@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
+import type { AdminProduct } from '@/composables/admin/useAdminProducts'
+import { useAdminProducts } from '@/composables/admin/useAdminProducts'
+import { createColumnHelper, FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
+import { valueUpdater } from '@/components/ui/table/utils'
+import { useCategories } from '@/domain/categories'
+import ProductSheet from '@/components/admin/products/ProductSheet.vue'
+import ProductDeleteConfirm from '@/components/admin/products/ProductDeleteConfirm.vue'
 
 definePageMeta({
   layout: 'admin',
@@ -16,10 +23,7 @@ const ascending = ref(false)
 const page = ref(1)
 const pageSize = ref(10)
 
-const dialogOpen = ref(false)
-import type { AdminProduct } from '@/composables/admin/useAdminProducts'
-import { useAdminProducts } from '@/composables/admin/useAdminProducts'
-
+const sheetOpen = ref(false)
 const editProduct = ref<AdminProduct | null>(null)
 const deletingId = ref<string | null>(null)
 
@@ -47,6 +51,8 @@ watch(params, () => {
   refresh()
 })
 
+const rows = computed(() => data.value?.rows || [])
+
 onMounted(() => {
   const supabase = useSupabaseClient()
   const channel = supabase
@@ -60,44 +66,51 @@ onMounted(() => {
   })
 })
 
+const columnHelper = createColumnHelper<AdminProduct>()
+const columns = [
+  columnHelper.accessor('name', { header: 'Product', enableSorting: true }),
+  columnHelper.display({ id: 'categories', header: 'Categories', enableSorting: false }),
+  columnHelper.display({ id: 'price', header: 'Price', enableSorting: true }),
+  columnHelper.accessor('stock_quantity', { header: 'Stock', enableSorting: true }),
+  columnHelper.display({ id: 'actions', header: 'Actions', enableSorting: false }),
+] 
+
+const sorting = ref<SortingState>([])
+const table = useVueTable({
+  data: computed(() => rows.value),
+  columns,
+  state: { sorting: sorting.value },
+  onSortingChange: (updater) => {
+    valueUpdater(updater, sorting)
+    const s = sorting.value[0]
+    if (s) {
+      const id = s.id === 'price' ? 'retail_price' : (s.id as 'name' | 'stock_quantity')
+      sortBy.value = id
+      ascending.value = !s.desc
+    } else {
+      sortBy.value = 'created_at'
+      ascending.value = false
+    }
+  },
+  manualSorting: true,
+  getCoreRowModel: getCoreRowModel(),
+})
+
+watch(sorting, (s) => {
+  table.setOptions(prev => ({ ...prev, state: { ...(prev.state as any), sorting: s } }))
+})
+
 const openCreate = () => {
   editProduct.value = null
-  dialogOpen.value = true
+  sheetOpen.value = true
 }
 
 const openEdit = (p: AdminProduct) => {
   editProduct.value = p
-  dialogOpen.value = true
+  sheetOpen.value = true
 }
 
-const onSubmitForm = async (payload: {
-  name: string
-  pet_type: string
-  product_type: string
-  retail_price?: number | null
-  wholesale_price?: number | null
-  stock_quantity?: number
-}) => {
-  const { create, update } = useAdminProducts()
-  try {
-    if (editProduct.value?.id) {
-      await update(editProduct.value.id, payload)
-      toast.success('Product updated')
-    } else {
-      await create(payload)
-      toast.success('Product created')
-    }
-    dialogOpen.value = false
-    refresh()
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Operation failed'
-    toast.error(msg)
-  }
-}
-
-const confirmDelete = (id: string) => {
-  deletingId.value = id
-}
+const confirmDelete = (id: string) => { deletingId.value = id }
 
 const deleteProduct = async () => {
   if (!deletingId.value) return
@@ -115,7 +128,34 @@ const deleteProduct = async () => {
 
 const formatCurrency = (v: number | null | undefined) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(Number(v || 0))
 const totalPages = computed(() => Math.max(1, Math.ceil(Number(data.value?.count || 0) / pageSize.value)))
-const rows = computed(() => data.value?.rows || [])
+
+const { options, getCategoryLabel } = useCategories()
+const petOptions = options('pet')
+const typeOptions = options('type')
+
+const onSubmitSheet = async (payload: { name: string; pet_type: string; product_type: string; retail_price: number; stock_quantity: number }) => {
+  const { create, update } = useAdminProducts()
+  try {
+    if (editProduct.value?.id) {
+      await update(editProduct.value.id, { ...payload, wholesale_price: null })
+      toast.success('Product updated')
+    } else {
+      await create({ ...payload, wholesale_price: null })
+      toast.success('Product created')
+    }
+    sheetOpen.value = false
+    refresh()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Operation failed'
+    toast.error(msg)
+  }
+}
+
+const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quantity', asc: boolean) => {
+  sortBy.value = key
+  ascending.value = asc
+  sorting.value = key === 'retail_price' ? [{ id: 'price', desc: !asc }] : [{ id: key, desc: !asc }]
+}
 </script>
 
 <template>
@@ -133,19 +173,13 @@ const rows = computed(() => data.value?.rows || [])
         <Select v-model="petType">
           <SelectTrigger class="w-40"><SelectValue placeholder="Pet" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="dogs">Dogs</SelectItem>
-            <SelectItem value="cats">Cats</SelectItem>
-            <SelectItem value="birds">Birds</SelectItem>
-            <SelectItem value="fish">Fish</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            <SelectItem v-for="opt in petOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
           </SelectContent>
         </Select>
         <Select v-model="productType">
           <SelectTrigger class="w-44"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent>
-            <SelectItem value="Food">Food</SelectItem>
-            <SelectItem value="Toys">Toys</SelectItem>
-            <SelectItem value="Accessories">Accessories</SelectItem>
+            <SelectItem v-for="opt in typeOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -158,11 +192,11 @@ const rows = computed(() => data.value?.rows || [])
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem as="button" @click="sortBy = 'created_at'; ascending = false">Newest</DropdownMenuItem>
-            <DropdownMenuItem as="button" @click="sortBy = 'name'; ascending = true">Name</DropdownMenuItem>
-            <DropdownMenuItem as="button" @click="sortBy = 'retail_price'; ascending = true">Price ↑</DropdownMenuItem>
-            <DropdownMenuItem as="button" @click="sortBy = 'retail_price'; ascending = false">Price ↓</DropdownMenuItem>
-            <DropdownMenuItem as="button" @click="sortBy = 'stock_quantity'; ascending = false">Stock</DropdownMenuItem>
+            <DropdownMenuItem as="button" @click="setServerSort('created_at', false)">Newest</DropdownMenuItem>
+            <DropdownMenuItem as="button" @click="setServerSort('name', true)">Name</DropdownMenuItem>
+            <DropdownMenuItem as="button" @click="setServerSort('retail_price', true)">Price ↑</DropdownMenuItem>
+            <DropdownMenuItem as="button" @click="setServerSort('retail_price', false)">Price ↓</DropdownMenuItem>
+            <DropdownMenuItem as="button" @click="setServerSort('stock_quantity', false)">Stock</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button class="bg-secondary text-white" @click="openCreate">
@@ -180,25 +214,21 @@ const rows = computed(() => data.value?.rows || [])
       <CardContent>
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Pet</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead class="text-right">Retail</TableHead>
-              <TableHead class="text-right">Wholesale</TableHead>
-              <TableHead class="text-right">Stock</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead class="text-right">Actions</TableHead>
+            <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
+              <TableHead v-for="header in headerGroup.headers" :key="header.id" :class="header.column.getCanSort() ? 'cursor-pointer select-none' : ''" @click="header.column.getCanSort() && header.column.toggleSorting(header.column.getIsSorted() === 'asc')">
+                <FlexRender :render="header.column.columnDef.header" :props="header.getContext()" />
+                <Icon v-if="header.column.getCanSort() && !header.column.getIsSorted()" name="lucide:arrow-up-down" class="ml-1 inline h-3 w-3" />
+                <Icon v-else-if="header.column.getIsSorted() === 'asc'" name="lucide:arrow-up" class="ml-1 inline h-3 w-3" />
+                <Icon v-else-if="header.column.getIsSorted() === 'desc'" name="lucide:arrow-down" class="ml-1 inline h-3 w-3" />
+              </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-if="pending">
-              <TableCell colspan="8">
-                <Skeleton class="h-10 w-full" />
-              </TableCell>
+              <TableCell colspan="5"><Skeleton class="h-10 w-full" /></TableCell>
             </TableRow>
             <TableRow v-else-if="error">
-              <TableCell colspan="8">
+              <TableCell colspan="5">
                 <Alert variant="destructive">
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{{ error.message }}</AlertDescription>
@@ -206,20 +236,23 @@ const rows = computed(() => data.value?.rows || [])
               </TableCell>
             </TableRow>
             <TableRow v-else-if="rows.length === 0">
-              <TableCell colspan="8">
-                <TableEmpty>No products found</TableEmpty>
-              </TableCell>
+              <TableCell colspan="5"><TableEmpty>No products found</TableEmpty></TableCell>
             </TableRow>
-            <TableRow v-else v-for="p in rows" :key="p.id">
-              <TableCell class="font-medium">{{ p.name }}</TableCell>
-              <TableCell>{{ p.pet_type }}</TableCell>
-              <TableCell>{{ p.product_type }}</TableCell>
-              <TableCell class="text-right">{{ formatCurrency(p.retail_price) }}</TableCell>
-              <TableCell class="text-right">{{ formatCurrency(p.wholesale_price) }}</TableCell>
-              <TableCell class="text-right">{{ p.stock_quantity }}</TableCell>
+            <TableRow v-else v-for="row in table.getRowModel().rows" :key="row.id">
               <TableCell>
-                <Badge :variant="p.stock_quantity > 0 ? 'secondary' : 'destructive'">{{ p.stock_quantity > 0 ? 'active' : 'inactive' }}</Badge>
+                <div class="flex items-center justify-between">
+                  <span class="font-medium">{{ row.original.name }}</span>
+                  <Badge :variant="row.original.stock_quantity > 0 ? 'secondary' : 'destructive'">{{ row.original.stock_quantity > 0 ? 'active' : 'inactive' }}</Badge>
+                </div>
               </TableCell>
+              <TableCell>
+                <div class="flex items-center gap-2">
+                  <Badge variant="outline">{{ getCategoryLabel('pet') }}: {{ row.original.pet_type }}</Badge>
+                  <Badge variant="outline">{{ getCategoryLabel('type') }}: {{ row.original.product_type }}</Badge>
+                </div>
+              </TableCell>
+              <TableCell class="text-right">{{ formatCurrency(row.original.retail_price) }}</TableCell>
+              <TableCell class="text-right">{{ row.original.stock_quantity }}</TableCell>
               <TableCell class="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger as-child>
@@ -228,11 +261,11 @@ const rows = computed(() => data.value?.rows || [])
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem as="button" @click="openEdit(p)">
+                    <DropdownMenuItem as="button" @click="openEdit(row.original)">
                       <Icon name="lucide:pencil" class="h-4 w-4 mr-2" /> Edit
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem as="button" class="text-destructive" @click="confirmDelete(p.id)">
+                    <DropdownMenuItem as="button" class="text-destructive" @click="confirmDelete(row.original.id)">
                       <Icon name="lucide:trash" class="h-4 w-4 mr-2" /> Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -243,36 +276,25 @@ const rows = computed(() => data.value?.rows || [])
         </Table>
       </CardContent>
       <CardFooter class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <Button variant="outline" :disabled="page === 1" @click="page = Math.max(1, page - 1)">Prev</Button>
-          <Button variant="outline" :disabled="page >= totalPages" @click="page = Math.min(totalPages, page + 1)">Next</Button>
-        </div>
+        <Pagination :total="totalPages" :page="page" :items-per-page="pageSize" @update:page="(p) => page = p">
+          <PaginationContent v-slot="{ items }">
+            <PaginationFirst />
+            <PaginationPrevious />
+            <template v-for="(item, i) in items" :key="i">
+              <PaginationItem v-if="item.type === 'page'" :value="item.value" :isActive="item.value === page">{{ item.value }}</PaginationItem>
+              <PaginationEllipsis v-else />
+            </template>
+            <PaginationNext />
+            <PaginationLast />
+          </PaginationContent>
+        </Pagination>
         <div class="text-sm">Page {{ page }} of {{ totalPages }}</div>
       </CardFooter>
     </Card>
 
-    <Dialog v-model:open="dialogOpen">
-      <DialogContent class="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{{ editProduct ? 'Edit Product' : 'Add Product' }}</DialogTitle>
-          <DialogDescription />
-        </DialogHeader>
-        <ProductForm :initial="editProduct || undefined" :submit-text="editProduct ? 'Update' : 'Create'" @submit="onSubmitForm" />
-      </DialogContent>
-    </Dialog>
+    <ProductSheet v-model:open="sheetOpen" :initial="editProduct || null" @submit="onSubmitSheet" />
 
-    <AlertDialog :open="!!deletingId" @update:open="deletingId = null">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete product?</AlertDialogTitle>
-          <AlertDialogDescription />
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction class="bg-destructive text-destructive-foreground" @click="deleteProduct">Delete</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ProductDeleteConfirm :open="!!deletingId" @update:open="deletingId = null" @confirm="deleteProduct" />
   </div>
   
 </template>

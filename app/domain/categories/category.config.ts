@@ -3,6 +3,7 @@ import type { CategoryConfig } from './category.types'
 export const CATEGORY_CONFIG: CategoryConfig = {
   pet: {
     label: 'Pet Type',
+    required: true,
     options: [
       { id: 'cat', label: 'Cat' },
       { id: 'dog', label: 'Dog' },
@@ -15,20 +16,29 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   type: {
     label: 'Product Type',
     dependsOn: 'pet',
-    options: [
-      { id: 'food', label: 'Food' },
-      { id: 'treats', label: 'Treats' },
-      { id: 'toys', label: 'Toys' },
-      { id: 'medicine', label: 'Medicine' },
-      { id: 'accessories', label: 'Accessories' },
-      { id: 'grooming', label: 'Grooming' },
-      { id: 'shelter', label: 'Shelter & Beds' },
+    required: true,
+    rules: [
+      {
+        when: { category: 'pet', values: ['cat', 'dog', 'bird', 'fish', 'other'] },
+        options: [
+          { id: 'food', label: 'Food' },
+          { id: 'treats', label: 'Treats' },
+          { id: 'toys', label: 'Toys' },
+          { id: 'medicine', label: 'Medicine' },
+          { id: 'accessories', label: 'Accessories' },
+          { id: 'grooming', label: 'Grooming' },
+          { id: 'shelter', label: 'Shelter & Beds' },
+        ],
+      },
     ],
   },
 
   age: {
     label: 'Age Group',
     dependsOn: 'pet',
+    requiredWhen: [
+      { category: 'pet', values: ['cat', 'dog'] },
+    ],
     rules: [
       {
         when: { category: 'pet', values: ['cat'] },
@@ -71,6 +81,9 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   size: {
     label: 'Size',
     dependsOn: 'unit',
+    requiredWhen: [
+      { category: 'unit', values: ['gram', 'ml', 'liter', 'piece'] },
+    ],
     rules: [
       {
         when: { category: 'unit', values: ['gram'] },
@@ -102,6 +115,9 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   flavour: {
     label: 'Flavour',
     dependsOn: 'type',
+    requiredWhen: [
+      { category: 'type', values: ['food', 'treats'] },
+    ],
     rules: [
       {
         when: { category: 'type', values: ['food', 'treats'] },

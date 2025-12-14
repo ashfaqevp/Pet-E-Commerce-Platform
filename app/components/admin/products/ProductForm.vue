@@ -98,12 +98,6 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
 
       <div>
-        <Label for="wholesale">Wholesale Price</Label>
-        <Input id="wholesale" type="number" step="0.01" v-model.number="wholesalePrice" />
-        <p v-if="wholesalePriceError" class="text-destructive text-xs mt-1">{{ wholesalePriceError }}</p>
-      </div>
-
-      <div>
         <Label for="stock">Stock</Label>
         <Input id="stock" type="number" v-model.number="stockQty" />
         <p v-if="stockQtyError" class="text-destructive text-xs mt-1">{{ stockQtyError }}</p>

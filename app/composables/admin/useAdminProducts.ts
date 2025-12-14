@@ -6,6 +6,8 @@ export interface AdminProduct {
   retail_price: number | null
   stock_quantity: number
   created_at: string
+  thumbnail_url?: string | null
+  image_urls?: string[] | null
 }
 
 export interface AdminProductInput {
@@ -14,6 +16,8 @@ export interface AdminProductInput {
   product_type: string
   retail_price?: number | null
   stock_quantity?: number
+  thumbnail_url?: string | null
+  image_urls?: string[] | null
 }
 
 export const useAdminProducts = () => {
@@ -85,5 +89,41 @@ export const useAdminProducts = () => {
     if (e) throw e
   }
 
-  return { pending: readonly(pending), error: readonly(error), list, create, update, remove }
+  const uploadProductImages = async (
+    productId: string,
+    files: { thumbnail?: File | null; gallery?: File[] | null }
+  ): Promise<{ thumbnail_url?: string; image_urls?: string[] }> => {
+    const storage = supabase.storage.from('product-images')
+
+    const urls: { thumbnail_url?: string; image_urls?: string[] } = {}
+
+    if (files.thumbnail) {
+      const ext = files.thumbnail.name.includes('.') ? files.thumbnail.name.substring(files.thumbnail.name.lastIndexOf('.')) : ''
+      const path = `products/${productId}/thumbnail-${Date.now()}${ext}`
+      const { error: upErr } = await storage.upload(path, files.thumbnail, { upsert: true, contentType: files.thumbnail.type })
+      if (upErr) throw upErr
+      const { data } = storage.getPublicUrl(path)
+      urls.thumbnail_url = data.publicUrl
+    }
+
+    if (files.gallery && files.gallery.length) {
+      const galleryUrls: string[] = []
+      await Promise.all(
+        files.gallery.map(async (file, idx) => {
+          const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : ''
+          const key = Math.random().toString(36).slice(2)
+          const path = `products/${productId}/gallery-${key}-${idx}${ext}`
+          const { error: gErr } = await storage.upload(path, file, { upsert: true, contentType: file.type })
+          if (gErr) throw gErr
+          const { data } = storage.getPublicUrl(path)
+          galleryUrls.push(data.publicUrl)
+        })
+      )
+      urls.image_urls = galleryUrls
+    }
+
+    return urls
+  }
+
+  return { pending: readonly(pending), error: readonly(error), list, create, update, remove, uploadProductImages }
 }

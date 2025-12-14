@@ -133,14 +133,38 @@ const { options, getCategoryLabel } = useCategories()
 const petOptions = options('pet')
 const typeOptions = options('type')
 
-const onSubmitSheet = async (payload: { name: string; pet_type: string; product_type: string; retail_price: number; stock_quantity: number }) => {
-  const { create, update } = useAdminProducts()
+const onSubmitSheet = async (payload: { name: string; pet_type: string; product_type: string; retail_price: number; stock_quantity: number; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[] }) => {
+  const { create, update, uploadProductImages } = useAdminProducts()
   try {
     if (editProduct.value?.id) {
-      await update(editProduct.value.id, { ...payload})
+      const productId = editProduct.value.id
+      const uploaded = await uploadProductImages(productId, { thumbnail: payload.thumbnailFile ?? null, gallery: payload.galleryFiles ?? [] })
+      const thumbUrl = uploaded.thumbnail_url || payload.existingThumbnailUrl || editProduct.value.thumbnail_url || null
+      const existingGallery = payload.existingGalleryUrls ?? editProduct.value.image_urls ?? []
+      const finalGallery = [...existingGallery, ...(uploaded.image_urls || [])]
+      await update(productId, {
+        name: payload.name,
+        pet_type: payload.pet_type,
+        product_type: payload.product_type,
+        retail_price: payload.retail_price,
+        stock_quantity: payload.stock_quantity ?? 0,
+        thumbnail_url: thumbUrl,
+        image_urls: finalGallery,
+      })
       toast.success('Product updated')
     } else {
-      await create({ ...payload})
+      const created = await create({
+        name: payload.name,
+        pet_type: payload.pet_type,
+        product_type: payload.product_type,
+        retail_price: payload.retail_price,
+        stock_quantity: payload.stock_quantity ?? 0,
+      })
+      const uploaded = await uploadProductImages(created.id, { thumbnail: payload.thumbnailFile ?? null, gallery: payload.galleryFiles ?? [] })
+      await update(created.id, {
+        thumbnail_url: uploaded.thumbnail_url ?? null,
+        image_urls: uploaded.image_urls ?? [],
+      })
       toast.success('Product created')
     }
     sheetOpen.value = false

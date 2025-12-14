@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toast } from 'vue-sonner'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm, useField } from 'vee-validate'
 import { z } from 'zod'
@@ -9,7 +10,17 @@ import { useCategories, isCategoryRequired, getCategoryLabel } from '@/domain/ca
 
 interface Emits {
   (e: 'update:open', v: boolean): void
-  (e: 'submit', payload: { name: string; pet_type: string; product_type: string; retail_price: number; stock_quantity: number }): void
+  (e: 'submit', payload: {
+    name: string
+    pet_type: string
+    product_type: string
+    retail_price: number
+    stock_quantity: number
+    thumbnailFile?: File | null
+    galleryFiles?: File[]
+    existingThumbnailUrl?: string | null
+    existingGalleryUrls?: string[]
+  }): void
 }
 
 const props = defineProps<{ open?: boolean; initial?: AdminProduct | null }>()
@@ -90,6 +101,8 @@ watch(() => props.open, (open) => {
       offer_percentage: undefined,
       stock_quantity: Number(props.initial?.stock_quantity ?? 0),
     }, false)
+    existingThumbnailUrl.value = props.initial?.thumbnail_url ?? null
+    existingGalleryUrls.value = Array.isArray(props.initial?.image_urls) ? (props.initial!.image_urls as string[]) : []
     if (props.initial?.pet_type) setCategory('pet', props.initial.pet_type)
     else clearCategory('pet')
     if (props.initial?.product_type) setCategory('type', props.initial.product_type)
@@ -129,14 +142,64 @@ attachWatcher('unit')
 const visibleKeys = computed(() => getVisibleKeysFromCtx())
 
 const onSubmit = handleSubmit(async (values) => {
+  const hasThumb = thumbnailFile.value || existingThumbnailUrl.value
+  if (!hasThumb) {
+    toast.error('Thumbnail image is required')
+    return
+  }
   emit('submit', {
     name: values.name,
     pet_type: values.pet,
     product_type: values.type,
     retail_price: values.price,
     stock_quantity: values.stock_quantity ?? 0,
+    thumbnailFile: thumbnailFile.value,
+    galleryFiles: galleryFiles.value,
+    existingThumbnailUrl: existingThumbnailUrl.value,
+    existingGalleryUrls: existingGalleryUrls.value,
   })
 })
+
+const thumbnailFile = ref<File | null>(null)
+const thumbnailPreview = ref<string | null>(null)
+const existingThumbnailUrl = ref<string | null>(null)
+
+const galleryFiles = ref<File[]>([])
+const galleryPreviews = ref<string[]>([])
+const existingGalleryUrls = ref<string[]>([])
+
+const onThumbChange = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  const file = target.files?.[0] || null
+  thumbnailFile.value = file
+  if (file) {
+    thumbnailPreview.value = URL.createObjectURL(file)
+    existingThumbnailUrl.value = null
+  } else {
+    thumbnailPreview.value = null
+  }
+}
+
+const clearThumbnail = () => {
+  thumbnailFile.value = null
+  thumbnailPreview.value = null
+}
+
+const onGalleryChange = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  const files = Array.from(target.files || [])
+  galleryFiles.value = [...galleryFiles.value, ...files]
+  galleryPreviews.value = [...galleryPreviews.value, ...files.map(f => URL.createObjectURL(f))]
+}
+
+const removeNewGalleryAt = (idx: number) => {
+  galleryFiles.value.splice(idx, 1)
+  galleryPreviews.value.splice(idx, 1)
+}
+
+const removeExistingGalleryAt = (idx: number) => {
+  existingGalleryUrls.value.splice(idx, 1)
+}
 </script>
 
 <template>
@@ -179,6 +242,42 @@ const onSubmit = handleSubmit(async (values) => {
                 <Label for="stock">Stock</Label>
                 <Input id="stock" type="number" v-model.number="stockQty" class="w-full" />
                 <p v-if="stockQtyError" class="text-destructive text-xs">{{ stockQtyError }}</p>
+                </div>
+                <div class="flex flex-col gap-1.5 md:col-span-2">
+                  <Label for="thumbnail">Thumbnail (required)</Label>
+                  <div class="flex items-center gap-3">
+                    <Avatar class="size-20">
+                      <AvatarImage v-if="thumbnailPreview" :src="thumbnailPreview" alt="thumbnail" />
+                      <AvatarImage v-else-if="existingThumbnailUrl" :src="existingThumbnailUrl" alt="thumbnail" />
+                      <AvatarFallback>IMG</AvatarFallback>
+                    </Avatar>
+                    <div class="flex items-center gap-2">
+                      <Input id="thumbnail" type="file" accept="image/*" class="w-56" @change="onThumbChange" />
+                      <Button variant="outline" @click.prevent="clearThumbnail">Remove</Button>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col gap-1.5 md:col-span-2">
+                  <Label for="gallery">Gallery (optional)</Label>
+                  <div class="flex items-center gap-2">
+                    <Input id="gallery" type="file" multiple accept="image/*" class="w-64" @change="onGalleryChange" />
+                  </div>
+                  <div class="flex flex-wrap gap-3 mt-2">
+                    <div v-for="(url, i) in existingGalleryUrls" :key="`existing-${i}`" class="flex items-center gap-2">
+                      <Avatar class="size-16">
+                        <AvatarImage :src="url" alt="gallery" />
+                        <AvatarFallback>IMG</AvatarFallback>
+                      </Avatar>
+                      <Button variant="ghost" size="sm" class="text-destructive" @click.prevent="removeExistingGalleryAt(i)">Remove</Button>
+                    </div>
+                    <div v-for="(url, i) in galleryPreviews" :key="`new-${i}`" class="flex items-center gap-2">
+                      <Avatar class="size-16">
+                        <AvatarImage :src="url" alt="gallery" />
+                        <AvatarFallback>IMG</AvatarFallback>
+                      </Avatar>
+                      <Button variant="ghost" size="sm" class="text-destructive" @click.prevent="removeNewGalleryAt(i)">Remove</Button>
+                    </div>
+                  </div>
                 </div>
             </div>
           </div>

@@ -38,6 +38,8 @@ export const isCategoryVisible = (key: CategoryKey, context: CategoryContext = {
   const config = CATEGORY_CONFIG[key]
   if (!config) return false
   if (!config.dependsOn) return true
+  const dependsValue = context[config.dependsOn]
+  if (!dependsValue) return false
   return getCategoryOptions(key, context).length > 0
 }
 

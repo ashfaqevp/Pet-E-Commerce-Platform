@@ -194,7 +194,7 @@ watch(petType, (val) => {
   }
 })
 
-const onSubmitSheet = async (payload: { name: string; pet_type: string; product_type: string; retail_price: number; stock_quantity: number; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[] }) => {
+const onSubmitSheet = async (payload: { name: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; stock_quantity: number; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[] }) => {
   const { create, update, uploadProductImages } = useAdminProducts()
   try {
     if (editProduct.value?.id) {
@@ -207,6 +207,10 @@ const onSubmitSheet = async (payload: { name: string; pet_type: string; product_
         name: payload.name,
         pet_type: payload.pet_type,
         product_type: payload.product_type,
+        age: payload.age ?? null,
+        unit: payload.unit ?? null,
+        size: payload.size ?? null,
+        flavour: payload.flavour ?? null,
         retail_price: payload.retail_price,
         stock_quantity: payload.stock_quantity ?? 0,
         thumbnail_url: thumbUrl,
@@ -218,6 +222,10 @@ const onSubmitSheet = async (payload: { name: string; pet_type: string; product_
         name: payload.name,
         pet_type: payload.pet_type,
         product_type: payload.product_type,
+        age: payload.age ?? null,
+        unit: payload.unit ?? null,
+        size: payload.size ?? null,
+        flavour: payload.flavour ?? null,
         retail_price: payload.retail_price,
         stock_quantity: payload.stock_quantity ?? 0,
       })

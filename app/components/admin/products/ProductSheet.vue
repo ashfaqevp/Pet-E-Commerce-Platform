@@ -14,6 +14,10 @@ interface Emits {
     name: string
     pet_type: string
     product_type: string
+    age?: string
+    unit?: string
+    size?: string
+    flavour?: string
     retail_price: number
     stock_quantity: number
     thumbnailFile?: File | null
@@ -68,7 +72,7 @@ const schema = toTypedSchema(
     })
 )
 
-const { handleSubmit, isSubmitting, setValues } = useForm({
+const { handleSubmit, isSubmitting, setValues, submitCount } = useForm({
   validationSchema: schema,
   initialValues: {
     name: '', pet: '', type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
@@ -76,27 +80,30 @@ const { handleSubmit, isSubmitting, setValues } = useForm({
   },
 })
 
-const { value: name, errorMessage: nameError } = useField<string>('name')
-const { value: pet, errorMessage: petError } = useField<string>('pet')
-const { value: type, errorMessage: typeError } = useField<string>('type')
-const { value: age, errorMessage: ageError } = useField<string | undefined>('age')
-const { value: unit, errorMessage: unitError } = useField<string | undefined>('unit')
-const { value: size, errorMessage: sizeError } = useField<string | undefined>('size')
-const { value: flavour, errorMessage: flavourError } = useField<string | undefined>('flavour')
-const { value: price, errorMessage: priceError } = useField<number>('price')
-const { value: offerPct, errorMessage: offerPctError } = useField<number | undefined>('offer_percentage')
-const { value: stockQty, errorMessage: stockQtyError } = useField<number>('stock_quantity')
+const { value: name, errorMessage: nameError, meta: nameMeta } = useField<string>('name')
+const { value: pet, errorMessage: petError, meta: petMeta } = useField<string>('pet')
+const { value: type, errorMessage: typeError, meta: typeMeta } = useField<string>('type')
+const { value: age, errorMessage: ageError, meta: ageMeta } = useField<string | undefined>('age')
+const { value: unit, errorMessage: unitError, meta: unitMeta } = useField<string | undefined>('unit')
+const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<string | undefined>('size')
+const { value: flavour, errorMessage: flavourError, meta: flavourMeta } = useField<string | undefined>('flavour')
+const { value: price, errorMessage: priceError, meta: priceMeta } = useField<number>('price')
+const { value: offerPct, errorMessage: offerPctError, meta: offerPctMeta } = useField<number | undefined>('offer_percentage')
+const { value: stockQty, errorMessage: stockQtyError, meta: stockQtyMeta } = useField<number>('stock_quantity')
+
+const initializing = ref(false)
 
 watch(() => props.open, (open) => {
   if (open) {
+    initializing.value = true
     setValues({
       name: props.initial?.name ?? '',
       pet: props.initial?.pet_type ?? '',
       type: props.initial?.product_type ?? '',
-      age: undefined,
-      unit: undefined,
-      size: undefined,
-      flavour: undefined,
+      age: (props.initial as any)?.age ?? undefined,
+      unit: (props.initial as any)?.unit ?? undefined,
+      size: (props.initial as any)?.size ?? undefined,
+      flavour: (props.initial as any)?.flavour ?? undefined,
       price: Number(props.initial?.retail_price ?? 0),
       offer_percentage: undefined,
       stock_quantity: Number(props.initial?.stock_quantity ?? 0),
@@ -107,7 +114,15 @@ watch(() => props.open, (open) => {
     else clearCategory('pet')
     if (props.initial?.product_type) setCategory('type', props.initial.product_type)
     else clearCategory('type')
-    clearCategory('unit'); clearCategory('size'); clearCategory('flavour'); clearCategory('age')
+    const initialUnit = (props.initial as any)?.unit as string | undefined
+    const initialSize = (props.initial as any)?.size as string | undefined
+    const initialFlavour = (props.initial as any)?.flavour as string | undefined
+    const initialAge = (props.initial as any)?.age as string | undefined
+    if (initialUnit) setCategory('unit', initialUnit); else clearCategory('unit')
+    if (initialSize) setCategory('size', initialSize); else clearCategory('size')
+    if (initialFlavour) setCategory('flavour', initialFlavour); else clearCategory('flavour')
+    if (initialAge) setCategory('age', initialAge); else clearCategory('age')
+    initializing.value = false
   }
 })
 
@@ -128,9 +143,11 @@ const clearField = (k: CategoryKey) => { valueMap[k].value = undefined }
 const attachWatcher = (k: CategoryKey) => {
   watch(valueMap[k], (v) => {
     if (v) setCategory(k, v)
-    for (const dep of getDependents(k)) {
-      clearCategory(dep)
-      clearField(dep)
+    if (!initializing.value) {
+      for (const dep of getDependents(k)) {
+        clearCategory(dep)
+        clearField(dep)
+      }
     }
   })
 }
@@ -147,10 +164,15 @@ const onSubmit = handleSubmit(async (values) => {
     toast.error('Thumbnail image is required')
     return
   }
+  console.log(values)
   emit('submit', {
     name: values.name,
     pet_type: values.pet,
     product_type: values.type,
+    age: values.age,
+    unit: values.unit,
+    size: values.size,
+    flavour: values.flavour,
     retail_price: values.price,
     stock_quantity: values.stock_quantity ?? 0,
     thumbnailFile: thumbnailFile.value,
@@ -163,6 +185,10 @@ const onSubmit = handleSubmit(async (values) => {
 const thumbnailFile = ref<File | null>(null)
 const thumbnailPreview = ref<string | null>(null)
 const existingThumbnailUrl = ref<string | null>(null)
+
+const { errorMessage: thumbnailError, meta: thumbnailMeta, validate: validateThumbnail } = useField('thumbnail', () => {
+  return (thumbnailFile.value || existingThumbnailUrl.value) ? true : 'Thumbnail image is required'
+})
 
 const galleryFiles = ref<File[]>([])
 const galleryPreviews = ref<string[]>([])
@@ -178,11 +204,13 @@ const onThumbChange = (e: Event) => {
   } else {
     thumbnailPreview.value = null
   }
+  validateThumbnail()
 }
 
 const clearThumbnail = () => {
   thumbnailFile.value = null
   thumbnailPreview.value = null
+  validateThumbnail()
 }
 
 const onGalleryChange = (e: Event) => {
@@ -216,32 +244,32 @@ const removeExistingGalleryAt = (idx: number) => {
                 <div class="flex flex-col gap-1.5">
                 <Label for="name">Name</Label>
                 <Input id="name" v-model="name" placeholder="Product name" class="w-full" />
-                <p v-if="nameError" class="text-destructive text-xs">{{ nameError }}</p>
+                <p v-if="nameError && nameMeta.touched" class="text-destructive text-xs">{{ nameError }}</p>
                 </div>
                 <div v-for="k in visibleKeys" :key="k" class="flex flex-col gap-1.5">
                   <Label :for="k">{{ getCategoryLabel(k) }}</Label>
-                  <Select :model-value="valueMap[k]?.value" @update:modelValue="(v) => (valueMap[k].value = v as string)">
+                  <Select v-model="valueMap[k].value">
                     <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p v-if="errorMap[k]?.value" class="text-destructive text-xs">{{ errorMap[k]?.value }}</p>
+                  <p v-if="errorMap[k]?.value && (k === 'pet' ? petMeta.touched : k === 'type' ? typeMeta.touched : k === 'age' ? ageMeta.touched : k === 'unit' ? unitMeta.touched : k === 'size' ? sizeMeta.touched : flavourMeta.touched)" class="text-destructive text-xs">{{ errorMap[k]?.value }}</p>
                 </div>
                 <div class="flex flex-col gap-1.5">
                 <Label for="price">Price</Label>
                 <Input id="price" type="number" step="0.01" v-model.number="price" class="w-full" />
-                <p v-if="priceError" class="text-destructive text-xs">{{ priceError }}</p>
+                <p v-if="priceError && priceMeta.touched" class="text-destructive text-xs">{{ priceError }}</p>
                 </div>
                 <div class="flex flex-col gap-1.5">
                 <Label for="offer">Offer %</Label>
                 <Input id="offer" type="number" step="1" min="0" max="90" v-model.number="offerPct" class="w-full" />
-                <p v-if="offerPctError" class="text-destructive text-xs">{{ offerPctError }}</p>
+                <p v-if="offerPctError && offerPctMeta.touched" class="text-destructive text-xs">{{ offerPctError }}</p>
                 </div>
                 <div class="flex flex-col gap-1.5">
                 <Label for="stock">Stock</Label>
                 <Input id="stock" type="number" v-model.number="stockQty" class="w-full" />
-                <p v-if="stockQtyError" class="text-destructive text-xs">{{ stockQtyError }}</p>
+                <p v-if="stockQtyError && stockQtyMeta.touched" class="text-destructive text-xs">{{ stockQtyError }}</p>
                 </div>
                 <div class="flex flex-col gap-1.5 md:col-span-2">
                   <Label for="thumbnail">Thumbnail (required)</Label>
@@ -256,6 +284,7 @@ const removeExistingGalleryAt = (idx: number) => {
                       <Button variant="outline" @click.prevent="clearThumbnail">Remove</Button>
                     </div>
                   </div>
+                  <p v-if="thumbnailError && (thumbnailMeta.touched || submitCount > 0)" class="text-destructive text-xs">{{ thumbnailError }}</p>
                 </div>
                 <div class="flex flex-col gap-1.5 md:col-span-2">
                   <Label for="gallery">Gallery (optional)</Label>

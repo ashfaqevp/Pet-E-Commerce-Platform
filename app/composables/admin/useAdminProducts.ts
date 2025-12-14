@@ -3,6 +3,10 @@ export interface AdminProduct {
   name: string
   pet_type: string
   product_type: string
+  age?: string | null
+  unit?: string | null
+  size?: string | null
+  flavour?: string | null
   retail_price: number | null
   stock_quantity: number
   created_at: string
@@ -15,6 +19,10 @@ export interface AdminProductInput {
   name: string
   pet_type: string
   product_type: string
+  age?: string | null
+  unit?: string | null
+  size?: string | null
+  flavour?: string | null
   retail_price?: number | null
   stock_quantity?: number
   is_active?: boolean

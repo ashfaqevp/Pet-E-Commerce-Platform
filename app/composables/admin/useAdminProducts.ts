@@ -13,6 +13,9 @@ export interface AdminProduct {
   is_active: boolean
   thumbnail_url?: string | null
   image_urls?: string[] | null
+  description?: string | null
+  default_rating?: number | null
+  base_product_id?: string | null
 }
 
 export interface AdminProductInput {
@@ -28,6 +31,9 @@ export interface AdminProductInput {
   is_active?: boolean
   thumbnail_url?: string | null
   image_urls?: string[] | null
+  description?: string | null
+  default_rating?: number | null
+  base_product_id?: string | null
 }
 
 export const useAdminProducts = () => {

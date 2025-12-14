@@ -194,7 +194,7 @@ watch(petType, (val) => {
   }
 })
 
-const onSubmitSheet = async (payload: { name: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; stock_quantity: number; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[] }) => {
+const onSubmitSheet = async (payload: { name: string; description: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[] }) => {
   const { create, update, uploadProductImages } = useAdminProducts()
   try {
     if (editProduct.value?.id) {
@@ -205,6 +205,7 @@ const onSubmitSheet = async (payload: { name: string; pet_type: string; product_
       const finalGallery = [...existingGallery, ...(uploaded.image_urls || [])]
       await update(productId, {
         name: payload.name,
+        description: payload.description,
         pet_type: payload.pet_type,
         product_type: payload.product_type,
         age: payload.age ?? null,
@@ -213,6 +214,8 @@ const onSubmitSheet = async (payload: { name: string; pet_type: string; product_
         flavour: payload.flavour ?? null,
         retail_price: payload.retail_price,
         stock_quantity: payload.stock_quantity ?? 0,
+        default_rating: payload.default_rating ?? null,
+        base_product_id: payload.is_base_product ? productId : (payload.base_product_id ?? null),
         thumbnail_url: thumbUrl,
         image_urls: finalGallery,
       })
@@ -220,6 +223,7 @@ const onSubmitSheet = async (payload: { name: string; pet_type: string; product_
     } else {
       const created = await create({
         name: payload.name,
+        description: payload.description,
         pet_type: payload.pet_type,
         product_type: payload.product_type,
         age: payload.age ?? null,
@@ -228,9 +232,12 @@ const onSubmitSheet = async (payload: { name: string; pet_type: string; product_
         flavour: payload.flavour ?? null,
         retail_price: payload.retail_price,
         stock_quantity: payload.stock_quantity ?? 0,
+        default_rating: payload.default_rating ?? null,
+        base_product_id: payload.is_base_product ? null : (payload.base_product_id ?? null),
       })
       const uploaded = await uploadProductImages(created.id, { thumbnail: payload.thumbnailFile ?? null, gallery: payload.galleryFiles ?? [] })
       await update(created.id, {
+        base_product_id: payload.is_base_product ? created.id : (payload.base_product_id ?? null),
         thumbnail_url: uploaded.thumbnail_url ?? null,
         image_urls: uploaded.image_urls ?? [],
       })

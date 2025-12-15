@@ -46,6 +46,8 @@ const logout = async () => {
   navigateTo('/login')
 }
 
+const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.meta.title as string) : '')
+
 </script>
 
 <template>
@@ -116,6 +118,7 @@ const logout = async () => {
           <div class="flex items-center justify-between px-4 py-3 md:px-6">
             <div class="flex items-center gap-2">
               <SidebarTrigger class="md:hidden" />
+              <span v-if="pageTitle" class="font-semibold text-[#0f766e] text-base md:text-lg">{{ pageTitle }}</span>
               <!-- <NuxtLink to="/admin" class="font-semibold tracking-wide md:hidden">
                  <Logo />
               </NuxtLink> -->

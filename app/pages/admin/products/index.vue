@@ -22,7 +22,7 @@ const status = ref<'active' | 'inactive' | typeof ALL | undefined>()
 const sortBy = ref<'name' | 'stock_quantity' | 'retail_price' | 'created_at'>('created_at')
 const ascending = ref(false)
 const page = ref(1)
-const pageSize = ref(5)
+const pageSize = ref(10)
 
 const sheetOpen = ref(false)
 const editProduct = ref<AdminProduct | null>(null)
@@ -70,11 +70,11 @@ onMounted(() => {
 const columnHelper = createColumnHelper<AdminProduct>()
 const columns = [
   columnHelper.display({ id: 'serial', header: '#', enableSorting: false }),
-  columnHelper.display({ id: 'thumbnail', header: 'Image', enableSorting: false }),
   columnHelper.accessor('name', { header: 'Product', enableSorting: true }),
   columnHelper.accessor('pet_type', { header: 'Pet Type', enableSorting: false }),
   columnHelper.accessor('product_type', { header: 'Product Type', enableSorting: false }),
   columnHelper.display({ id: 'price', header: 'Price', enableSorting: true }),
+  columnHelper.display({ id: 'rating', header: 'Rating', enableSorting: false }),
   columnHelper.accessor('stock_quantity', { header: 'Stock', enableSorting: true }),
   columnHelper.display({ id: 'status', header: 'Status', enableSorting: false }),
   columnHelper.display({ id: 'actions', header: 'Actions', enableSorting: false }),
@@ -102,7 +102,7 @@ const table = useVueTable({
 })
 
 watch(sorting, (s) => {
-  table.setOptions(prev => ({ ...prev, state: { ...(prev.state as any), sorting: s } }))
+  table.setOptions(prev => ({ ...prev, state: { ...(prev.state as Record<string, unknown>), sorting: s } }))
 })
 
 const openCreate = () => {
@@ -131,7 +131,13 @@ const deleteProduct = async () => {
   }
 }
 
-const formatCurrency = (v: number | null | undefined) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(Number(v || 0))
+const formatCurrency = (v?: number | null) =>
+  new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: 'OMR',
+  }).format(Number(v ?? 0))
+
+
 const totalItems = computed(() => Number(data.value?.count || 0))
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize.value)))
 
@@ -151,14 +157,38 @@ const typeLabelMap = computed<Record<string, string>>(() => {
 
 const headerAlignClass = (id: string) => {
   if (id === 'serial') return 'text-center'
-  if (id === 'thumbnail') return 'text-center'
   if (id === 'price' || id === 'stock_quantity') return 'text-right'
+  if (id === 'rating') return 'text-center'
   if (id === 'pet_type' || id === 'product_type') return 'text-center'
   if (id === 'status' || id === 'actions') return 'text-center'
   return 'text-left'
 }
 
 const getThumbnail = (p: AdminProduct) => p.thumbnail_url || (p.image_urls && p.image_urls[0]) || ''
+
+const getRatingParts = (v: number | null | undefined) => {
+  const r = Math.max(0, Math.min(5, Number(v || 0)))
+  const full = Math.floor(r)
+  const half = r - full >= 0.5 ? 1 : 0
+  const empty = 5 - full - half
+  return { full, half, empty, value: r }
+}
+
+const { data: baseProductsData, pending: baseProductsPending, error: baseProductsError } = await useLazyAsyncData(
+  'admin-base-products-map',
+  async () => {
+    const supabase = useSupabaseClient()
+    const { data, error } = await supabase
+      .from('products')
+      .select('id,name,base_product_id')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    const list = (data || []) as Array<{ id: string; name: string; base_product_id: string | null }>
+    return list.filter(p => p.base_product_id === p.id).map(p => ({ id: String(p.id), name: p.name }))
+  },
+  { server: true }
+)
+const baseNameById = computed(() => Object.fromEntries((baseProductsData.value || []).map(p => [p.id, p.name])) as Record<string, string>)
 
 const setActive = async (id: string) => {
   const { update } = useAdminProducts()
@@ -177,6 +207,35 @@ const setInactive = async (id: string) => {
   try {
     await update(id, { is_active: false })
     toast.success('Status set to inactive')
+    await refresh()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Update failed'
+    toast.error(msg)
+  }
+}
+
+const markFeatured = async (id: string) => {
+  const { update, countFeatured } = useAdminProducts()
+  try {
+    const count = await countFeatured()
+    if (count >= 5) {
+      toast.error('Maximum 5 featured products allowed')
+      return
+    }
+    await update(id, { is_featured: true })
+    toast.success('Marked as featured')
+    await refresh()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Update failed'
+    toast.error(msg)
+  }
+}
+
+const unmarkFeatured = async (id: string) => {
+  const { update } = useAdminProducts()
+  try {
+    await update(id, { is_featured: false })
+    toast.success('Removed from featured')
     await refresh()
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Update failed'
@@ -261,10 +320,10 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
 <template>
   <div class="space-y-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-      <div class="flex flex-1 items-center gap-2">
-        <Input v-model="search" placeholder="Search products" class="w-full md:w-80" />
+      <div class="flex flex-1 flex-wrap items-center gap-2 gap-y-3">
+        <Input v-model="search" placeholder="Search products" class="w-full md:w-80 bg-white" />
         <Select v-model="status">
-          <SelectTrigger class="w-40">
+          <SelectTrigger class="w-40 min-w-[150px] shrink-0 bg-white">
             <div class="flex items-center gap-1">
               <span class="text-xs text-muted-foreground">Status:</span>
               <SelectValue placeholder="All" />
@@ -277,7 +336,7 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
           </SelectContent>
         </Select>
         <Select v-model="petType">
-          <SelectTrigger class="w-40">
+          <SelectTrigger class="w-40 min-w-[150px] shrink-0 bg-white">
             <div class="flex items-center gap-1">
               <span class="text-xs text-muted-foreground">Pet:</span>
               <SelectValue placeholder="All" />
@@ -289,7 +348,7 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
           </SelectContent>
         </Select>
         <Select v-model="productType">
-          <SelectTrigger class="w-44">
+          <SelectTrigger class="w-44 min-w-[160px] shrink-0 bg-white">
             <div class="flex items-center gap-1">
               <span class="text-xs text-muted-foreground">Type:</span>
               <SelectValue placeholder="All" />
@@ -329,9 +388,11 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
         <CardTitle>Products</CardTitle>
         <Badge variant="outline">{{ data?.count || 0 }}</Badge>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
+      <CardContent class="p-0">
+        <div class="w-full overflow-x-auto">
+          <div class="max-h-[70vh] overflow-y-auto">
+            <Table class="min-w-[400px] max-w-[600px] md:min-w-full">
+          <TableHeader class="sticky top-0 bg-white z-10">
             <TableRow v-for="headerGroup in table.getHeaderGroups()" :key="headerGroup.id">
               <TableHead
                 v-for="header in headerGroup.headers"
@@ -348,7 +409,7 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
           </TableHeader>
           <TableBody>
             <TableRow v-if="pending">
-              <TableCell colspan="9"><Skeleton class="h-10 w-full" /></TableCell>
+              <TableCell colspan="9"><Skeleton v-for="i in 9" :key="i" class="h-10 w-full mb-3" /></TableCell>
             </TableRow>
             <TableRow v-else-if="error">
               <TableCell colspan="9">
@@ -363,15 +424,29 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
             </TableRow>
             <TableRow v-else v-for="row in table.getRowModel().rows" :key="row.id">
               <TableCell class="py-3 text-center w-10">{{ (page - 1) * pageSize + row.index + 1 }}</TableCell>
-              <TableCell class="py-3 text-center w-16">
-                <div class="h-10 w-10 rounded-sm overflow-hidden border bg-muted grid place-items-center">
-                  <img v-if="getThumbnail(row.original)" :src="getThumbnail(row.original)" alt="" class="h-full w-full object-cover" />
-                  <Icon v-else name="lucide:image" class="h-5 w-5 text-muted-foreground" />
-                </div>
-              </TableCell>
               <TableCell class="py-3 text-left">
-                <div class="flex items-center justify-between">
-                  <span class="font-medium">{{ row.original.name }}</span>
+                <div class="flex items-center gap-3 relative">
+                  <div class=" h-10 w-10 rounded-sm overflow-hidden border bg-muted grid place-items-center">
+                    <img v-if="getThumbnail(row.original)" :src="getThumbnail(row.original)" alt="" class="h-full w-full object-cover" />
+                    <Icon v-else name="lucide:image" class="h-5 w-5 text-muted-foreground" />
+
+                  </div>
+                  <div class="flex flex-col text-start ">
+                    <span class="font-medium">{{ row.original.name }}
+                      <span v-if="row.original.is_featured" class="text-[#FF9500]">
+                        <Icon name="material-symbols:star" class="h-4 w-4 inline" />
+                      </span>
+                    </span>
+                    <span class="text-xs text-muted-foreground">
+                      <template v-if="row.original.base_product_id && row.original.base_product_id !== row.original.id">
+                         {{ baseNameById[row.original.base_product_id] ?? '—' }}
+                      </template>
+                      <template v-else>
+                        <!-- Base Product -->
+                      </template>
+                    </span>
+                  </div>
+
                 </div>
               </TableCell>
               <TableCell class="py-3 text-center">
@@ -381,6 +456,14 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
                 <Badge variant="outline">{{ typeLabelMap[row.original.product_type] ?? row.original.product_type }}</Badge>
               </TableCell>
               <TableCell class="py-3 text-right">{{ formatCurrency(row.original.retail_price) }}</TableCell>
+              <TableCell class="py-3 text-center">
+                <div class="flex items-center justify-center gap-1">
+                  <Icon v-for="i in getRatingParts(row.original.default_rating).full" :key="`f-${i}`" name="lucide:star" class="h-3.5 w-3.5 text-[#FF9500]" />
+                  <Icon v-if="getRatingParts(row.original.default_rating).half === 1" name="lucide:star-half" class="h-3.5 w-3.5 text-[#FF9500]" />
+                  <Icon v-for="i in getRatingParts(row.original.default_rating).empty" :key="`e-${i}`" name="lucide:star" class="h-3.5 w-3.5 text-muted-foreground/40" />
+                  <span class="text-xs text-muted-foreground">{{ getRatingParts(row.original.default_rating).value.toFixed(1) }}</span>
+                </div>
+              </TableCell>
               <TableCell class="py-3 text-right">{{ row.original.stock_quantity }}</TableCell>
               <TableCell class="py-3 text-center">
                 <Badge :variant="row.original.is_active ? 'secondary' : 'destructive'">{{ row.original.is_active ? 'active' : 'inactive' }}</Badge>
@@ -398,25 +481,34 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem v-if="!row.original.is_active" as="button" @click="setActive(row.original.id)">
-                      <Icon name="lucide:check-circle" class="h-4 w-4 mr-2" /> Set Active
-                    </DropdownMenuItem>
-                    <DropdownMenuItem v-else as="button" @click="setInactive(row.original.id)">
-                      <Icon name="lucide:slash" class="h-4 w-4 mr-2" /> Set Inactive
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem as="button" class="text-destructive" @click="confirmDelete(row.original.id)">
-                      <Icon name="lucide:trash" class="h-4 w-4 mr-2" /> Delete
-                    </DropdownMenuItem>
+                  <DropdownMenuItem v-if="!row.original.is_active" as="button" @click="setActive(row.original.id)">
+                    <Icon name="lucide:check-circle" class="h-4 w-4 mr-2" /> Set Active
+                  </DropdownMenuItem>
+                  <DropdownMenuItem v-else as="button" @click="setInactive(row.original.id)">
+                    <Icon name="lucide:slash" class="h-4 w-4 mr-2" /> Set Inactive
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem v-if="!row.original.is_featured" as="button" @click="markFeatured(row.original.id)">
+                    <Icon name="lucide:star" class="h-4 w-4 mr-2" /> Add to Featured
+                  </DropdownMenuItem>
+                  <DropdownMenuItem v-else as="button" @click="unmarkFeatured(row.original.id)">
+                    <Icon name="lucide:star-off" class="h-4 w-4 mr-2" /> Remove Featured
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem as="button" class="text-destructive" @click="confirmDelete(row.original.id)">
+                    <Icon name="lucide:trash" class="h-4 w-4 mr-2" /> Delete
+                  </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
+          </div>
+        </div>
       </CardContent>
-      <CardFooter class="flex items-center justify-between">
-        <Pagination :total="totalItems" :page="page" :items-per-page="pageSize" @update:page="(p) => page = p">
+      <CardFooter class="flex items-center justify-between gap-3 flex-col md:flex-row">
+        <Pagination class="w-full md:w-auto" :total="totalItems" :page="page" :items-per-page="pageSize" @update:page="(p) => page = p">
           <PaginationContent v-slot="{ items }">
             <PaginationFirst />
             <PaginationPrevious />
@@ -428,7 +520,7 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
             <PaginationLast />
           </PaginationContent>
         </Pagination>
-        <div class="text-sm">Page {{ page }} of {{ totalPages }}</div>
+        <div class="text-sm min-w-[200px] text-center md:text-end">Page {{ page }} of {{ totalPages }}</div>
       </CardFooter>
     </Card>
 

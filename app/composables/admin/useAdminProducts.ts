@@ -16,6 +16,7 @@ export interface AdminProduct {
   description?: string | null
   default_rating?: number | null
   base_product_id?: string | null
+  is_featured?: boolean
 }
 
 export interface AdminProductInput {
@@ -34,6 +35,7 @@ export interface AdminProductInput {
   description?: string | null
   default_rating?: number | null
   base_product_id?: string | null
+  is_featured?: boolean
 }
 
 export const useAdminProducts = () => {
@@ -100,6 +102,15 @@ export const useAdminProducts = () => {
     return data as unknown as AdminProduct
   }
 
+  const countFeatured = async (): Promise<number> => {
+    const { count, error: e } = await supabase
+      .from('products')
+      .select('id', { count: 'exact', head: true })
+      .eq('is_featured', true)
+    if (e) throw e
+    return count ?? 0
+  }
+
   const remove = async (id: string): Promise<void> => {
     const { error: e } = await supabase.from('products').delete().eq('id', id)
     if (e) throw e
@@ -141,5 +152,5 @@ export const useAdminProducts = () => {
     return urls
   }
 
-  return { pending: readonly(pending), error: readonly(error), list, create, update, remove, uploadProductImages }
+  return { pending: readonly(pending), error: readonly(error), list, create, update, remove, uploadProductImages, countFeatured }
 }

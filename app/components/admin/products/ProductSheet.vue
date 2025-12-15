@@ -113,10 +113,10 @@ watch(() => props.open, async (open) => {
     initializing.value = true
     const initialPet = props.initial?.pet_type ?? ''
     const initialType = props.initial?.product_type ?? ''
-    const initialUnit = (props.initial as any)?.unit as string | undefined
-    const initialSize = (props.initial as any)?.size as string | undefined
-    const initialFlavour = (props.initial as any)?.flavour as string | undefined
-    const initialAge = (props.initial as any)?.age as string | undefined
+    const initialUnit = props.initial?.unit ?? undefined
+    const initialSize = props.initial?.size ?? undefined
+    const initialFlavour = props.initial?.flavour ?? undefined
+    const initialAge = props.initial?.age ?? undefined
     if (initialPet) setCategory('pet', initialPet); else clearCategory('pet')
     await nextTick()
     if (initialType) setCategory('type', initialType); else clearCategory('type')
@@ -127,7 +127,7 @@ watch(() => props.open, async (open) => {
 
     setValues({
       name: props.initial?.name ?? '',
-      description: (props.initial as any)?.description ?? '',
+      description: props.initial?.description ?? '',
       pet: initialPet,
       type: initialType,
       age: initialAge ?? undefined,
@@ -137,10 +137,10 @@ watch(() => props.open, async (open) => {
       price: Number(props.initial?.retail_price ?? 0),
       offer_percentage: undefined,
       stock_quantity: Number(props.initial?.stock_quantity ?? 0),
-      default_rating: (props.initial as any)?.default_rating ?? undefined,
-      product_kind: props.initial && (props.initial as any)?.base_product_id === props.initial.id ? 'base' : 'variant',
-      base_product_id: props.initial && (props.initial as any)?.base_product_id !== props.initial.id
-        ? ((props.initial as any)?.base_product_id ?? undefined)
+      default_rating: props.initial?.default_rating ?? undefined,
+      product_kind: props.initial?.id ? (props.initial?.base_product_id === props.initial.id ? 'base' : 'variant') : 'base',
+      base_product_id: props.initial?.id && props.initial.base_product_id !== props.initial.id
+        ? (props.initial.base_product_id ?? undefined)
         : undefined,
     }, false)
     await nextTick()

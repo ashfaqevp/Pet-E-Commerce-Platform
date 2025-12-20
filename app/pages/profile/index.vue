@@ -4,8 +4,6 @@ import { definePageMeta, useLazyAsyncData, useSupabaseClient, useSupabaseUser, n
 import { toast } from 'vue-sonner'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Avatar } from '@/components/ui/avatar'
 import { AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -31,8 +29,8 @@ watchEffect(() => {
   if (!user.value) navigateTo('/')
 })
 
-const { getProfile, updatePhone } = useProfile()
-const { listAddresses, createAddress, updateAddress, deleteAddress, setDefault } = useAddresses()
+const { getProfile } = useProfile()
+const { listAddresses, deleteAddress, setDefault } = useAddresses()
 const { listRecent } = useOrders()
 
 const { data: profileData, pending: profilePending, error: profileError, refresh: refreshProfile } = await useLazyAsyncData(
@@ -69,24 +67,9 @@ const orders = computed(() => (ordersData.value as OrderRow[]) || [])
 const phoneInput = ref('')
 const phoneDialogOpen = ref(false)
 watch(profile, (p) => { phoneInput.value = p?.phone ?? '' }, { immediate: true })
-const savingPhone = ref(false)
-const savePhone = async () => {
-  if (!phoneInput.value || phoneInput.value.trim().length < 6) {
-    toast.error('Enter a valid phone number')
-    return
-  }
-  try {
-    savingPhone.value = true
-    await updatePhone(phoneInput.value.trim())
-    toast.success('Profile updated')
-    await refreshProfile()
-    phoneDialogOpen.value = false
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Update failed'
-    toast.error(msg)
-  } finally {
-    savingPhone.value = false
-  }
+const afterPhoneSaved = async () => {
+  phoneDialogOpen.value = false
+  await refreshProfile()
 }
 
 const addressDialogOpen = ref(false)
@@ -135,29 +118,9 @@ const openEditAddress = (a: AddressRow) => {
   addressDialogOpen.value = true
 }
 
-const submittingAddress = ref(false)
-const submitAddress = async () => {
-  if (!addressForm.value.full_name || !addressForm.value.address_line_1 || !addressForm.value.city || !addressForm.value.state || !addressForm.value.postal_code || !addressForm.value.country) {
-    toast.error('Fill all required fields')
-    return
-  }
-  try {
-    submittingAddress.value = true
-    if (editingAddress.value) {
-      await updateAddress(editingAddress.value.id, addressForm.value)
-      toast.success('Address updated')
-    } else {
-      await createAddress(addressForm.value)
-      toast.success('Address added')
-    }
-    addressDialogOpen.value = false
-    await refreshAddresses()
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Save failed'
-    toast.error(msg)
-  } finally {
-    submittingAddress.value = false
-  }
+const afterAddressSaved = async () => {
+  addressDialogOpen.value = false
+  await refreshAddresses()
 }
 
 const removeAddressClick = async (id: string) => {
@@ -201,7 +164,10 @@ const logout = async () => {
     <div class="space-y-6">
       <div class="flex items-center justify-between">
         <h1 class="text-2xl font-semibold">Profile</h1>
-        <Button variant="outline" class="text-red-600 border-red-300" :disabled="loggingOut" @click="logout">Logout</Button>
+        <Button variant="outline" class="text-red-600 border-red-300" :disabled="loggingOut" @click="logout">
+            <Icon name="lucide:log-out" />
+            Logout
+        </Button>
       </div>
 
       <Card class="border-none rounded-2xl overflow-hidden shadow-sm bg-white">
@@ -229,11 +195,11 @@ const logout = async () => {
                       <Button
                         :variant="profile?.phone ? 'outline' : 'default'"
                         size="sm"
-                        class="w-8 h-8 p-0"
                         aria-label="Edit phone"
                         @click="phoneDialogOpen = true"
                       >
-                        <Icon :name="profile?.phone ? 'lucide:pencil' : 'lucide:plus'" />
+                        <Icon :name="profile?.phone ? 'lucide:pencil' : 'fluent:phone-add-24-regular'" />
+                        <span v-if="!profile?.phone" class="hidden md:block">Add Phone number</span>
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -325,12 +291,11 @@ const logout = async () => {
 
     <!-- Address: Mobile bottom sheet -->
     <Sheet :open="addressDialogOpen && !isLg" @update:open="addressDialogOpen = $event">
-      <SheetContent side="bottom" class="rounded-t-2xl p-4 sm:p-6 space-y-4">
-        <SheetHeader>
+      <SheetContent side="bottom" class="rounded-t-2xl p-4 sm:p-6 py-0 sm:py-0 pb-5">
+        <SheetHeader class="pt-8 px-0">
           <SheetTitle>{{ editingAddress ? 'Edit Address' : 'Add Address' }}</SheetTitle>
-          <SheetDescription />
         </SheetHeader>
-        <AddressFormContent v-model="addressForm" :submitting="submittingAddress" @save="submitAddress" />
+        <AddressFormContent v-model="addressForm" :address-id="editingAddress?.id || undefined" @save="afterAddressSaved" />
       </SheetContent>
     </Sheet>
 
@@ -341,18 +306,17 @@ const logout = async () => {
           <DialogTitle>{{ editingAddress ? 'Edit Address' : 'Add Address' }}</DialogTitle>
           <DialogDescription />
         </DialogHeader>
-        <AddressFormContent v-model="addressForm" :submitting="submittingAddress" @save="submitAddress" />
+        <AddressFormContent v-model="addressForm" :address-id="editingAddress?.id || undefined" @save="afterAddressSaved" />
       </DialogContent>
     </Dialog>
 
     <!-- Phone: Mobile bottom sheet -->
     <Sheet :open="phoneDialogOpen && !isLg" @update:open="phoneDialogOpen = $event">
-      <SheetContent side="bottom" class="rounded-t-2xl p-4 sm:p-6 space-y-4">
-        <SheetHeader>
+      <SheetContent side="bottom" class="rounded-t-2xl p-4 sm:p-6 py-0 sm:py-0 pb-5">
+        <SheetHeader class="pt-8 px-0">
           <SheetTitle>Edit Phone</SheetTitle>
-          <SheetDescription />
         </SheetHeader>
-        <PhoneEditContent v-model="phoneInput" :saving="savingPhone" @save="savePhone" />
+        <PhoneEditContent v-model="phoneInput" @save="afterPhoneSaved" />
       </SheetContent>
     </Sheet>
 
@@ -363,7 +327,7 @@ const logout = async () => {
           <DialogTitle>Edit Phone</DialogTitle>
           <DialogDescription />
         </DialogHeader>
-        <PhoneEditContent v-model="phoneInput" :saving="savingPhone" @save="savePhone" />
+        <PhoneEditContent v-model="phoneInput" @save="afterPhoneSaved" />
       </DialogContent>
     </Dialog>
   </div>

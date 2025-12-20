@@ -10,15 +10,21 @@ import { Avatar } from '@/components/ui/avatar'
 import { AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useWindowSize } from '@vueuse/core'
 import { useProfile, type ProfileRow } from '@/composables/useProfile'
 import { useAddresses, type AddressRow, type AddressInput } from '@/composables/useAddresses'
 import { useOrders, type OrderRow } from '@/composables/useOrders'
+import PhoneEditContent from '@/components/profile/PhoneEditContent.vue'
+import AddressFormContent from '@/components/profile/AddressFormContent.vue'
 
 definePageMeta({ layout: 'default' })
 
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const { width } = useWindowSize()
+const isLg = computed(() => width.value >= 1024)
 
 watchEffect(() => {
   if (!user.value) navigateTo('/')
@@ -60,6 +66,7 @@ const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
 const orders = computed(() => (ordersData.value as OrderRow[]) || [])
 
 const phoneInput = ref('')
+const phoneDialogOpen = ref(false)
 watch(profile, (p) => { phoneInput.value = p?.phone ?? '' }, { immediate: true })
 const savingPhone = ref(false)
 const savePhone = async () => {
@@ -72,6 +79,7 @@ const savePhone = async () => {
     await updatePhone(phoneInput.value.trim())
     toast.success('Profile updated')
     await refreshProfile()
+    phoneDialogOpen.value = false
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Update failed'
     toast.error(msg)
@@ -195,7 +203,7 @@ const logout = async () => {
         <Button variant="outline" class="text-red-600 border-red-300" :disabled="loggingOut" @click="logout">Logout</Button>
       </div>
 
-      <Card>
+      <Card class="border-none rounded-2xl overflow-hidden shadow-sm bg-white">
         <CardHeader>
           <CardTitle>User Info</CardTitle>
           <CardDescription />
@@ -205,32 +213,27 @@ const logout = async () => {
             <Skeleton class="h-6 w-40" />
             <Skeleton class="h-6 w-56" />
           </div>
-          <div v-else class="flex items-center gap-4">
+          <div v-else class="flex items-center justify-between gap-4">
             <Avatar class="size-12">
               <AvatarImage :src="((user?.user_metadata as Record<string, unknown>)?.avatar_url as string) || '/images/placeholder.svg'" />
             </Avatar>
-            <div>
+            <div class="flex-1">
               <p class="font-medium">{{ (user?.user_metadata as Record<string, unknown>)?.full_name as string || '—' }}</p>
               <p class="text-sm text-muted-foreground">{{ user?.email || '—' }}</p>
+              <div class="flex items-center justify-between mt-2">
+                <p class="text-sm text-muted-foreground">{{ profile?.phone ? `Phone: ${profile.phone}` : 'Phone: —' }}</p>
+                <Button
+                  :variant="profile?.phone ? 'outline' : 'default'"
+                  :size="profile?.phone ? 'default' : 'lg'"
+                  :class="profile?.phone ? 'rounded-full' : 'rounded-full font-bold bg-secondary text-white hover:bg-secondary/90'"
+                  @click="phoneDialogOpen = true"
+                >
+                  {{ profile?.phone ? 'Edit' : 'Add Phone Number' }}
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Profile Details</CardTitle>
-          <CardDescription />
-        </CardHeader>
-        <CardContent>
-          <div class="space-y-3 max-w-md">
-            <label class="text-sm">Phone Number</label>
-            <Input v-model="phoneInput" placeholder="Phone" />
-          </div>
-        </CardContent>
-        <CardFooter>
-          <Button class="w-full max-w-md" :disabled="savingPhone" @click="savePhone">Save</Button>
-        </CardFooter>
       </Card>
 
       <Card>
@@ -300,33 +303,47 @@ const logout = async () => {
       </Card>
     </div>
 
-    <Dialog :open="addressDialogOpen" @update:open="addressDialogOpen = $event">
+    <!-- Address: Mobile bottom sheet -->
+    <Sheet :open="addressDialogOpen && !isLg" @update:open="addressDialogOpen = $event">
+      <SheetContent side="bottom" class="rounded-t-2xl p-4 sm:p-6 space-y-4">
+        <SheetHeader>
+          <SheetTitle>{{ editingAddress ? 'Edit Address' : 'Add Address' }}</SheetTitle>
+          <SheetDescription />
+        </SheetHeader>
+        <AddressFormContent v-model="addressForm" :submitting="submittingAddress" @save="submitAddress" />
+      </SheetContent>
+    </Sheet>
+
+    <!-- Address: Desktop dialog -->
+    <Dialog :open="addressDialogOpen && isLg" @update:open="addressDialogOpen = $event">
       <DialogContent class="rounded-xl">
         <DialogHeader>
           <DialogTitle>{{ editingAddress ? 'Edit Address' : 'Add Address' }}</DialogTitle>
           <DialogDescription />
         </DialogHeader>
-        <div class="space-y-3">
-          <Input v-model="addressForm.full_name" placeholder="Full name" />
-          <Input v-model="addressForm.phone" placeholder="Phone" />
-          <Textarea v-model="addressForm.address_line_1" placeholder="Address line 1" />
-          <Textarea v-model="addressForm.address_line_2" placeholder="Address line 2 (optional)" />
-          <div class="grid grid-cols-2 gap-3">
-            <Input v-model="addressForm.city" placeholder="City" />
-            <Input v-model="addressForm.state" placeholder="State" />
-          </div>
-          <div class="grid grid-cols-2 gap-3">
-            <Input v-model="addressForm.postal_code" placeholder="Postal code" />
-            <Input v-model="addressForm.country" placeholder="Country" />
-          </div>
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <input id="is_default" type="checkbox" v-model="addressForm.is_default" class="rounded" />
-              <label for="is_default" class="text-sm">Set as default</label>
-            </div>
-            <Button :disabled="submittingAddress" @click="submitAddress">Save</Button>
-          </div>
-        </div>
+        <AddressFormContent v-model="addressForm" :submitting="submittingAddress" @save="submitAddress" />
+      </DialogContent>
+    </Dialog>
+
+    <!-- Phone: Mobile bottom sheet -->
+    <Sheet :open="phoneDialogOpen && !isLg" @update:open="phoneDialogOpen = $event">
+      <SheetContent side="bottom" class="rounded-t-2xl p-4 sm:p-6 space-y-4">
+        <SheetHeader>
+          <SheetTitle>Edit Phone</SheetTitle>
+          <SheetDescription />
+        </SheetHeader>
+        <PhoneEditContent v-model="phoneInput" :saving="savingPhone" @save="savePhone" />
+      </SheetContent>
+    </Sheet>
+
+    <!-- Phone: Desktop dialog -->
+    <Dialog :open="phoneDialogOpen && isLg" @update:open="phoneDialogOpen = $event">
+      <DialogContent class="rounded-xl">
+        <DialogHeader>
+          <DialogTitle>Edit Phone</DialogTitle>
+          <DialogDescription />
+        </DialogHeader>
+        <PhoneEditContent v-model="phoneInput" :saving="savingPhone" @save="savePhone" />
       </DialogContent>
     </Dialog>
   </div>

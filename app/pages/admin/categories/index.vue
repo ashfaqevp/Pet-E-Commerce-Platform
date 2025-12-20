@@ -6,13 +6,14 @@ definePageMeta({
 })
 
 import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
+import type { CategoryOption, CategoryRule } from '~/domain/categories/category.types'
 
-type PetId = typeof CATEGORY_CONFIG.pet.options[number]['id']
-type TypeId = typeof CATEGORY_CONFIG.type.rules[number]['options'][number]['id']
-type AgeId = typeof CATEGORY_CONFIG.age.rules[number]['options'][number]['id']
-type UnitId = typeof CATEGORY_CONFIG.unit.options[number]['id']
-type SizeId = typeof CATEGORY_CONFIG.size.rules[number]['options'][number]['id']
-type FlavourId = typeof CATEGORY_CONFIG.flavour.rules[number]['options'][number]['id']
+type PetId = CategoryOption['id']
+type TypeId = CategoryRule['options'][number]['id']
+type AgeId = CategoryRule['options'][number]['id']
+type UnitId = CategoryOption['id']
+type SizeId = CategoryRule['options'][number]['id']
+type FlavourId = CategoryRule['options'][number]['id']
 
 const selectedPet = ref<PetId | null>(null)
 const selectedType = ref<TypeId | null>(null)
@@ -21,11 +22,12 @@ const selectedUnit = ref<UnitId | null>(null)
 const selectedSize = ref<SizeId | null>(null)
 const selectedFlavour = ref<FlavourId | null>(null)
 
-function getRuleOptions<T extends string>(
-  rules: ReadonlyArray<{ when: { category: string; values: readonly string[] }; options: readonly { id: T; label: string }[] }>,
+function getRuleOptions(
+  rules: ReadonlyArray<CategoryRule> | undefined,
   context: Record<string, string | null>
-): readonly { id: T; label: string }[] {
-  const result: { id: T; label: string }[] = []
+): readonly { id: string; label: string }[] {
+  if (!rules) return []
+  const result: { id: string; label: string }[] = []
   for (const r of rules) {
     const v = context[r.when.category]
     if (v && r.when.values.includes(v)) result.push(...r.options)
@@ -34,20 +36,20 @@ function getRuleOptions<T extends string>(
 }
 
 const typeOptions = computed(() => {
-  if (!selectedPet.value) return [] as readonly { id: TypeId; label: string }[]
-  return getRuleOptions<TypeId>(CATEGORY_CONFIG.type.rules, { pet: selectedPet.value })
+  if (!selectedPet.value) return [] as readonly { id: string; label: string }[]
+  return getRuleOptions(CATEGORY_CONFIG.type.rules, { pet: selectedPet.value })
 })
 const ageOptions = computed(() => {
-  if (!selectedPet.value) return [] as readonly { id: AgeId; label: string }[]
-  return getRuleOptions<AgeId>(CATEGORY_CONFIG.age.rules, { pet: selectedPet.value })
+  if (!selectedPet.value) return [] as readonly { id: string; label: string }[]
+  return getRuleOptions(CATEGORY_CONFIG.age.rules, { pet: selectedPet.value })
 })
 const sizeOptions = computed(() => {
-  if (!selectedUnit.value) return [] as readonly { id: SizeId; label: string }[]
-  return getRuleOptions<SizeId>(CATEGORY_CONFIG.size.rules, { unit: selectedUnit.value })
+  if (!selectedUnit.value) return [] as readonly { id: string; label: string }[]
+  return getRuleOptions(CATEGORY_CONFIG.size.rules, { unit: selectedUnit.value })
 })
 const flavourOptions = computed(() => {
-  if (!selectedType.value) return [] as readonly { id: FlavourId; label: string }[]
-  return getRuleOptions<FlavourId>(CATEGORY_CONFIG.flavour.rules, { type: selectedType.value })
+  if (!selectedType.value) return [] as readonly { id: string; label: string }[]
+  return getRuleOptions(CATEGORY_CONFIG.flavour.rules, { type: selectedType.value })
 })
 
 const isPetRequired = true

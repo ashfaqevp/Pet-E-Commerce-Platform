@@ -97,7 +97,7 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
     <section class="container mx-auto px-4 py-8">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-xl font-semibold">Products</h3>
-        <NuxtLink to="/products"><Button variant="ghost">See All</Button></NuxtLink>
+        <NuxtLink to="/products"><Button variant="ghost" class="underline">See All</Button></NuxtLink>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
         <ProductCard

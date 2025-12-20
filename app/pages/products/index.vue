@@ -351,10 +351,11 @@ onMounted(() => {
         </Sheet>
         
         <!-- Desktop Reset Button -->
-        <Button variant="outline" class="hidden md:flex gap-2" @click="clearAllFilters">
+         <!-- TODO: only show when filters are active -->
+        <!-- <Button variant="outline" class="hidden md:flex gap-2" @click="clearAllFilters">
           <Icon name="lucide:rotate-ccw" class="h-4 w-4" />
-          Reset
-        </Button>
+          Reset Filter
+        </Button> -->
       </div>
     </div>
 

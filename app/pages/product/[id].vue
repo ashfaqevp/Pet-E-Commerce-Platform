@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useRoute, navigateTo, definePageMeta } from "#imports";
-import { useCartStore } from "@/stores/cart";
+import { useRoute, definePageMeta } from "#imports";
 import { Button } from "@/components/ui/button";
+import AddToCartButton from "@/components/AddToCartButton.vue";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import type { UnwrapRefCarouselApi } from "@/components/ui/carousel/interface";
 import Autoplay from "embla-carousel-autoplay";
@@ -187,18 +187,7 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
 
 
 
-const cart = useCartStore();
-const addToCart = () => {
-  cart.addItem({
-    ...product.value,
-    id,
-    flavor: flavorValue.value,
-    size: sizeValue.value,
-    age: ageValue.value,
-    quantity: qty.value,
-  });
-  navigateTo("/cart");
-};
+
 
 const reviews = ref([
   { author: "Jane Doe", rating: 5, comment: "My dog loves it!" },
@@ -383,12 +372,9 @@ definePageMeta({ layout: "default" });
             </Button>
           </div>
 
-          <Button
-            class="flex-1 py-3 rounded-full font-bold bg-secondary text-white hover:bg-secondary/90"
-            size="lg"
-            @click="addToCart"
-            >Add to Cart</Button
-          >
+          <div class="flex-1">
+            <AddToCartButton :product-id="id" />
+          </div>
         </div>
 
         <!-- Details section -->

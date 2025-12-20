@@ -1,285 +1,393 @@
 <script setup lang="ts">
-import { toTypedSchema } from '@vee-validate/zod'
-import { useForm, useField } from 'vee-validate'
-import { z } from 'zod'
-import { toast } from 'vue-sonner'
-
 definePageMeta({
   layout: 'admin',
   middleware: 'admin',
   title: 'Categories',
 })
 
-interface AdminCategory {
-  id: string
-  name: string
-  slug?: string | null
-  created_at: string
-}
+import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
 
-const search = ref('')
-const sortBy = ref<'created_at' | 'name'>('created_at')
-const ascending = ref(false)
-const page = ref(1)
-const pageSize = ref(10)
+type PetId = typeof CATEGORY_CONFIG.pet.options[number]['id']
+type TypeId = typeof CATEGORY_CONFIG.type.rules[number]['options'][number]['id']
+type AgeId = typeof CATEGORY_CONFIG.age.rules[number]['options'][number]['id']
+type UnitId = typeof CATEGORY_CONFIG.unit.options[number]['id']
+type SizeId = typeof CATEGORY_CONFIG.size.rules[number]['options'][number]['id']
+type FlavourId = typeof CATEGORY_CONFIG.flavour.rules[number]['options'][number]['id']
 
-const params = computed(() => ({
-  search: search.value || undefined,
-  sortBy: sortBy.value,
-  ascending: ascending.value,
-  page: page.value,
-  pageSize: pageSize.value,
-}))
+const selectedPet = ref<PetId | null>(null)
+const selectedType = ref<TypeId | null>(null)
+const selectedAge = ref<AgeId | null>(null)
+const selectedUnit = ref<UnitId | null>(null)
+const selectedSize = ref<SizeId | null>(null)
+const selectedFlavour = ref<FlavourId | null>(null)
 
-const { data, pending, error, refresh } = await useLazyAsyncData(
-  'admin-categories',
-  async () => {
-    const supabase = useSupabaseClient()
-    let q = supabase.from('categories').select('id,name,slug,created_at', { count: 'exact' })
-    q = q.is('parent_id', null)
-    if (params.value.search) q = q.ilike('name', `%${params.value.search}%`)
-    q = q.order(params.value.sortBy, { ascending: params.value.ascending })
-    const from = (params.value.page - 1) * params.value.pageSize
-    const to = from + params.value.pageSize - 1
-    q = q.range(from, to)
-    const { data, error, count } = await q
-    if (error) throw error
-    const rows = ((data || []) as unknown as Array<{ id: string; name: string; slug?: string | null; created_at: string | Date }>)
-      .map((r) => ({
-        id: String(r.id),
-        name: r.name,
-        slug: r.slug || null,
-        created_at: typeof r.created_at === 'string' ? r.created_at : new Date(r.created_at).toISOString(),
-      })) as AdminCategory[]
-    return { rows, count: count ?? rows.length }
-  },
-  { server: true }
-)
-
-watch(params, () => {
-  refresh()
-})
-
-onMounted(() => {
-  const supabase = useSupabaseClient()
-  const channel = supabase
-    .channel('public:categories')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
-      refresh()
-    })
-    .subscribe()
-  onUnmounted(() => {
-    supabase.removeChannel(channel)
-  })
-})
-
-const totalPages = computed(() => Math.max(1, Math.ceil(Number(data.value?.count || 0) / pageSize.value)))
-const rows = computed(() => data.value?.rows || [])
-
-const dialogOpen = ref(false)
-const editCategory = ref<AdminCategory | null>(null)
-const deletingId = ref<string | null>(null)
-
-const openCreate = () => {
-  editCategory.value = null
-  dialogOpen.value = true
-}
-
-const openEdit = (c: AdminCategory) => {
-  editCategory.value = c
-  dialogOpen.value = true
-}
-
-const schema = toTypedSchema(
-  z.object({
-    name: z.string().min(1),
-    slug: z.string().min(1).optional(),
-  })
-)
-
-const { handleSubmit, isSubmitting } = useForm({
-  validationSchema: schema,
-  initialValues: {
-    name: editCategory.value?.name ?? '',
-    slug: editCategory.value?.slug ?? undefined,
-  },
-})
-
-const { value: name, errorMessage: nameError } = useField<string>('name')
-const { value: slug, errorMessage: slugError } = useField<string | undefined>('slug')
-
-const onSubmit = handleSubmit(async (values) => {
-  const supabase = useSupabaseClient()
-  try {
-    if (editCategory.value?.id) {
-      const { error: e } = await supabase.from('categories').update({ name: values.name, slug: values.slug } as unknown as never).eq('id', editCategory.value.id)
-      if (e) throw e
-      toast.success('Category updated')
-    } else {
-      const { error: e } = await supabase.from('categories').insert([{ name: values.name, slug: values.slug, parent_id: null } as unknown as never])
-      if (e) throw e
-      toast.success('Category created')
-    }
-    dialogOpen.value = false
-    refresh()
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Operation failed'
-    toast.error(msg)
+function getRuleOptions<T extends string>(
+  rules: ReadonlyArray<{ when: { category: string; values: readonly string[] }; options: readonly { id: T; label: string }[] }>,
+  context: Record<string, string | null>
+): readonly { id: T; label: string }[] {
+  const result: { id: T; label: string }[] = []
+  for (const r of rules) {
+    const v = context[r.when.category]
+    if (v && r.when.values.includes(v)) result.push(...r.options)
   }
+  return result
+}
+
+const typeOptions = computed(() => {
+  if (!selectedPet.value) return [] as readonly { id: TypeId; label: string }[]
+  return getRuleOptions<TypeId>(CATEGORY_CONFIG.type.rules, { pet: selectedPet.value })
+})
+const ageOptions = computed(() => {
+  if (!selectedPet.value) return [] as readonly { id: AgeId; label: string }[]
+  return getRuleOptions<AgeId>(CATEGORY_CONFIG.age.rules, { pet: selectedPet.value })
+})
+const sizeOptions = computed(() => {
+  if (!selectedUnit.value) return [] as readonly { id: SizeId; label: string }[]
+  return getRuleOptions<SizeId>(CATEGORY_CONFIG.size.rules, { unit: selectedUnit.value })
+})
+const flavourOptions = computed(() => {
+  if (!selectedType.value) return [] as readonly { id: FlavourId; label: string }[]
+  return getRuleOptions<FlavourId>(CATEGORY_CONFIG.flavour.rules, { type: selectedType.value })
 })
 
-const confirmDelete = (id: string) => {
-  deletingId.value = id
-}
+const isPetRequired = true
+const isTypeRequired = true
+const isAgeRequired = computed(() => {
+  if (!selectedPet.value) return false
+  return CATEGORY_CONFIG.age.requiredWhen?.some((w) => w.category === 'pet' && w.values.includes(selectedPet.value as string)) ?? false
+})
+const isSizeRequired = computed(() => {
+  if (!selectedUnit.value) return false
+  return CATEGORY_CONFIG.size.requiredWhen?.some((w) => w.category === 'unit' && w.values.includes(selectedUnit.value as string)) ?? false
+})
+const isFlavourRequired = computed(() => {
+  if (!selectedType.value) return false
+  return CATEGORY_CONFIG.flavour.requiredWhen?.some((w) => w.category === 'type' && w.values.includes(selectedType.value as string)) ?? false
+})
 
-const deleteCategory = async () => {
-  if (!deletingId.value) return
-  const supabase = useSupabaseClient()
-  try {
-    const { error: e } = await supabase.from('categories').delete().eq('id', deletingId.value)
-    if (e) throw e
-    toast.success('Category deleted')
-    deletingId.value = null
-    refresh()
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Delete failed'
-    toast.error(msg)
+watch(selectedPet, () => {
+  selectedType.value = null
+  selectedAge.value = null
+  selectedFlavour.value = null
+})
+watch(selectedUnit, () => {
+  selectedSize.value = null
+})
+
+const requiredKeys = computed(() => {
+  const keys: string[] = []
+  if (isPetRequired) keys.push('pet')
+  if (isTypeRequired) keys.push('type')
+  if (isAgeRequired.value) keys.push('age')
+  if (isSizeRequired.value) keys.push('size')
+  if (isFlavourRequired.value) keys.push('flavour')
+  return keys
+})
+
+const filledRequiredKeys = computed(() => {
+  const map: Record<string, string | null> = {
+    pet: selectedPet.value,
+    type: selectedType.value,
+    age: selectedAge.value,
+    size: selectedSize.value,
+    flavour: selectedFlavour.value,
   }
+  return requiredKeys.value.filter((k) => !!map[k])
+})
+
+const completeness = computed(() => {
+  const total = requiredKeys.value.length
+  const done = filledRequiredKeys.value.length
+  return total === 0 ? 100 : Math.round((done / total) * 100)
+})
+
+const resetAll = () => {
+  selectedPet.value = null
+  selectedType.value = null
+  selectedAge.value = null
+  selectedUnit.value = null
+  selectedSize.value = null
+  selectedFlavour.value = null
 }
 
-const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(iso))
+const formatLabel = (text: string) => text.replace(/([a-z])([A-Z])/g, '$1 $2')
+
+const selectedTab = ref('explorer')
 </script>
 
 <template>
   <div class="space-y-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
       <div class="flex items-center gap-2">
-        <Input v-model="search" placeholder="Search categories" class="w-64" />
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="outline" class="gap-2">
-              <Icon name="lucide:arrow-up-down" class="h-4 w-4" />
-              Sort
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem as="button" @click="sortBy = 'created_at'; ascending = false">Newest</DropdownMenuItem>
-            <DropdownMenuItem as="button" @click="sortBy = 'name'; ascending = true">Name</DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <!-- <Badge class="bg-[#0f766e] text-white">Classification</Badge>
+        <span class="text-sm text-muted-foreground">Define how products are categorized</span> -->
       </div>
       <div class="flex items-center gap-2">
-        <Button class="bg-secondary text-white" @click="openCreate">
-          <Icon name="lucide:plus" class="h-4 w-4 mr-2" />
-          Add Category
+        <Button v-if="selectedTab === 'explorer'" variant="secondary" class="bg-secondary text-white" @click="resetAll">
+          <Icon name="lucide:rotate-ccw" class="h-4 w-4 mr-2" />
+          Reset All
         </Button>
       </div>
     </div>
 
-    <Card>
-      <CardHeader class="flex items-center justify-between">
-        <CardTitle>Categories</CardTitle>
-        <Badge variant="outline">{{ data?.count || 0 }}</Badge>
-      </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Slug</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead class="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-if="pending">
-              <TableCell colspan="4"><Skeleton class="h-10 w-full" /></TableCell>
-            </TableRow>
-            <TableRow v-else-if="error">
-              <TableCell colspan="4">
-                <Alert variant="destructive">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{{ error.message }}</AlertDescription>
-                </Alert>
-              </TableCell>
-            </TableRow>
-            <TableRow v-else-if="rows.length === 0">
-              <TableCell colspan="4">
-                <TableEmpty>No categories found</TableEmpty>
-              </TableCell>
-            </TableRow>
-            <TableRow v-else v-for="c in rows" :key="c.id">
-              <TableCell class="font-medium">{{ c.name }}</TableCell>
-              <TableCell>{{ c.slug || '—' }}</TableCell>
-              <TableCell>{{ formatDate(c.created_at) }}</TableCell>
-              <TableCell class="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" size="icon">
-                      <Icon name="lucide:ellipsis" class="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem as="button" @click="openEdit(c)">
-                      <Icon name="lucide:pencil" class="h-4 w-4 mr-2" /> Edit
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem as="button" class="text-destructive" @click="confirmDelete(c.id)">
-                      <Icon name="lucide:trash" class="h-4 w-4 mr-2" /> Delete
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </CardContent>
-      <CardFooter class="flex items-center justify-between">
-        <div class="flex items-center gap-2">
-          <Button variant="outline" :disabled="page === 1" @click="page = Math.max(1, page - 1)">Prev</Button>
-          <Button variant="outline" :disabled="page >= totalPages" @click="page = Math.min(totalPages, page + 1)">Next</Button>
+    <Tabs v-model="selectedTab" defaultValue="explorer" class="w-full">
+      <TabsList class="w-full justify-start h-12">
+        <TabsTrigger value="definitions">All Categories</TabsTrigger>
+        <TabsTrigger value="explorer">Explorer</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="explorer" class="space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <Card class="lg:col-span-2">
+            <CardHeader>
+              <CardTitle class="text-[#0f766e]">Classification Explorer</CardTitle>
+              <CardDescription />
+            </CardHeader>
+            <CardContent class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label>Pet Type</Label>
+                    <Badge :class="isPetRequired ? 'bg-[#FF9500] text-white' : 'bg-muted'">Required</Badge>
+                  </div>
+                  <Select v-model="selectedPet">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select pet type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Pet Type</SelectLabel>
+                        <SelectItem v-for="o in CATEGORY_CONFIG.pet.options" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label>Product Type</Label>
+                    <Badge :class="isTypeRequired ? 'bg-[#FF9500] text-white' : 'bg-muted'">Required</Badge>
+                  </div>
+                  <Select v-model="selectedType" :disabled="!selectedPet || typeOptions.length === 0">
+                    <SelectTrigger class="w-full">
+                      <SelectValue :placeholder="!selectedPet ? 'Select pet first' : 'Select product type'" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Product Type</SelectLabel>
+                        <SelectItem v-for="o in typeOptions" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label>Age Group</Label>
+                    <Badge :class="isAgeRequired ? 'bg-[#FF9500] text-white' : 'bg-muted'">{{ isAgeRequired ? 'Required Now' : 'Optional' }}</Badge>
+                  </div>
+                  <Select v-model="selectedAge" :disabled="!selectedPet || ageOptions.length === 0">
+                    <SelectTrigger class="w-full">
+                      <SelectValue :placeholder="!selectedPet ? 'Select pet first' : (ageOptions.length ? 'Select age group' : 'Not applicable')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Age Group</SelectLabel>
+                        <SelectItem v-for="o in ageOptions" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label>Unit</Label>
+                    <Badge class="bg-muted">Optional</Badge>
+                  </div>
+                  <Select v-model="selectedUnit">
+                    <SelectTrigger class="w-full">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Unit</SelectLabel>
+                        <SelectItem v-for="o in CATEGORY_CONFIG.unit.options" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label>Size</Label>
+                    <Badge :class="isSizeRequired ? 'bg-[#FF9500] text-white' : 'bg-muted'">{{ isSizeRequired ? 'Required Now' : 'Optional' }}</Badge>
+                  </div>
+                  <Select v-model="selectedSize" :disabled="!selectedUnit || sizeOptions.length === 0">
+                    <SelectTrigger class="w-full">
+                      <SelectValue :placeholder="!selectedUnit ? 'Select unit first' : (sizeOptions.length ? 'Select size' : 'Not applicable')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Size</SelectLabel>
+                        <SelectItem v-for="o in sizeOptions" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <Label>Flavour</Label>
+                    <Badge :class="isFlavourRequired ? 'bg-[#FF9500] text-white' : 'bg-muted'">{{ isFlavourRequired ? 'Required Now' : 'Optional' }}</Badge>
+                  </div>
+                  <Select v-model="selectedFlavour" :disabled="!selectedType || flavourOptions.length === 0">
+                    <SelectTrigger class="w-full">
+                      <SelectValue :placeholder="!selectedType ? 'Select product type first' : (flavourOptions.length ? 'Select flavour' : 'Not applicable')" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Flavour</SelectLabel>
+                        <SelectItem v-for="o in flavourOptions" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <Alert v-if="requiredKeys.length && filledRequiredKeys.length < requiredKeys.length" class="border-[#FF9500]">
+                <AlertTitle class="text-[#FF9500]">Missing required fields</AlertTitle>
+                <AlertDescription>
+                  <div class="flex flex-wrap gap-2 mt-2">
+                    <Badge v-for="k in requiredKeys.filter(k => !filledRequiredKeys.includes(k))" :key="k" variant="outline" class="border-[#FF9500] text-[#FF9500]">{{ k }}</Badge>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle class="text-[#0f766e]">Summary</CardTitle>
+              <CardDescription />
+            </CardHeader>
+            <CardContent class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-sm">Completeness</span>
+                <Badge variant="outline" class="border-[#0f766e] text-[#0f766e]">{{ filledRequiredKeys.length }}/{{ requiredKeys.length }} • {{ completeness }}%</Badge>
+              </div>
+              <div class="space-y-2">
+                <div class="flex items-center justify-between"><span class="text-sm">Pet</span><Badge variant="outline">{{ selectedPet || '—' }}</Badge></div>
+                <div class="flex items-center justify-between"><span class="text-sm">Type</span><Badge variant="outline">{{ selectedType || '—' }}</Badge></div>
+                <div class="flex items-center justify-between"><span class="text-sm">Age</span><Badge variant="outline">{{ selectedAge || '—' }}</Badge></div>
+                <div class="flex items-center justify-between"><span class="text-sm">Unit</span><Badge variant="outline">{{ selectedUnit || '—' }}</Badge></div>
+                <div class="flex items-center justify-between"><span class="text-sm">Size</span><Badge variant="outline">{{ selectedSize || '—' }}</Badge></div>
+                <div class="flex items-center justify-between"><span class="text-sm">Flavour</span><Badge variant="outline">{{ selectedFlavour || '—' }}</Badge></div>
+              </div>
+            </CardContent>
+            <CardFooter class="flex items-center justify-end">
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button variant="outline" class="border-[#0f766e] text-[#0f766e]">Copy classification</Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Use selections to tag products</p>
+                </TooltipContent>
+              </Tooltip>
+            </CardFooter>
+          </Card>
         </div>
-        <div class="text-sm">Page {{ page }} of {{ totalPages }}</div>
-      </CardFooter>
-    </Card>
+      </TabsContent>
 
-    <Dialog v-model:open="dialogOpen">
-      <DialogContent class="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{{ editCategory ? 'Edit Category' : 'Add Category' }}</DialogTitle>
-          <DialogDescription />
-        </DialogHeader>
-        <form class="space-y-4" @submit.prevent="onSubmit">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label for="name">Name</Label>
-              <Input id="name" v-model="name" placeholder="Category name" />
-              <p v-if="nameError" class="text-destructive text-xs mt-1">{{ nameError }}</p>
-            </div>
-            <div>
-              <Label for="slug">Slug</Label>
-              <Input id="slug" v-model="slug" placeholder="category-slug" />
-              <p v-if="slugError" class="text-destructive text-xs mt-1">{{ slugError }}</p>
-            </div>
-          </div>
-          <div class="flex justify-end gap-2">
-            <Button type="submit" :disabled="isSubmitting">{{ editCategory ? 'Update' : 'Create' }}</Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+      <TabsContent value="definitions" class="space-y-4">
+        <Card>
+          <CardHeader>
+            <CardTitle class="text-[#0f766e]">Category Definitions</CardTitle>
+            <CardDescription />
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible>
+              <AccordionItem value="pet">
+                <AccordionTrigger>Pet Type</AccordionTrigger>
+                <AccordionContent>
+                  <div class="flex items-center gap-2 mb-2"><Badge variant="outline">Required</Badge></div>
+                  <div class="flex flex-wrap gap-2">
+                    <Badge v-for="o in CATEGORY_CONFIG.pet.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
 
-    <AlertDialog :open="!!deletingId" @update:open="deletingId = null">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete category?</AlertDialogTitle>
-          <AlertDialogDescription />
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction class="bg-destructive text-destructive-foreground" @click="deleteCategory">Delete</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+              <AccordionItem value="type">
+                <AccordionTrigger>Product Type</AccordionTrigger>
+                <AccordionContent>
+                  <div class="flex items-center gap-2 mb-2"><Badge variant="outline">Depends on: Pet</Badge><Badge variant="outline">Required</Badge></div>
+                  <div class="space-y-3">
+                    <div v-for="r in CATEGORY_CONFIG.type.rules" :key="r.when.values.join(',')" class="space-y-2">
+                      <div class="text-xs text-muted-foreground">When Pet ∈ {{ r.when.values.join(', ') }}</div>
+                      <div class="flex flex-wrap gap-2">
+                        <Badge v-for="o in r.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="age">
+                <AccordionTrigger>Age Group</AccordionTrigger>
+                <AccordionContent>
+                  <div class="flex items-center gap-2 mb-2"><Badge variant="outline">Depends on: Pet</Badge></div>
+                  <div class="space-y-3">
+                    <div v-for="r in CATEGORY_CONFIG.age.rules" :key="r.when.values.join(',')" class="space-y-2">
+                      <div class="text-xs text-muted-foreground">When Pet ∈ {{ r.when.values.join(', ') }}</div>
+                      <div class="flex flex-wrap gap-2">
+                        <Badge v-for="o in r.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="unit">
+                <AccordionTrigger>Unit</AccordionTrigger>
+                <AccordionContent>
+                  <div class="flex flex-wrap gap-2">
+                    <Badge v-for="o in CATEGORY_CONFIG.unit.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="size">
+                <AccordionTrigger>Size</AccordionTrigger>
+                <AccordionContent>
+                  <div class="flex items-center gap-2 mb-2"><Badge variant="outline">Depends on: Unit</Badge></div>
+                  <div class="space-y-3">
+                    <div v-for="r in CATEGORY_CONFIG.size.rules" :key="r.when.values.join(',')" class="space-y-2">
+                      <div class="text-xs text-muted-foreground">When Unit ∈ {{ r.when.values.join(', ') }}</div>
+                      <div class="flex flex-wrap gap-2">
+                        <Badge v-for="o in r.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="flavour">
+                <AccordionTrigger>Flavour</AccordionTrigger>
+                <AccordionContent>
+                  <div class="flex items-center gap-2 mb-2"><Badge variant="outline">Depends on: Product Type</Badge></div>
+                  <div class="space-y-3">
+                    <div v-for="r in CATEGORY_CONFIG.flavour.rules" :key="r.when.values.join(',')" class="space-y-2">
+                      <div class="text-xs text-muted-foreground">When Type ∈ {{ r.when.values.join(', ') }}</div>
+                      <div class="flex flex-wrap gap-2">
+                        <Badge v-for="o in r.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
+      </TabsContent>
+    </Tabs>
   </div>
 </template>

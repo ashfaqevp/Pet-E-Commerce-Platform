@@ -17,7 +17,6 @@ const menu: SidebarSection[] = [
     label: 'Products', icon: 'lucide:package', children: [
       { label: 'All Products', href: '/admin/products' },
       { label: 'Categories', href: '/admin/categories' },
-      { label: 'Subcategories', href: '/admin/categories/subcategories' },
     ],
   },
   { label: 'Orders', icon: 'lucide:shopping-cart', href: '/admin/orders' },

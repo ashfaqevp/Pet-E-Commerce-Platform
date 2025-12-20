@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useCart } from '@/composables/useCart'
-import { useSupabaseUser, navigateTo } from '#imports'
+import { useSupabaseUser } from '#imports'
 import { Button } from '@/components/ui/button'
 import { toast } from 'vue-sonner'
 
@@ -11,11 +11,12 @@ const props = defineProps<{
 }>()
 
 const { addToCart } = useCart()
-const supabaseUser = useSupabaseUser()
+const user = useSupabaseUser()
+const authStore = useAuthStore()
 
-const onAdd = async () => {
-  if (!supabaseUser.value) {
-    navigateTo('/login')
+const onAddToCart = async () => {
+  if (!user.value) {
+    authStore.requireAuth()
     return
   }
 
@@ -36,7 +37,7 @@ const onAdd = async () => {
   <Button
     class="w-full py-3 rounded-full font-bold bg-secondary text-white hover:bg-secondary/90"
     size="lg"
-    @click="onAdd"
+    @click="onAddToCart"
   >
     Add to Cart
   </Button>

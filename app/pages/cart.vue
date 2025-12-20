@@ -48,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo } from '#imports'
+import { computed, watchEffect } from 'vue'
+import { definePageMeta, useLazyAsyncData, useSupabaseUser } from '#imports'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
@@ -71,9 +71,11 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   { server: true }
 )
 
-if (!supabaseUser.value) {
-  navigateTo('/login')
-}
+watchEffect(() => {
+  if (!supabaseUser.value) {
+    useAuthStore().requireAuth()
+  }
+})
 
 const items = computed(() => (data.value as CartItemRow[]) || [])
 

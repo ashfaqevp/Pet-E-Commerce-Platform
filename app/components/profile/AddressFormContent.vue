@@ -65,7 +65,7 @@ const onField = <K extends keyof AddressInput>(key: K, v: AddressInput[K]) => {
         <Label for="is_default" class="text-sm">Set as default</Label>
       </div>
       <Button
-        class="py-3 rounded-full font-bold bg-secondary text-white hover:bg-secondary/90"
+        class="bg-secondary text-white hover:bg-secondary/90"
         size="lg"
         :disabled="props.submitting"
         @click="emit('save')"

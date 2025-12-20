@@ -26,7 +26,7 @@ const onInput = (e: Event) => {
       <Input :value="props.modelValue" placeholder="Phone" @input="onInput" />
     </div>
     <Button
-      class="w-full py-3 rounded-full font-bold bg-secondary text-white hover:bg-secondary/90"
+      class="w-full bg-secondary text-white hover:bg-secondary/90"
       size="lg"
       :disabled="props.saving"
       @click="emit('save')"

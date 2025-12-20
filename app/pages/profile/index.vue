@@ -18,6 +18,7 @@ import { useAddresses, type AddressRow, type AddressInput } from '@/composables/
 import { useOrders, type OrderRow } from '@/composables/useOrders'
 import PhoneEditContent from '@/components/profile/PhoneEditContent.vue'
 import AddressFormContent from '@/components/profile/AddressFormContent.vue'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 definePageMeta({ layout: 'default' })
 
@@ -222,14 +223,24 @@ const logout = async () => {
               <p class="text-sm text-muted-foreground">{{ user?.email || '—' }}</p>
               <div class="flex items-center justify-between mt-2">
                 <p class="text-sm text-muted-foreground">{{ profile?.phone ? `Phone: ${profile.phone}` : 'Phone: —' }}</p>
-                <Button
-                  :variant="profile?.phone ? 'outline' : 'default'"
-                  :size="profile?.phone ? 'default' : 'lg'"
-                  :class="profile?.phone ? 'rounded-full' : 'rounded-full font-bold bg-secondary text-white hover:bg-secondary/90'"
-                  @click="phoneDialogOpen = true"
-                >
-                  {{ profile?.phone ? 'Edit' : 'Add Phone Number' }}
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger as-child>
+                      <Button
+                        :variant="profile?.phone ? 'outline' : 'default'"
+                        size="sm"
+                        class="w-8 h-8 p-0"
+                        aria-label="Edit phone"
+                        @click="phoneDialogOpen = true"
+                      >
+                        <Icon :name="profile?.phone ? 'lucide:pencil' : 'lucide:plus'" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {{ profile?.phone ? 'Edit phone' : 'Add phone' }}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </div>
           </div>
@@ -240,7 +251,16 @@ const logout = async () => {
         <CardHeader>
           <div class="flex items-center justify-between">
             <CardTitle>Delivery Addresses</CardTitle>
-            <Button variant="outline" @click="openAddAddress">Add Address</Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <Button variant="outline" size="sm" class="w-8 h-8 p-0" aria-label="Add address" @click="openAddAddress">
+                    <Icon name="lucide:plus" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Add address</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
           <CardDescription />
         </CardHeader>

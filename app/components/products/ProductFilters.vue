@@ -61,7 +61,7 @@ function handleCheckboxChange(key: CategoryKey, id: string, checked: boolean | '
               <Checkbox
                 :id="`pet-${option.id}`"
                 :checked="isFilterActive('pet', option.id)"
-                @update:checked="(checked) => handleCheckboxChange('pet', option.id, checked)"
+                @update:checked="handleCheckboxChange('pet', option.id, $event)"
               />
               <span class="text-sm">{{ option.label }}</span>
             </Label>
@@ -90,7 +90,7 @@ function handleCheckboxChange(key: CategoryKey, id: string, checked: boolean | '
               <Checkbox
                 :id="`type-${option.id}`"
                 :checked="isFilterActive('type', option.id)"
-                @update:checked="(checked) => handleCheckboxChange('type', option.id, checked)"
+                @update:checked="handleCheckboxChange('type', option.id, $event)"
               />
               <span class="text-sm">{{ option.label }}</span>
             </Label>
@@ -119,7 +119,7 @@ function handleCheckboxChange(key: CategoryKey, id: string, checked: boolean | '
               <Checkbox
                 :id="`age-${option.id}`"
                 :checked="isFilterActive('age', option.id)"
-                @update:checked="(checked) => handleCheckboxChange('age', option.id, checked)"
+                @update:checked="handleCheckboxChange('age', option.id, $event)"
               />
               <span class="text-sm">{{ option.label }}</span>
             </Label>
@@ -145,7 +145,7 @@ function handleCheckboxChange(key: CategoryKey, id: string, checked: boolean | '
               <Checkbox
                 :id="`unit-${option.id}`"
                 :checked="isFilterActive('unit', option.id)"
-                @update:checked="(checked) => handleCheckboxChange('unit', option.id, checked)"
+                @update:checked="handleCheckboxChange('unit', option.id, $event)"
               />
               <span class="text-sm">{{ option.label }}</span>
             </Label>
@@ -174,7 +174,7 @@ function handleCheckboxChange(key: CategoryKey, id: string, checked: boolean | '
               <Checkbox
                 :id="`size-${option.id}`"
                 :checked="isFilterActive('size', option.id)"
-                @update:checked="(checked) => handleCheckboxChange('size', option.id, checked)"
+                @update:checked="handleCheckboxChange('size', option.id, $event)"
               />
               <span class="text-sm">{{ option.label }}</span>
             </Label>
@@ -203,7 +203,7 @@ function handleCheckboxChange(key: CategoryKey, id: string, checked: boolean | '
               <Checkbox
                 :id="`flavour-${option.id}`"
                 :checked="isFilterActive('flavour', option.id)"
-                @update:checked="(checked) => handleCheckboxChange('flavour', option.id, checked)"
+                @update:checked="handleCheckboxChange('flavour', option.id, $event)"
               />
               <span class="text-sm">{{ option.label }}</span>
             </Label>

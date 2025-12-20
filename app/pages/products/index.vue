@@ -8,7 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger } from '@/components/ui/sheet'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetClose } from '@/components/ui/sheet'
 import type { CategoryKey, CategoryRule, CategoryOption } from '@/domain/categories/category.types'
 import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
 
@@ -322,9 +322,16 @@ onMounted(() => {
               Filters
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" class="sm:max-w-xl">
-            <SheetHeader>
-              <SheetTitle>Filters</SheetTitle>
+          <SheetContent side="bottom" :show-close-button="false" class="w-full p-4 sm:p-6 pt-0 sm:pt-0 h-[80vh] max-h-[85vh] overflow-y-auto pb-[env(safe-area-inset-bottom)] rounded-t-lg">
+            <SheetHeader class="sticky top-0 z-10 bg-background border-b px-1 py-2 pt-4">
+              <div class="flex items-center justify-between">
+                <SheetTitle class="text-[#0f766e]">Filters</SheetTitle>
+                <SheetClose as-child>
+                  <Button variant="ghost" size="icon" aria-label="Close filters">
+                    <Icon name="lucide:x" class="h-5 w-5" />
+                  </Button>
+                </SheetClose>
+              </div>
               <SheetDescription />
             </SheetHeader>
             <div class="space-y-4 py-4">
@@ -354,7 +361,7 @@ onMounted(() => {
     <!-- Main Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- Desktop Filters Sidebar -->
-      <Card class="hidden lg:block h-max lg:sticky lg:top-24">
+      <Card class="hidden lg:block h-max lg:top-24">
         <CardHeader>
           <CardTitle class="text-[#0f766e]">Filters</CardTitle>
         </CardHeader>

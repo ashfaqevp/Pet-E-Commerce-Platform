@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo } from '#imports'
+import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo, useHead, useState } from '#imports'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,8 +9,13 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
 import { toast } from 'vue-sonner'
+import PageHeader from '@/components/common/PageHeader.vue'
 
 definePageMeta({ layout: 'default' })
+useHead({ title: 'Cart' })
+const pageTitle = useState<string>('pageTitle', () => '')
+pageTitle.value = 'Cart'
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Cart' }]
 
 const { loadCartWithProducts, updateQty, removeFromCart, refreshCart } = useCart()
 const supabaseUser = useSupabaseUser()
@@ -120,7 +125,7 @@ const goCheckout = () => {
 
 <template>
   <div class="container mx-auto px-4 py-6">
-    <h1 class="text-2xl font-semibold">Cart</h1>
+    <PageHeader :title="'Cart'" :items="breadcrumbs" />
 
     <div class="mt-4">
 

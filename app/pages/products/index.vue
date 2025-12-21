@@ -11,8 +11,13 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTrigger, SheetClose } from '@/components/ui/sheet'
 import type { CategoryKey, CategoryRule, CategoryOption } from '@/domain/categories/category.types'
 import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
+import PageHeader from '@/components/common/PageHeader.vue'
 
 definePageMeta({ layout: 'default' })
+useHead({ title: 'Products' })
+const pageTitle = useState<string>('pageTitle', () => '')
+pageTitle.value = 'Products'
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Products' }]
 
 interface ProductRow {
   id: string
@@ -309,12 +314,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-4">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-4">
-      <h3 class="text-xl font-semibold">Products</h3>
-      <div class="flex items-center gap-2">
-        <!-- Mobile Filter Button -->
+  <div class="container mx-auto px-4 py-6">
+    <PageHeader :title="'Products'" :items="breadcrumbs" />
+    <div class="mt-4">
+      <!-- Mobile Filter Button -->
+      <div class="flex items-center justify-end mb-4">
         <Sheet v-model:open="mobileFilterOpen">
           <SheetTrigger as-child>
             <Button variant="outline" class="md:hidden gap-2">
@@ -349,15 +353,7 @@ onMounted(() => {
             </div>
           </SheetContent>
         </Sheet>
-        
-        <!-- Desktop Reset Button -->
-         <!-- TODO: only show when filters are active -->
-        <!-- <Button variant="outline" class="hidden md:flex gap-2" @click="clearAllFilters">
-          <Icon name="lucide:rotate-ccw" class="h-4 w-4" />
-          Reset Filter
-        </Button> -->
       </div>
-    </div>
 
     <!-- Main Layout -->
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -456,6 +452,7 @@ onMounted(() => {
           </Badge>
         </CardFooter>
       </div>
+    </div>
     </div>
   </div>
 </template>

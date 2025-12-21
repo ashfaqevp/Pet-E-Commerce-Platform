@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, watchEffect } from 'vue'
-import { definePageMeta, useLazyAsyncData, useSupabaseClient, useSupabaseUser, navigateTo } from '#imports'
+import { definePageMeta, useLazyAsyncData, useSupabaseClient, useSupabaseUser, navigateTo, useHead, useState } from '#imports'
 import { toast } from 'vue-sonner'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -17,8 +17,13 @@ import { useOrders, type OrderRow } from '@/composables/useOrders'
 import PhoneEditContent from '@/components/profile/PhoneEditContent.vue'
 import AddressFormContent from '@/components/profile/AddressFormContent.vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import PageHeader from '@/components/common/PageHeader.vue'
 
 definePageMeta({ layout: 'default' })
+useHead({ title: 'Profile' })
+const pageTitle = useState<string>('pageTitle', () => '')
+pageTitle.value = 'Profile'
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Profile' }]
 
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
@@ -185,10 +190,9 @@ const logout = async () => {
 
 <template>
   <div class="container mx-auto px-4 py-6">
-    
+    <PageHeader :title="'Profile'" :items="breadcrumbs" />
     <div class="space-y-6">
       <div class="flex items-center justify-between">
-        <h1 class="text-2xl font-semibold">Profile</h1>
         <Button variant="outline" class="text-red-600 border-red-300" :disabled="loggingOut" @click="logout">
             <Icon name="lucide:log-out" />
             Logout

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo } from '#imports'
+import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo, useHead, useState } from '#imports'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell, TableEmpty } from '@/components/ui/table'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -13,8 +13,13 @@ import { toast } from 'vue-sonner'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
 import { useAddresses, type AddressRow } from '@/composables/useAddresses'
 import { useCheckoutOrder } from '@/composables/useCheckoutOrder'
+import PageHeader from '@/components/common/PageHeader.vue'
 
 definePageMeta({ layout: 'default' })
+useHead({ title: 'Checkout' })
+const pageTitle = useState<string>('pageTitle', () => '')
+pageTitle.value = 'Checkout'
+const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Checkout' }]
 
 const user = useSupabaseUser()
 watchEffect(() => {
@@ -122,7 +127,7 @@ const placeOrder = async () => {
 
 <template>
   <div class="container mx-auto px-4 py-6 sm:py-8">
-    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Checkout</h1>
+    <PageHeader :title="'Checkout'" :items="breadcrumbs" />
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
       <div class="lg:col-span-2 space-y-4 sm:space-y-6">

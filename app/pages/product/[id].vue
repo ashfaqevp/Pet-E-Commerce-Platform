@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from "vue";
-import { useRoute, definePageMeta, useLazyAsyncData, useSupabaseClient } from "#imports";
+import { useRoute, definePageMeta, useLazyAsyncData, useSupabaseClient, useHead, useState } from "#imports";
 import { Button } from "@/components/ui/button";
 import { useCart, type CartItemWithProduct } from "@/composables/useCart";
 import AddToCartButton from "@/components/AddToCartButton.vue";
@@ -8,17 +8,11 @@ import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carouse
 import type { UnwrapRefCarouselApi } from "@/components/ui/carousel/interface";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Breadcrumb,
-  BreadcrumbList,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbSeparator,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+import PageHeader from "@/components/common/PageHeader.vue";
 import { CATEGORY_CONFIG } from "~/domain/categories/category.config";
 
 definePageMeta({ layout: "default" });
+const pageTitle = useState<string>("pageTitle", () => "")
 
 type VariantOption = {
   id: string;
@@ -226,6 +220,9 @@ const product = computed(() => {
     variants?: VariantGroup[];
   };
 });
+useHead({ title: computed(() => (product.value?.name ? `${product.value.name}` : 'Product')) })
+watch(product, (p) => { pageTitle.value = p?.name || 'Details' }, { immediate: true })
+const productBreadcrumbs = computed(() => [{ label: 'Home', href: '/' }, { label: 'Products', href: '/products' }, { label: product.value?.name || 'Product' }])
 
 watch([product, cartItems], () => {
   const pid = product.value?.id
@@ -265,29 +262,12 @@ const { data: _data_test } = await supabase.auth.getSession()
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-6 md:py-8 bg-white">
+  <div class="container mx-auto px-4 py-6">
     <Alert v-if="error" variant="destructive" class="mb-4">
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>{{ (error as any)?.message || 'Failed to load product' }}</AlertDescription>
     </Alert>
-    <!-- Desktop breadcrumbs -->
-    <div class="hidden md:block mb-4">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/product">Products</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>{{ product.name }}</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-    </div>
+    <PageHeader :title="product.name" :items="productBreadcrumbs" />
 
     <div v-if="pending" class="grid lg:grid-cols-2 gap-8">
       <div class="rounded-2xl p-4 md:p-6">
@@ -301,7 +281,7 @@ const { data: _data_test } = await supabase.auth.getSession()
       </div>
     </div>
 
-    <div v-else class="grid lg:grid-cols-2 gap-8">
+    <div v-else class="grid lg:grid-cols-2 gap-8 bg-white rounded-2xl p-4 md:p-6 mt-2">
       <div class="rounded-2xl p-4 md:p-6">
         <Carousel
           class="w-full"

@@ -17,6 +17,7 @@ const route = useRoute();
 const router = useRouter();
 const searchQuery = ref("");
 const isSearchFocused = ref(false);
+const pageTitle = useState<string>('pageTitle', () => '')
 
 // SSR-safe mobile breakpoint tracking
 const isMobile = ref(false);
@@ -62,10 +63,19 @@ const isActive = (path: string) => {
 };
 
 const isProductDetail = computed(() => route.path.startsWith('/product/'));
+const isHome = computed(() => route.path === '/')
 
 function handleSearch() {
   if (searchQuery.value.trim()) {
     router.push(`/search?q=${searchQuery.value}`);
+  }
+}
+
+function goBack() {
+  if (process.client && window.history.length > 1) {
+    router.back()
+  } else {
+    router.push('/')
   }
 }
 
@@ -88,22 +98,18 @@ watch(user, () => {
         class="container mx-auto px-2 md:px-4 flex h-16 items-center justify-between gap-6"
       >
         <!-- Mobile: Logo + optional search input (shown on the right) -->
-        <div v-if="isMobile && !isProductDetail" class="md:hidden flex-1 flex items-center gap-2 w-full">
+        <div v-if="isMobile && (isHome || (!isProductDetail && !pageTitle))" class="md:hidden flex-1 flex items-center gap-2 w-full">
           <Logo />
         </div>
 
-        <!-- Mobile: product detail header -->
-        <div v-if="isMobile && isProductDetail" class="md:hidden flex items-center justify-between w-full">
+        <!-- Mobile: page header with back and title -->
+        <div v-if="isMobile && pageTitle && !isHome" class="md:hidden flex items-center justify-between w-full">
           <div class="flex items-center gap-2">
-            <NuxtLink to="/" class="rounded-full border bg-background shadow-sm h-9 w-9 grid place-items-center">
+            <Button variant="ghost" size="icon" class="rounded-full border bg-background shadow-sm" @click="goBack">
               <Icon name="lucide:arrow-left" class="h-5 w-5 text-foreground" />
-            </NuxtLink>
-            <h2 class="text-lg font-semibold text-foreground">Details</h2>
+            </Button>
+            <h2 class="text-lg font-semibold text-foreground truncate">{{ pageTitle }}</h2>
           </div>
-
-          <Button variant="ghost" size="icon" class="rounded-full border bg-background shadow-sm">
-            <Icon name="lucide:heart" class="h-5 w-5 text-foreground" />
-          </Button>
         </div>
 
         <!-- Mobile searchbar: rounded pill with inline icon and Cancel button -->
@@ -148,7 +154,7 @@ watch(user, () => {
         </div>
 
         <Button
-          v-if="!isProductDetail && !isSearchFocused"
+          v-if="(!isProductDetail && !isSearchFocused && !pageTitle) || isHome"
           variant="ghost"
           size="icon"
           class="md:hidden rounded-full border bg-background/80 shadow-sm hover:bg-secondary/10 text-foreground"

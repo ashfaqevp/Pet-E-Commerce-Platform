@@ -1,24 +1,25 @@
-import { serverSupabaseClient } from '#supabase/server'
-
-interface PaymentResult {
-  response_status?: string
-}
+interface PaymentResult { response_status?: string }
 interface QueryResponse {
   tran_ref?: string
   cart_id?: string
   payment_result?: PaymentResult
 }
 
+// Read-only verification endpoint
+// - Accepts { tranRef }
+// - Queries PayTabs for transaction status
+// - Returns status to caller
+// - DOES NOT update database (webhook is the single source of truth)
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
-  const { tranRef, cartId } = body as { tranRef?: string; cartId?: string }
+  const { tranRef } = body as { tranRef?: string }
 
   if (!tranRef) {
     throw createError({ statusCode: 400, message: 'Missing tranRef' })
   }
 
   const config = useRuntimeConfig()
-
   if (!config.paytabsServerKey || !config.paytabsProfileId || !config.paytabsBaseUrl) {
     throw createError({ statusCode: 500, message: 'PayTabs config missing' })
   }
@@ -39,32 +40,11 @@ export default defineEventHandler(async (event) => {
   )
 
   const status = res?.payment_result?.response_status
-  const supabase = await serverSupabaseClient(event)
+  console.info('[paytabs:verify] query result', { status, tran_ref: res?.tran_ref, cart_id: res?.cart_id })
 
-  if (status === 'A') {
-    await supabase
-      .from('orders')
-      .update({
-        payment_status: 'paid',
-        status: 'confirmed',
-        tran_ref: res.tran_ref || tranRef,
-        paid_at: new Date().toISOString(),
-      } as unknown as never)
-      .eq('id', (cartId || res.cart_id) as unknown as never)
-    return { ok: true, status: 'A' }
+  if (!status) {
+    throw createError({ statusCode: 502, message: 'Invalid PayTabs query response' })
   }
 
-  if (status) {
-    await supabase
-      .from('orders')
-      .update({
-        payment_status: 'failed',
-        status: 'payment_failed',
-        tran_ref: res.tran_ref || tranRef,
-      } as unknown as never)
-      .eq('id', (cartId || res.cart_id) as unknown as never)
-    return { ok: true, status }
-  }
-
-  throw createError({ statusCode: 502, message: 'Invalid PayTabs query response' })
+  return { ok: true, status, tran_ref: res?.tran_ref, cart_id: res?.cart_id }
 })

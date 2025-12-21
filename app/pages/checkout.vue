@@ -78,16 +78,12 @@ const pay = async (orderId: string) => {
     body: { orderId },
   })
   if (res.redirect_url) {
+    console.info('[paytabs:create] redirecting', { url: res.redirect_url })
     window.location.href = res.redirect_url
     return
   }
-  if (res.payment_result?.response_status === 'A') {
-    toast.success('Payment authorized')
-    navigateTo('/orders/success')
-  } else {
-    toast.error('Payment failed')
-    navigateTo('/orders/failed')
-  }
+  console.info('[paytabs:create] no redirect_url, sending to return page')
+  navigateTo('/payment/return')
 }
 
 const placeOrder = async () => {
@@ -105,6 +101,9 @@ const placeOrder = async () => {
   }
   try {
     const orderId = await create(selectedAddressId.value)
+    if (process.client) {
+      localStorage.setItem('last_order_id', orderId)
+    }
     toast.success('Order created')
     await pay(orderId)
   } catch (e) {

@@ -1,99 +1,74 @@
-<!-- <script setup lang="ts">
-const route = useRoute()
-const status = route.query.respStatus
-
-console.log(status)
-
-console.log(route)
-
-if (status === 'A') {
-  navigateTo('/orders/success')
-} else {
-  navigateTo('/orders/failed')
-}
-</script> -->
-
 <script setup lang="ts">
-const route = useRoute()
+import { definePageMeta, useSupabaseClient, useLazyAsyncData, navigateTo } from '#imports'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+
+definePageMeta({ layout: 'default' })
+
 const supabase = useSupabaseClient()
 
-type PaymentStatus = 'unpaid' | 'paid' | 'refunded' | 'failed'
-interface OrderLite {
-  id: string
-  payment_status: PaymentStatus | null
-  tran_ref: string | null
-}
+type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'failed'
+interface OrderLite { id: string; payment_status: PaymentStatus | null }
 
-const cartId = route.query.cartId as string | undefined
-const tranRef = route.query.tranRef as string | undefined
-const respStatus = route.query.respStatus as string | undefined
+const { data, pending, error } = await useLazyAsyncData(
+  'payment-return-status',
+  async (): Promise<{ status: PaymentStatus | null; reason?: string }> => {
+    const orderId = process.client ? localStorage.getItem('last_order_id') : null
+    console.info('[payment:return] orderId', orderId)
+    if (!orderId) return { status: null, reason: 'no-order-id' }
 
-const { data, error } = await useLazyAsyncData(
-  'payment-return-check',
-  async (): Promise<{ paid: boolean; reason?: string }> => {
-    console.info('Payment return: start', { cartId, tranRef, respStatus })
-    if (!cartId && !tranRef) return { paid: false, reason: 'missing-params' }
-
-    let order: OrderLite | null = null
-
-    if (cartId) {
+    // Poll DB briefly to allow webhook to arrive
+    let status: PaymentStatus | null = null
+    for (let i = 0; i < 10; i++) {
       const { data, error } = await supabase
         .from('orders')
-        .select('id,payment_status,tran_ref')
-        .eq('id', cartId)
+        .select('id,payment_status')
+        .eq('id', orderId as string)
         .single()
-      if (error) throw error
-      order = data as unknown as OrderLite
-      console.info('Payment return: order by id', { id: order?.id, status: order?.payment_status })
-    } else if (tranRef) {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('id,payment_status,tran_ref')
-        .eq('tran_ref', tranRef)
-        .maybeSingle()
-      if (error) throw error
-      order = (data as unknown as OrderLite) || null
-      console.info('Payment return: order by ref', { id: order?.id, status: order?.payment_status })
-    }
-
-    if (order?.payment_status === 'paid') return { paid: true, reason: 'db-paid' }
-
-    if (tranRef) {
-      try {
-        console.info('Payment return: verify start')
-        await $fetch('/api/paytabs/verify', {
-          method: 'POST',
-          body: { tranRef, cartId },
-        })
-        const key = cartId ? { k: 'id', v: cartId } : { k: 'tran_ref', v: tranRef }
-        const { data: refreshed, error: refErr } = await supabase
-          .from('orders')
-          .select('id,payment_status,tran_ref')
-          .eq(key.k, key.v)
-          .single()
-        if (refErr) throw refErr
-        const o = refreshed as unknown as OrderLite
-        console.info('Payment return: verify done', { id: o?.id, status: o?.payment_status })
-        return { paid: o.payment_status === 'paid', reason: 'verified' }
-      } catch (e) {
-        console.error('Payment return: verify error', e instanceof Error ? e.message : String(e))
-        return { paid: false, reason: 'verify-error' }
+      if (error) {
+        console.error('[payment:return] load error', error.message)
+        break
       }
+      const order = data as unknown as OrderLite
+      status = (order?.payment_status || null) as PaymentStatus | null
+      console.info('[payment:return] order status', status)
+      if (status === 'paid' || status === 'failed') break
+      await new Promise(resolve => setTimeout(resolve, 1500))
     }
-
-    return { paid: false, reason: 'not-paid' }
+    return { status }
   },
   { server: false }
 )
 
 if (error.value) {
-  console.error('Payment return: error', error.value?.message || String(error.value))
   navigateTo('/orders/failed')
-} else if (data.value?.paid) {
-  console.info('Payment return: success', { reason: data.value?.reason })
+} else if (data.value?.status === 'paid') {
   navigateTo('/orders/success')
-} else {
-  console.info('Payment return: failed', { reason: data.value?.reason })
+} else if (!pending.value) {
   navigateTo('/orders/failed')
 }
 </script>
+
+<template>
+  <div class="container mx-auto px-4 py-6 sm:py-10">
+    <Card class="bg-white rounded-xl border">
+      <CardHeader>
+        <CardTitle class="text-secondary">Processing Payment</CardTitle>
+      </CardHeader>
+      <CardContent class="space-y-4">
+        <div v-if="pending" class="space-y-2">
+          <Skeleton class="h-6 w-48" />
+          <Skeleton class="h-10 w-64" />
+        </div>
+        <Alert v-else-if="error" variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{{ error.message }}</AlertDescription>
+        </Alert>
+        <div v-else class="space-y-2">
+          <p class="text-muted-foreground text-sm">Verifying your payment status...</p>
+        </div>
+      </CardContent>
+    </Card>
+  </div>
+</template>

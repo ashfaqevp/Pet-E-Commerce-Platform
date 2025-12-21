@@ -3,7 +3,8 @@ import { ref } from 'vue'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
 import { useAddresses, type AddressRow } from '@/composables/useAddresses'
 
-type PaymentStatus = 'unpaid' | 'paid' | 'refunded' | 'failed'
+// Payment status lifecycle: pending -> paid/failed
+type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'failed'
 
 interface Totals {
   subtotal: number
@@ -25,7 +26,7 @@ interface ShippingAddressSnapshot {
 
 interface OrderInsertRow extends Totals {
   user_id: string
-  status: 'pending'
+  status: 'awaiting_payment'
   payment_status: PaymentStatus
   shipping_address: ShippingAddressSnapshot
 }
@@ -64,8 +65,8 @@ export const useCheckoutOrder = () => {
       const total = round2(subtotal + shipping + tax)
       const payload: OrderInsertRow = {
         user_id: user.value.id,
-        status: 'pending',
-        payment_status: 'unpaid',
+        status: 'awaiting_payment',
+        payment_status: 'pending',
         subtotal: round2(subtotal),
         shipping_fee: round2(shipping),
         tax: round2(tax),

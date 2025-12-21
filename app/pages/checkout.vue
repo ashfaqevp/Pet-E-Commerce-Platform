@@ -1,113 +1,214 @@
 <script setup lang="ts">
-import { Form, Field } from 'vee-validate'
-import { z } from 'zod'
-import { toTypedSchema } from '@vee-validate/zod'
-import { computed, watchEffect } from 'vue'
-import { useRuntimeConfig, definePageMeta, navigateTo, useSupabaseUser } from '#imports'
-import { useCartStore } from '@/stores/cart'
-import { $fetch } from 'ofetch'
-import { Input } from '@/components/ui/input'
+import { computed, ref, watchEffect } from 'vue'
+import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo } from '#imports'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell, TableEmpty } from '@/components/ui/table'
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'vue-sonner'
-
-const cart = useCartStore()
-const subtotal = computed(() => cart.total)
-const shipping = computed(() => (cart.items.length ? 10 : 0))
-const total = computed(() => subtotal.value + shipping.value)
-
-const supabaseUser = useSupabaseUser()
-watchEffect(() => {
-  if (!supabaseUser.value) useAuthStore().requireAuth()
-})
-
-const schema = toTypedSchema(
-  z.object({
-    fullName: z.string().min(2),
-    email: z.string().email(),
-    address: z.string().min(6),
-  })
-)
-
-const config = useRuntimeConfig()
-
-const onSubmit = async (values: any) => {
-  // Create order on server -> Supabase edge function
-  try {
-    const { data } = await $fetch('/api/payments/create-order', {
-      method: 'POST',
-      body: { amount: Math.round(total.value * 100), currency: 'USD' },
-    })
-
-    // Initialize Razorpay checkout (client-side)
-    const options: any = {
-      key: config.public.razorpayKeyId,
-      amount: data.amount,
-      currency: data.currency,
-      name: 'Blackhorse PetShop',
-      description: 'Order payment',
-      order_id: data.id,
-      prefill: { name: values.fullName, email: values.email },
-      theme: { color: '#0f766e' },
-      handler: function (_response: any) {
-        toast.success('Payment successful')
-        navigateTo('/')
-      },
-    }
-    // @ts-ignore
-    const rzp = new (window as any).Razorpay(options)
-    rzp.open()
-    toast.success('Opening Razorpay checkout')
-  } catch (e) {
-    console.error(e)
-    toast.error('Failed to create order')
-  }
-}
+import { useCart, type CartItemWithProduct } from '@/composables/useCart'
+import { useAddresses, type AddressRow } from '@/composables/useAddresses'
+import { useCheckoutOrder } from '@/composables/useCheckoutOrder'
 
 definePageMeta({ layout: 'default' })
+
+const user = useSupabaseUser()
+watchEffect(() => {
+  if (!user.value) useAuthStore().requireAuth()
+})
+
+const { loadCartWithProducts } = useCart()
+const { listAddresses } = useAddresses()
+
+const { data: itemsData, pending: itemsPending, error: itemsError, refresh: refreshItems } = await useLazyAsyncData(
+  'checkout-cart',
+  async () => {
+    if (!user.value) return []
+    return await loadCartWithProducts()
+  },
+  { server: true }
+)
+
+const { data: addressesData, pending: addressesPending, error: addressesError, refresh: refreshAddresses } = await useLazyAsyncData(
+  'checkout-addresses',
+  async () => {
+    if (!user.value) return []
+    return await listAddresses()
+  },
+  { server: true }
+)
+
+watchEffect(async () => {
+  if (user.value) {
+    await refreshItems()
+    await refreshAddresses()
+  }
+})
+
+const items = computed(() => (itemsData.value as CartItemWithProduct[]) || [])
+const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
+const defaultAddress = computed(() => addresses.value.find(a => a.is_default) || addresses.value[0] || null)
+const selectedAddressId = ref<string | null>(null)
+watchEffect(() => {
+  if (!selectedAddressId.value) selectedAddressId.value = defaultAddress.value?.id || null
+})
+
+const subtotal = computed(() => items.value.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0))
+const shipping = computed(() => (items.value.length ? 10 : 0))
+const tax = computed(() => Math.round(subtotal.value * 0.05 * 100) / 100)
+const total = computed(() => Math.round((subtotal.value + shipping.value + tax.value) * 100) / 100)
+
+const { create, creating } = useCheckoutOrder()
+
+const placeOrder = async () => {
+  if (!user.value) {
+    toast.error('Please sign in')
+    return
+  }
+  if (!items.value.length) {
+    toast.error('Cart is empty')
+    return
+  }
+  if (!selectedAddressId.value) {
+    toast.error('Select a delivery address')
+    return
+  }
+  try {
+    const orderId = await create(selectedAddressId.value)
+    toast.success('Order placed')
+    navigateTo('/profile')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Order failed'
+    toast.error(msg)
+  }
+}
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-6">Checkout</h1>
+  <div class="container mx-auto px-4 py-6 sm:py-8">
+    <h1 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Checkout</h1>
 
-    <div class="grid lg:grid-cols-3 gap-6">
-      <div class="lg:col-span-2 bg-white rounded-xl border p-6">
-        <Form @submit="onSubmit" :validation-schema="schema">
-          <div class="grid sm:grid-cols-2 gap-4">
-            <Field name="fullName" v-slot="{ field, errors }">
-              <Label class="mb-1">Full Name</Label>
-              <Input v-bind="field" />
-              <span class="text-red-600 text-xs">{{ errors[0] }}</span>
-            </Field>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+        <Card class="bg-white rounded-xl border">
+          <CardHeader>
+            <CardTitle class="text-secondary">Delivery Address</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-3">
+            <div v-if="addressesPending">
+              <Skeleton class="h-10 w-full" />
+            </div>
+            <Alert v-else-if="addressesError" variant="destructive">
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{{ addressesError.message }}</AlertDescription>
+            </Alert>
+            <div v-else-if="addresses.length === 0">
+              <TableEmpty>No addresses. Add in Profile.</TableEmpty>
+            </div>
+            <div v-else class="space-y-3">
+              <Label class="text-sm">Select address</Label>
+              <Select v-model="selectedAddressId">
+                <SelectTrigger class="bg-white">
+                  <SelectValue placeholder="Choose address" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem v-for="a in addresses" :key="a.id" :value="a.id">{{ a.full_name }} — {{ a.city }}</SelectItem>
+                </SelectContent>
+              </Select>
+              <div v-if="selectedAddressId" class="text-sm text-muted-foreground">
+                <p>{{ addresses.find(a => a.id === selectedAddressId)?.full_name }}</p>
+                <p>{{ addresses.find(a => a.id === selectedAddressId)?.phone }}</p>
+                <p>{{ addresses.find(a => a.id === selectedAddressId)?.address_line_1 }}</p>
+                <p v-if="addresses.find(a => a.id === selectedAddressId)?.address_line_2">{{ addresses.find(a => a.id === selectedAddressId)?.address_line_2 }}</p>
+                <p>{{ addresses.find(a => a.id === selectedAddressId)?.city }}, {{ addresses.find(a => a.id === selectedAddressId)?.state }} {{ addresses.find(a => a.id === selectedAddressId)?.postal_code }}</p>
+                <p>{{ addresses.find(a => a.id === selectedAddressId)?.country }}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-            <Field name="email" v-slot="{ field, errors }">
-              <Label class="mb-1">Email</Label>
-              <Input type="email" v-bind="field" />
-              <span class="text-red-600 text-xs">{{ errors[0] }}</span>
-            </Field>
-
-            <Field name="address" v-slot="{ field, errors }" class="sm:col-span-2">
-              <Label class="mb-1">Address</Label>
-              <Input v-bind="field" />
-              <span class="text-red-600 text-xs">{{ errors[0] }}</span>
-            </Field>
-          </div>
-
-          <Button type="submit" class="mt-6 w-full sm:w-auto">Pay with Razorpay</Button>
-        </Form>
+        <Card class="bg-white rounded-xl border">
+          <CardHeader>
+            <CardTitle class="text-secondary">Cart Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead class="text-right">Qty</TableHead>
+                  <TableHead class="text-right">Price</TableHead>
+                  <TableHead class="text-right">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-if="itemsPending">
+                  <TableCell colspan="4"><Skeleton class="h-10 w-full" /></TableCell>
+                </TableRow>
+                <TableRow v-else-if="itemsError">
+                  <TableCell colspan="4">
+                    <Alert variant="destructive">
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{{ itemsError.message }}</AlertDescription>
+                    </Alert>
+                  </TableCell>
+                </TableRow>
+                <TableRow v-else-if="items.length === 0">
+                  <TableCell colspan="4">
+                    <TableEmpty>Your cart is empty</TableEmpty>
+                  </TableCell>
+                </TableRow>
+                <TableRow v-else v-for="i in items" :key="i.id">
+                  <TableCell class="max-w-[220px] truncate">{{ i.product.name }}</TableCell>
+                  <TableCell class="text-right">{{ i.quantity }}</TableCell>
+                  <TableCell class="text-right">${{ Number(i.product.retail_price || 0).toFixed(2) }}</TableCell>
+                  <TableCell class="text-right">${{ (Number(i.product.retail_price || 0) * Number(i.quantity || 1)).toFixed(2) }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
 
-      <div class="bg-white rounded-xl border p-6 h-fit">
-        <h3 class="text-lg font-bold mb-4 text-secondary">Order Summary</h3>
-        <div class="space-y-3">
-          <div class="flex justify-between"><span>Subtotal:</span><span>${{ subtotal.toFixed(2) }}</span></div>
-          <div class="flex justify-between"><span>Shipping & Tax:</span><span>${{ shipping.toFixed(2) }}</span></div>
-          <div class="border-t pt-3 flex justify-between font-bold text-lg"><span>Total:</span><span>${{ total.toFixed(2) }}</span></div>
-        </div>
+      <div class="space-y-4 sm:space-y-6">
+        <Card class="bg-white rounded-xl border h-fit">
+          <CardHeader>
+            <CardTitle class="text-secondary">Price Breakdown</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-3">
+            <div class="flex items-center justify-between">
+              <span>Subtotal</span>
+              <span class="font-medium">${{ subtotal.toFixed(2) }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Shipping</span>
+              <span class="font-medium">${{ shipping.toFixed(2) }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span>Tax (5%)</span>
+              <span class="font-medium">${{ tax.toFixed(2) }}</span>
+            </div>
+            <Separator />
+            <div class="flex items-center justify-between text-lg font-bold">
+              <span>Total</span>
+              <span>${{ total.toFixed(2) }}</span>
+            </div>
+            <Button
+              class="mt-4 w-full"
+              :disabled="creating || itemsPending || addressesPending || items.length === 0 || !selectedAddressId"
+              @click="placeOrder"
+            >
+              <span v-if="creating">Placing order...</span>
+              <span v-else>Confirm & Place Order</span>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   </div>
 </template>
-
 

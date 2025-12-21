@@ -16,3 +16,60 @@ export const formatOMR = (v: number | string | null | undefined): string => {
     maximumFractionDigits: 3,
   }).format(n)
 }
+
+export type BadgeVariant = 'default' | 'secondary' | 'destructive' | 'outline' | 'success' | 'warning' | 'info' | 'failed'
+export type StatusCategory = 'success' | 'failed' | 'warning' | 'info'
+export interface StatusStyle {
+  category: StatusCategory
+  variant: BadgeVariant
+}
+
+const STATUS_VARIANT: Record<StatusCategory, BadgeVariant> = {
+  success: 'success',
+  failed: 'failed',
+  warning: 'warning',
+  info: 'info',
+}
+
+export const orderStatusStyle = (status: string | null | undefined): StatusStyle => {
+  const s = (status || '').toLowerCase()
+  let category: StatusCategory
+  switch (s) {
+    case 'completed':
+    case 'delivered':
+    case 'confirmed':
+      category = 'success'
+      break
+    case 'cancelled':
+    case 'returned':
+      category = 'failed'
+      break
+    case 'awaiting_payment':
+      category = 'warning'
+      break
+    case 'pending':
+    default:
+      category = 'info'
+  }
+  return { category, variant: STATUS_VARIANT[category] }
+}
+
+export const paymentStatusStyle = (status: string | null | undefined): StatusStyle => {
+  const s = (status || '').toLowerCase()
+  let category: StatusCategory
+  switch (s) {
+    case 'paid':
+      category = 'success'
+      break
+    case 'failed':
+      category = 'failed'
+      break
+    case 'unpaid':
+    case 'pending':
+      category = 'warning'
+      break
+    default:
+      category = 'info'
+  }
+  return { category, variant: STATUS_VARIANT[category] }
+}

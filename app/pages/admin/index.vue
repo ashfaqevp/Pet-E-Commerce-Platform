@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { orderStatusStyle, paymentStatusStyle } from '@/utils'
 definePageMeta({
   layout: 'admin',
   middleware: 'admin',
@@ -6,13 +7,16 @@ definePageMeta({
 })
 
 type OrderStatus = 'pending' | 'shipped' | 'delivered' | 'cancelled' | 'returned' | 'completed'
+type PaymentStatus = 'paid' | 'unpaid' | 'failed' | 'pending'
+type ExtendedOrderStatus = OrderStatus | 'awaiting_payment' | 'confirmed'
 
 interface OrderRow {
   id: string
-  customer_email?: string | null
   total: number
-  status: OrderStatus
+  status: ExtendedOrderStatus
+  payment_status: PaymentStatus
   created_at: string
+  user_id: string
 }
 
 const { data: metrics, pending: metricsPending, error: metricsError, refresh: refreshMetrics } = await useLazyAsyncData(
@@ -20,31 +24,35 @@ const { data: metrics, pending: metricsPending, error: metricsError, refresh: re
   async () => {
     const supabase = useSupabaseClient()
 
-    const productsCountReq = supabase.from('products').select('*', { count: 'exact', head: true })
+    const productsCountReq = supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_active', true)
     const ordersCountReq = supabase.from('orders').select('*', { count: 'exact', head: true })
-    const customersCountReq = supabase.from('user_profiles').select('*', { count: 'exact', head: true })
-    const completedSalesReq = supabase.from('orders').select('total').eq('status', 'completed')
+    const customersCountReq = supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'customer')
+    const paidOrdersCountReq = supabase.from('orders').select('*', { count: 'exact', head: true }).eq('payment_status', 'paid')
+    const paidTotalsReq = supabase.from('orders').select('total').eq('payment_status', 'paid')
 
-    const [productsCountRes, ordersCountRes, customersCountRes, completedSalesRes] = await Promise.all([
+    const [productsCountRes, ordersCountRes, customersCountRes, paidOrdersCountRes, paidTotalsRes] = await Promise.all([
       productsCountReq,
       ordersCountReq,
       customersCountReq,
-      completedSalesReq,
+      paidOrdersCountReq,
+      paidTotalsReq,
     ])
 
     if (productsCountRes.error) throw productsCountRes.error
     if (ordersCountRes.error) throw ordersCountRes.error
     if (customersCountRes.error) throw customersCountRes.error
-    if (completedSalesRes.error) throw completedSalesRes.error
+    if (paidOrdersCountRes.error) throw paidOrdersCountRes.error
+    if (paidTotalsRes.error) throw paidTotalsRes.error
 
-    const completed = (completedSalesRes.data as unknown as Array<{ total: number | null }> | null) || []
-    const totalSales = completed.reduce((sum, o) => sum + Number(o.total || 0), 0)
+    const paidTotals = (paidTotalsRes.data as unknown as Array<{ total: number | null }> | null) || []
+    const totalRevenue = paidTotals.reduce((sum, o) => sum + Number(o.total || 0), 0)
 
     return {
-      totalSales,
-      customers: customersCountRes.count || 0,
-      products: productsCountRes.count || 0,
-      orders: ordersCountRes.count || 0,
+      totalRevenue,
+      totalOrders: ordersCountRes.count || 0,
+      paidOrders: paidOrdersCountRes.count || 0,
+      totalCustomers: customersCountRes.count || 0,
+      totalProducts: productsCountRes.count || 0,
     }
   },
   { server: true }
@@ -56,16 +64,25 @@ const { data: recentOrders, pending: ordersPending, error: ordersError, refresh:
     const supabase = useSupabaseClient()
     const { data, error } = await supabase
       .from('orders')
-      .select('id,total,status,created_at,user_id')
+      .select('id,created_at,total,status,payment_status,user_id')
       .order('created_at', { ascending: false })
       .limit(10)
     if (error) throw error
-    const rows = (data as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date }> | null) || []
+    const rows = (data as unknown as Array<{
+      id: string
+      total: number | null
+      status: string | null
+      payment_status: string | null
+      created_at: string | Date
+      user_id: string | null
+    }> | null) || []
     return rows.map((row) => ({
       id: String(row.id),
       total: Number(row.total || 0),
-      status: (row.status || 'pending') as OrderStatus,
+      status: (row.status || 'pending') as ExtendedOrderStatus,
+      payment_status: (row.payment_status || 'pending') as PaymentStatus,
       created_at: typeof row.created_at === 'string' ? row.created_at : new Date(row.created_at).toISOString(),
+      user_id: String(row.user_id || ''),
     })) as OrderRow[]
   },
   { server: true }
@@ -87,6 +104,11 @@ onMounted(() => {
 
 const formatCurrency = (v: number) => formatOMR(v)
 const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(iso))
+const paidProgress = computed(() => {
+  const total = metrics.value?.totalOrders || 0
+  const paid = metrics.value?.paidOrders || 0
+  return total > 0 ? Math.round((paid / total) * 100) : 0
+})
 </script>
 
 <template>
@@ -94,11 +116,11 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <Card class="bg-white rounded-sm">
         <CardHeader>
-          <CardTitle class="text-sm">Total Sales</CardTitle>
+          <CardTitle class="text-sm">Total Revenue</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton v-if="metricsPending" class="h-6 w-24" />
-          <p v-else class="text-2xl font-semibold">{{ formatCurrency(metrics?.totalSales || 0) }}</p>
+          <p v-else class="text-2xl font-semibold">{{ formatCurrency(metrics?.totalRevenue || 0) }}</p>
         </CardContent>
       </Card>
       <Card class="bg-white rounded-sm">
@@ -107,16 +129,16 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
         </CardHeader>
         <CardContent>
           <Skeleton v-if="metricsPending" class="h-6 w-12" />
-          <p v-else class="text-2xl font-semibold">{{ metrics?.customers || 0 }}</p>
+          <p v-else class="text-2xl font-semibold">{{ metrics?.totalCustomers || 0 }}</p>
         </CardContent>
       </Card>
       <Card class="bg-white rounded-sm">
         <CardHeader>
-          <CardTitle class="text-sm">Total Products</CardTitle>
+          <CardTitle class="text-sm">Active Products</CardTitle>
         </CardHeader>
         <CardContent>
           <Skeleton v-if="metricsPending" class="h-6 w-12" />
-          <p v-else class="text-2xl font-semibold">{{ metrics?.products || 0 }}</p>
+          <p v-else class="text-2xl font-semibold">{{ metrics?.totalProducts || 0 }}</p>
         </CardContent>
       </Card>
       <Card class="bg-white rounded-sm">
@@ -125,7 +147,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
         </CardHeader>
         <CardContent>
           <Skeleton v-if="metricsPending" class="h-6 w-12" />
-          <p v-else class="text-2xl font-semibold">{{ metrics?.orders || 0 }}</p>
+          <p v-else class="text-2xl font-semibold">{{ metrics?.totalOrders || 0 }}</p>
         </CardContent>
       </Card>
     </div>
@@ -149,16 +171,17 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
                 <TableHead>Date</TableHead>
                 <TableHead class="text-right">Total</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Payment</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               <TableRow v-if="ordersPending">
-                <TableCell colspan="4">
+                <TableCell colspan="5">
                   <Skeleton class="h-8 w-full" />
                 </TableCell>
               </TableRow>
               <TableRow v-else-if="ordersError">
-                <TableCell colspan="4">
+                <TableCell colspan="5">
                   <Alert variant="destructive">
                     <AlertTitle>Error</AlertTitle>
                     <AlertDescription>{{ ordersError.message }}</AlertDescription>
@@ -166,7 +189,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
                 </TableCell>
               </TableRow>
               <TableRow v-else-if="(recentOrders?.length || 0) === 0">
-                <TableCell colspan="4">
+                <TableCell colspan="5">
                   <TableEmpty>No orders found</TableEmpty>
                 </TableCell>
               </TableRow>
@@ -178,9 +201,16 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
                 <TableCell class="text-right">{{ formatCurrency(row.total) }}</TableCell>
                 <TableCell>
                   <Badge
-                    :variant="row.status === 'completed' || row.status === 'delivered' ? 'default' : row.status === 'cancelled' || row.status === 'returned' ? 'destructive' : 'secondary'"
+                    :variant="orderStatusStyle(row.status).variant"
                   >
                     {{ row.status }}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    :variant="paymentStatusStyle(row.payment_status).variant"
+                  >
+                    {{ row.payment_status }}
                   </Badge>
                 </TableCell>
               </TableRow>
@@ -195,16 +225,16 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
         </CardHeader>
         <CardContent class="space-y-3">
           <div class="flex items-center justify-between">
-            <span>Completed</span>
-            <span class="font-medium">{{ formatCurrency(metrics?.totalSales || 0) }}</span>
+            <span>Paid Orders</span>
+            <span class="font-medium">{{ metrics?.paidOrders || 0 }}</span>
           </div>
-          <Progress :model-value="100" />
+          <Progress :model-value="paidProgress" />
           <Separator />
           <div class="flex items-center justify-between">
-            <span>Pending</span>
-            <span class="font-medium">—</span>
+            <span>Unpaid/Pending Orders</span>
+            <span class="font-medium">{{ (metrics?.totalOrders || 0) - (metrics?.paidOrders || 0) }}</span>
           </div>
-          <Progress :model-value="30" />
+          <Progress :model-value="Math.max(0, 100 - paidProgress)" />
         </CardContent>
       </Card>
     </div>

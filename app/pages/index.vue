@@ -6,7 +6,7 @@ import Autoplay from 'embla-carousel-autoplay'
 import type { UnwrapRefCarouselApi } from '@/components/ui/carousel/interface'
 // Carousel banners from public folder
 const banners: string[] = [
-  'https://img.pikbest.com/backgrounds/20210612/pet-store-product-promotion-poster_6011205.jpg!bwr800',
+  // 'https://img.pikbest.com/backgrounds/20210612/pet-store-product-promotion-poster_6011205.jpg!bwr800',
   '/images/banners/1.png',
   '/images/banners/2.png',
 ]

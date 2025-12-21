@@ -22,7 +22,7 @@ watchEffect(() => {
 })
 
 const { loadCartWithProducts } = useCart()
-const { listAddresses } = useAddresses()
+const { listAddresses, setDefault } = useAddresses()
 
 const { data: itemsData, pending: itemsPending, error: itemsError, refresh: refreshItems } = await useLazyAsyncData(
   'checkout-cart',
@@ -56,6 +56,13 @@ const selectedAddressId = ref<string | null>(null)
 watchEffect(() => {
   if (!selectedAddressId.value) selectedAddressId.value = defaultAddress.value?.id || null
 })
+const hasDefaultAddress = computed(() => addresses.value.some(a => a.is_default))
+const goToProfile = () => navigateTo('/profile')
+const setSelectedAsDefault = async () => {
+  if (!selectedAddressId.value) return
+  await setDefault(selectedAddressId.value)
+  await refreshAddresses()
+}
 
 const subtotal = computed(() => items.value.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0))
 const shipping = computed(() => (items.value.length ? 10 : 0))
@@ -131,8 +138,9 @@ const placeOrder = async () => {
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{{ addressesError.message }}</AlertDescription>
             </Alert>
-            <div v-else-if="addresses.length === 0">
-              <TableEmpty>No addresses. Add in Profile.</TableEmpty>
+            <div v-else-if="addresses.length === 0" class="space-y-3">
+              <TableEmpty>No addresses found.</TableEmpty>
+              <Button variant="default" class="w-full" @click="goToProfile">Add address in Profile</Button>
             </div>
             <div v-else class="space-y-3">
               <Label class="text-sm">Select address</Label>
@@ -144,6 +152,12 @@ const placeOrder = async () => {
                   <SelectItem v-for="a in addresses" :key="a.id" :value="a.id">{{ a.full_name }} — {{ a.city }}</SelectItem>
                 </SelectContent>
               </Select>
+              <Alert v-if="!hasDefaultAddress" variant="default">
+                <AlertTitle>No default address</AlertTitle>
+                <AlertDescription>
+                  Select an address and set it as default for faster checkout.
+                </AlertDescription>
+              </Alert>
               <div v-if="selectedAddressId" class="text-sm text-muted-foreground">
                 <p>{{ addresses.find(a => a.id === selectedAddressId)?.full_name }}</p>
                 <p>{{ addresses.find(a => a.id === selectedAddressId)?.phone }}</p>
@@ -151,6 +165,10 @@ const placeOrder = async () => {
                 <p v-if="addresses.find(a => a.id === selectedAddressId)?.address_line_2">{{ addresses.find(a => a.id === selectedAddressId)?.address_line_2 }}</p>
                 <p>{{ addresses.find(a => a.id === selectedAddressId)?.city }}, {{ addresses.find(a => a.id === selectedAddressId)?.state }} {{ addresses.find(a => a.id === selectedAddressId)?.postal_code }}</p>
                 <p>{{ addresses.find(a => a.id === selectedAddressId)?.country }}</p>
+              </div>
+              <div v-if="selectedAddressId" class="flex items-center gap-2">
+                <Button variant="default" size="sm" @click="setSelectedAsDefault">Use selected address</Button>
+                <Button variant="outline" size="sm" @click="goToProfile">Manage addresses in Profile</Button>
               </div>
             </div>
           </CardContent>

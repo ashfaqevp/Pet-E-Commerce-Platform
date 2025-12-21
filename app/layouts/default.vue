@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useCart } from "@/composables/useCart";
+const user = useSupabaseUser()
 import {
   Accordion,
   AccordionItem,
@@ -38,6 +41,8 @@ onMounted(() => {
     lastScrollY = y;
   };
   window.addEventListener("scroll", onScroll, { passive: true });
+  // Refresh cart badge count on mount
+  refreshCart()
 });
 onBeforeUnmount(() => {
   if (updateMobile) window.removeEventListener("resize", updateMobile);
@@ -64,6 +69,11 @@ function handleSearch() {
   }
 }
 
+// Cart badge state
+const { cartCount, refreshCart } = useCart()
+watch(user, () => {
+  refreshCart()
+})
 // (removed non-SSR-safe window access at setup time)
 </script>
 
@@ -161,13 +171,20 @@ function handleSearch() {
               <Icon name="lucide:heart" class="h-5 w-5" />
             </Button>
             <NuxtLink to="/cart">
-              <Button
-                variant="ghost"
-                size="icon"
-                class="rounded-full border bg-background shadow-sm hover:bg-secondary/10 text-foreground"
-              >
-                <Icon name="lucide:shopping-cart" class="h-5 w-5" />
-              </Button>
+              <div class="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="rounded-full border bg-background shadow-sm hover:bg-secondary/10 text-foreground"
+                >
+                  <Icon name="lucide:shopping-cart" class="h-5 w-5" />
+                </Button>
+                <Badge
+                  v-if="cartCount > 0"
+                  variant="secondary"
+                  class="absolute -top-1 -right-1 h-4 min-w-[1rem] px-1 text-[10px]"
+                >{{ cartCount }}</Badge>
+              </div>
             </NuxtLink>
             <NuxtLink to="/profile">
               <Button
@@ -200,7 +217,14 @@ function handleSearch() {
           class="flex flex-col items-center gap-1 text-xs"
           :class="isActive(item.path) ? 'text-secondary' : 'text-muted-foreground'"
         >
-          <Icon :name="item.icon" class="h-6 w-6" />
+          <div class="relative">
+            <Icon :name="item.icon" class="h-6 w-6" />
+            <Badge
+              v-if="item.path === '/cart' && cartCount > 0"
+              variant="secondary"
+              class="absolute -top-1 -right-2 h-4 min-w-[1rem] px-1 text-[10px]"
+            >{{ cartCount }}</Badge>
+          </div>
           <span>{{ item.label }}</span>
         </NuxtLink>
       </div>

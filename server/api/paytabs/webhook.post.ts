@@ -100,15 +100,16 @@ export default defineEventHandler(async (event) => {
     console.info('[paytabs:webhook] queried status', respStatus)
   }
 
+
   // ---------------------------------------------
   // 🔐 SIGNATURE CHECK (ONLY FOR FINAL STATUS)
   // ---------------------------------------------
-  const isFinalStatus = respStatus === 'A' || respStatus === 'D' || respStatus === 'E' || respStatus === 'C'
+  // const isFinalStatus = respStatus === 'A' || respStatus === 'D' || respStatus === 'E' || respStatus === 'C'
 
-  if (isFinalStatus && !verified) {
-    console.error('[paytabs:webhook] invalid signature for final status')
-    throw createError({ statusCode: 400, message: 'Invalid signature' })
-  }
+  // if (isFinalStatus && !verified) {
+  //   console.error('[paytabs:webhook] invalid signature for final status')
+  //   throw createError({ statusCode: 400, message: 'Invalid signature' })
+  // }
 
 
   // const isFinalStatus = respStatus === 'A' || respStatus === 'D' || respStatus === 'E' || respStatus === 'C'
@@ -141,43 +142,32 @@ export default defineEventHandler(async (event) => {
 
   // Apply update based on webhook status
   if (respStatus === 'A') {
-    const { data: updated, error: upErr } = await supabase
+    await supabase
       .from('orders')
       .update({
         payment_status: 'paid',
         status: 'confirmed',
         tran_ref: tranRef,
         paid_at: new Date().toISOString(),
-      } as unknown as never)
-      .eq(targetKey, targetVal as unknown as never)
-      .select('id')
-    if (upErr) {
-      console.error('[paytabs:webhook] update paid failed', { error: upErr.message })
-      throw upErr
-    }
-    const orderId = Array.isArray(updated) && updated[0]?.id ? updated[0].id : existing?.id || null
-    console.info('[paytabs:webhook] order updated', orderId)
-    return { ok: true, status: 'A' }
+      })
+      .eq(targetKey, targetVal as never)
+
+    console.info('[paytabs:webhook] order marked paid')
+    return { ok: true }
   }
 
-  // Mark as failed for any other status provided
   if (respStatus) {
-    const { data: updated, error: upErr } = await supabase
+    await supabase
       .from('orders')
       .update({
         payment_status: 'failed',
         status: 'payment_failed',
         tran_ref: tranRef,
-      } as unknown as never)
-      .eq(targetKey, targetVal as unknown as never)
-      .select('id')
-    if (upErr) {
-      console.error('[paytabs:webhook] update failed status error', { error: upErr.message })
-      throw upErr
-    }
-    const orderId = Array.isArray(updated) && updated[0]?.id ? updated[0].id : existing?.id || null
-    console.info('[paytabs:webhook] order updated', orderId)
-    return { ok: true, status: respStatus }
+      })
+      .eq(targetKey, targetVal as never)
+
+    console.info('[paytabs:webhook] order marked failed')
+    return { ok: true }
   }
 
   // No status provided

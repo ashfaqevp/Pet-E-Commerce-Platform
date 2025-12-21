@@ -26,11 +26,13 @@ interface OrderLite {
 
 const cartId = route.query.cartId as string | undefined
 const tranRef = route.query.tranRef as string | undefined
+const respStatus = route.query.respStatus as string | undefined
 
 const { data, error } = await useLazyAsyncData(
   'payment-return-check',
-  async (): Promise<{ paid: boolean }> => {
-    if (!cartId && !tranRef) return { paid: false }
+  async (): Promise<{ paid: boolean; reason?: string }> => {
+    console.info('Payment return: start', { cartId, tranRef, respStatus })
+    if (!cartId && !tranRef) return { paid: false, reason: 'missing-params' }
 
     let order: OrderLite | null = null
 
@@ -42,6 +44,7 @@ const { data, error } = await useLazyAsyncData(
         .single()
       if (error) throw error
       order = data as unknown as OrderLite
+      console.info('Payment return: order by id', { id: order?.id, status: order?.payment_status })
     } else if (tranRef) {
       const { data, error } = await supabase
         .from('orders')
@@ -50,12 +53,14 @@ const { data, error } = await useLazyAsyncData(
         .maybeSingle()
       if (error) throw error
       order = (data as unknown as OrderLite) || null
+      console.info('Payment return: order by ref', { id: order?.id, status: order?.payment_status })
     }
 
-    if (order?.payment_status === 'paid') return { paid: true }
+    if (order?.payment_status === 'paid') return { paid: true, reason: 'db-paid' }
 
     if (tranRef) {
       try {
+        console.info('Payment return: verify start')
         await $fetch('/api/paytabs/verify', {
           method: 'POST',
           body: { tranRef, cartId },
@@ -68,22 +73,27 @@ const { data, error } = await useLazyAsyncData(
           .single()
         if (refErr) throw refErr
         const o = refreshed as unknown as OrderLite
-        return { paid: o.payment_status === 'paid' }
-      } catch {
-        return { paid: false }
+        console.info('Payment return: verify done', { id: o?.id, status: o?.payment_status })
+        return { paid: o.payment_status === 'paid', reason: 'verified' }
+      } catch (e) {
+        console.error('Payment return: verify error', e instanceof Error ? e.message : String(e))
+        return { paid: false, reason: 'verify-error' }
       }
     }
 
-    return { paid: false }
+    return { paid: false, reason: 'not-paid' }
   },
   { server: false }
 )
 
 if (error.value) {
+  console.error('Payment return: error', error.value?.message || String(error.value))
   navigateTo('/orders/failed')
 } else if (data.value?.paid) {
+  console.info('Payment return: success', { reason: data.value?.reason })
   navigateTo('/orders/success')
 } else {
+  console.info('Payment return: failed', { reason: data.value?.reason })
   navigateTo('/orders/failed')
 }
 </script>

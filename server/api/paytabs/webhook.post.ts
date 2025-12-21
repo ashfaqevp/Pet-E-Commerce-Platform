@@ -1,10 +1,10 @@
 import crypto from 'crypto'
 import { serverSupabaseClient } from '#supabase/server'
 import { readRawBody } from 'h3'
+import { createClient } from '@supabase/supabase-js'
 
 export default defineEventHandler(async (event) => {
-
-  console.log('PayTabs webhook callback received', { event })
+  console.info('PayTabs webhook: received')
   const rawBody = await readRawBody(event)
 
   if (!rawBody) {
@@ -25,37 +25,28 @@ export default defineEventHandler(async (event) => {
     Object.entries(form).filter(([, v]) => typeof v === 'string' && v.trim().length > 0)
   ) as Record<string, string>
 
-  // Sort fields alphabetically
-  const sorted = Object.keys(filtered)
-    .sort()
-    .reduce((acc, k) => {
-      acc[k] = filtered[k] as string
-      return acc
-    }, {} as Record<string, string>)
-
-  const query = new URLSearchParams(sorted).toString()
+  const sortedKeys = Object.keys(filtered).sort()
+  const query = sortedKeys.map(k => `${k}=${filtered[k]}`).join('&')
 
   const expectedSignature = crypto
     .createHmac('sha256', config.paytabsServerKey)
     .update(query)
     .digest('hex')
 
-  let verified = true
-  if (receivedSignature) {
-    verified = expectedSignature === receivedSignature
-  }
-  if (!verified) {
-    console.error('Invalid PayTabs signature', { receivedSignature, expectedSignature, query })
-  }
+  let verified = !!receivedSignature ? expectedSignature === receivedSignature : false
+  console.info('PayTabs webhook: signature', { hasSignature: !!receivedSignature, verified })
 
-  // ✅ VERIFIED CALLBACK
-  const supabase = await serverSupabaseClient(event)
+  const adminUrl = process.env.SUPABASE_URL
+  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_API_KEY
+  const adminClient = adminUrl && adminKey ? createClient(adminUrl, adminKey, { auth: { persistSession: false } }) : null
+  const supabase = adminClient || (await serverSupabaseClient(event))
   const tranRef = filtered.tranRef || (form as Record<string, string>)['tranRef']
   const cartId = filtered.cartId || (form as Record<string, string>)['cartId']
   const statusField = filtered.respStatus || (form as Record<string, string>)['respStatus']
+  console.info('PayTabs webhook: payload', { tranRef, cartId, statusField })
 
-  if (verified && statusField === 'A') {
-    await supabase
+  if (verified && statusField === 'A' && cartId) {
+    const { data: updated, error: upErr } = await supabase
       .from('orders')
       .update({
         payment_status: 'paid',
@@ -64,6 +55,12 @@ export default defineEventHandler(async (event) => {
         paid_at: new Date().toISOString(),
       } as unknown as never)
       .eq('id', cartId)
+      .select('id')
+    if (upErr) {
+      console.error('PayTabs webhook: update paid failed', { tranRef, cartId, error: upErr.message })
+      throw upErr
+    }
+    console.info('PayTabs webhook: update paid', { count: Array.isArray(updated) ? updated.length : 0 })
   } else {
     if (tranRef) {
       try {
@@ -83,8 +80,9 @@ export default defineEventHandler(async (event) => {
           }
         )
         const resp = res?.payment_result?.response_status
+        console.info('PayTabs webhook: query', { status: resp, tranRef: res?.tran_ref, cartId: res?.cart_id || cartId })
         if (resp === 'A') {
-          await supabase
+          const { data: updated, error: upErr } = await supabase
             .from('orders')
             .update({
               payment_status: 'paid',
@@ -93,8 +91,14 @@ export default defineEventHandler(async (event) => {
               paid_at: new Date().toISOString(),
             } as unknown as never)
             .eq('id', (cartId || res.cart_id) as unknown as never)
+            .select('id')
+          if (upErr) {
+            console.error('PayTabs webhook: update from query failed', { error: upErr.message })
+            throw upErr
+          }
+          console.info('PayTabs webhook: update from query paid', { count: Array.isArray(updated) ? updated.length : 0 })
         } else if (resp) {
-          await supabase
+          const { data: updated, error: upErr } = await supabase
             .from('orders')
             .update({
               payment_status: 'failed',
@@ -102,12 +106,19 @@ export default defineEventHandler(async (event) => {
               tran_ref: res.tran_ref || tranRef,
             } as unknown as never)
             .eq('id', (cartId || res.cart_id) as unknown as never)
+            .select('id')
+          if (upErr) {
+            console.error('PayTabs webhook: mark failed from query error', { error: upErr.message })
+            throw upErr
+          }
+          console.info('PayTabs webhook: update failed', { count: Array.isArray(updated) ? updated.length : 0 })
         }
       } catch (e) {
-        console.error('PayTabs query failed', e)
+        console.error('PayTabs webhook: query request failed', e instanceof Error ? e.message : String(e))
       }
     }
   }
 
+  console.info('PayTabs webhook: done')
   return { ok: true }
 })

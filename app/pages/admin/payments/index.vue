@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
+import { paymentStatusStyle } from '@/utils'
 
 definePageMeta({
   layout: 'admin',
@@ -7,7 +8,7 @@ definePageMeta({
   title: 'Payments',
 })
 
-type PaymentStatus = 'success' | 'failed' | 'refunded'
+type PaymentStatus = 'success' | 'failed' | 'refunded' | 'pending'
 
 interface AdminPayment {
   id: string
@@ -19,7 +20,6 @@ interface AdminPayment {
 }
 
 const status = ref<PaymentStatus | 'all'>('all')
-const provider = ref<string | 'all'>('all')
 const sortBy = ref<'created_at' | 'amount'>('created_at')
 const ascending = ref(false)
 const page = ref(1)
@@ -27,7 +27,6 @@ const pageSize = ref(10)
 
 const params = computed(() => ({
   status: status.value === 'all' ? undefined : status.value,
-  provider: provider.value === 'all' ? undefined : provider.value,
   sortBy: sortBy.value,
   ascending: ascending.value,
   page: page.value,
@@ -38,24 +37,33 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   'admin-payments',
   async () => {
     const supabase = useSupabaseClient()
-    let q = supabase.from('payments').select('id,order_id,amount,status,provider,created_at', { count: 'exact' })
-    if (params.value.status) q = q.eq('status', params.value.status)
-    if (params.value.provider) q = q.eq('provider', params.value.provider)
-    q = q.order(params.value.sortBy, { ascending: params.value.ascending })
+    let q = supabase.from('orders').select('id,total,payment_status,payment_provider,created_at', { count: 'exact' })
+    if (params.value.status === 'success') q = q.eq('payment_status', 'paid')
+    else if (params.value.status === 'failed') q = q.eq('payment_status', 'failed')
+    else if (params.value.status === 'refunded') q = q.eq('payment_status', 'refunded')
+    // provider filter removed
+    const sortField = params.value.sortBy === 'amount' ? 'total' : 'created_at'
+    q = q.order(sortField, { ascending: params.value.ascending })
     const from = (params.value.page - 1) * params.value.pageSize
     const to = from + params.value.pageSize - 1
     q = q.range(from, to)
     const { data, error, count } = await q
     if (error) throw error
-    const rows = ((data || []) as unknown as Array<{ id: string; order_id?: string | null; amount: number | null; status: string | null; provider?: string | null; created_at: string | Date }>)
-      .map((r) => ({
-        id: String(r.id),
-        order_id: r.order_id || null,
-        amount: r.amount ?? 0,
-        status: (r.status || 'success') as PaymentStatus,
-        provider: r.provider || null,
-        created_at: typeof r.created_at === 'string' ? r.created_at : new Date(r.created_at).toISOString(),
-      })) as AdminPayment[]
+    console.info('admin:payments:raw', data)
+    const rows = ((data || []) as unknown as Array<{ id: string; total: number | null; payment_status: string | null; payment_provider?: string | null; created_at: string | Date }>)
+      .map((r) => {
+        const ps = (r.payment_status || '').toLowerCase()
+        const status: PaymentStatus = ps === 'paid' ? 'success' : ps === 'failed' ? 'failed' : 'pending'
+        return {
+          id: String(r.id),
+          order_id: String(r.id),
+          amount: r.total ?? 0,
+          status,
+          provider: r.payment_provider || 'paytabs',
+          created_at: typeof r.created_at === 'string' ? r.created_at : new Date(r.created_at).toISOString(),
+        } as AdminPayment
+      })
+    console.info('admin:payments:rows', rows)
     return { rows, count: count ?? rows.length }
   },
   { server: true }
@@ -68,8 +76,8 @@ watch(params, () => {
 onMounted(() => {
   const supabase = useSupabaseClient()
   const channel = supabase
-    .channel('public:payments')
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'payments' }, () => {
+    .channel('public:orders')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
       refresh()
     })
     .subscribe()
@@ -81,24 +89,7 @@ onMounted(() => {
 const totalPages = computed(() => Math.max(1, Math.ceil(Number(data.value?.count || 0) / pageSize.value)))
 const rows = computed(() => data.value?.rows || [])
 
-const refundId = ref<string | null>(null)
-
-const requestRefund = (id: string) => {
-  refundId.value = id
-}
-
-const confirmRefund = async () => {
-  if (!refundId.value) return
-  const supabase = useSupabaseClient()
-  const { error: e } = await supabase.from('payments').update({ status: 'refunded' } as unknown as never).eq('id', refundId.value)
-  if (e) {
-    toast.error(e.message)
-  } else {
-    toast.success('Payment refunded')
-  }
-  refundId.value = null
-  refresh()
-}
+// refund actions removed
 
 const formatCurrency = (v: number | null | undefined) => formatOMR(Number(v || 0))
 const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(iso))
@@ -115,15 +106,6 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
             <SelectItem value="success">Success</SelectItem>
             <SelectItem value="failed">Failed</SelectItem>
             <SelectItem value="refunded">Refunded</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select v-model="provider">
-          <SelectTrigger class="w-44"><SelectValue placeholder="Provider" /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All</SelectItem>
-            <SelectItem value="stripe">Stripe</SelectItem>
-            <SelectItem value="razorpay">Razorpay</SelectItem>
-            <SelectItem value="paypal">PayPal</SelectItem>
           </SelectContent>
         </Select>
         <DropdownMenu>
@@ -156,15 +138,14 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
               <TableHead class="text-right">Amount</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Provider</TableHead>
-              <TableHead class="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow v-if="pending">
-              <TableCell colspan="7"><Skeleton class="h-10 w-full" /></TableCell>
+              <TableCell colspan="6"><Skeleton class="h-10 w-full" /></TableCell>
             </TableRow>
             <TableRow v-else-if="error">
-              <TableCell colspan="7">
+              <TableCell colspan="6">
                 <Alert variant="destructive">
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{{ error.message }}</AlertDescription>
@@ -172,7 +153,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
               </TableCell>
             </TableRow>
             <TableRow v-else-if="rows.length === 0">
-              <TableCell colspan="7">
+              <TableCell colspan="6">
                 <TableEmpty>No payments found</TableEmpty>
               </TableCell>
             </TableRow>
@@ -184,23 +165,10 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
               <TableCell>{{ formatDate(p.created_at) }}</TableCell>
               <TableCell class="text-right">{{ formatCurrency(p.amount) }}</TableCell>
               <TableCell>
-                <Badge :variant="p.status === 'success' ? 'default' : p.status === 'failed' ? 'destructive' : 'secondary'">{{ p.status }}</Badge>
+                <Badge :variant="paymentStatusStyle(p.status).variant">{{ p.status }}</Badge>
               </TableCell>
               <TableCell>{{ p.provider || '—' }}</TableCell>
-              <TableCell class="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" size="icon">
-                      <Icon name="lucide:ellipsis" class="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem as="button" :disabled="p.status === 'refunded'" @click="requestRefund(p.id)">
-                      <Icon name="lucide:rotate-ccw" class="h-4 w-4 mr-2" /> Refund
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+              
             </TableRow>
           </TableBody>
         </Table>
@@ -214,17 +182,6 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
       </CardFooter>
     </Card>
 
-    <AlertDialog :open="!!refundId" @update:open="refundId = null">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Refund payment?</AlertDialogTitle>
-          <AlertDialogDescription />
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction class="bg-secondary text-white" @click="confirmRefund">Confirm</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    
   </div>
 </template>

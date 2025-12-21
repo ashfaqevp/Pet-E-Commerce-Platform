@@ -1,10 +1,16 @@
 <script setup lang="ts">
+import { navigateTo } from '#imports'
 const authStore = useAuthStore()
 const { loginWithGoogle } = useAuth()
+
+const onUpdateOpen = (v: boolean) => {
+  authStore.showAuthDialog = v
+  if (!v) navigateTo('/')
+}
 </script>
 
 <template>
-  <Dialog :open="authStore.showAuthDialog" @update:open="authStore.showAuthDialog = $event">
+  <Dialog :open="authStore.showAuthDialog" @update:open="onUpdateOpen">
     <DialogContent class="rounded-xl">
       <DialogHeader>
         <DialogTitle>Sign in to continue</DialogTitle>

@@ -1,4 +1,4 @@
-import { useSupabaseClient, useSupabaseUser } from '#imports'
+import { useSupabaseClient, useSupabaseUser, useState } from '#imports'
 import { useLocalStorage } from '@vueuse/core'
 
 export interface CartItemRow {
@@ -29,6 +29,8 @@ export interface CartItemWithProduct {
 export const useCart = () => {
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
+  const cartCount = useState<number>('cart-count', () => 0)
+  const cartLocks = new Set<string>()
 
   const requireAuth = () => {
     if (!user.value) {
@@ -48,6 +50,20 @@ export const useCart = () => {
   }
 
   const guestItems = useLocalStorage<{ product_id: string; quantity: number }[]>('bh-cart', [])
+
+  const refreshCart = async (): Promise<void> => {
+    if (!user.value) {
+      const items = guestItems.value || []
+      cartCount.value = items.reduce((sum, i) => sum + (i.quantity ?? 1), 0)
+      return
+    }
+    const { data, error } = await supabase
+      .from('cart_items')
+      .select('quantity')
+    if (error) throw error
+    const rows = (data ?? []) as unknown as { quantity: number }[]
+    cartCount.value = rows.reduce((sum, r) => sum + (r.quantity ?? 1), 0)
+  }
 
   const loadCartWithProducts = async (): Promise<CartItemWithProduct[]> => {
     if (!user.value) {
@@ -80,33 +96,43 @@ export const useCart = () => {
       .map<CartItemWithProduct>(r => ({ id: r.id, product_id: r.product_id, quantity: r.quantity ?? 1, product: map.get(r.product_id)! }))
   }
 
-  const addToCart = async ({ productId, quantity = 1 }: { productId: string; quantity?: number }): Promise<void> => {
-    if (!user.value) {
-      const idx = guestItems.value.findIndex(i => i.product_id === productId)
-      if (idx >= 0) guestItems.value[idx]!.quantity = (guestItems.value[idx]!.quantity ?? 1) + quantity
-      else guestItems.value.push({ product_id: productId, quantity })
-      return
+const addToCart = async ({
+  productId,
+  quantity = 1,
+}: {
+  productId: string
+  quantity?: number
+}) => {
+  if (!user.value) {
+    // guest logic stays same
+    const idx = guestItems.value.findIndex(i => i.product_id === productId)
+    if (idx >= 0) {
+      guestItems.value[idx]!.quantity += Math.max(1, quantity)
+    } else {
+      guestItems.value.push({ product_id: productId, quantity: Math.max(1, quantity) })
     }
-    const { data: existingData, error: selErr } = await supabase
-      .from('cart_items')
-      .select('id,quantity')
-      .eq('product_id', productId)
-      .maybeSingle()
-    if (selErr) throw selErr
-    const existing = existingData as unknown as { id: string; quantity: number } | null
-    if (existing?.id) {
-      const { error } = await supabase
-        .from('cart_items')
-        .update({ quantity: (existing.quantity ?? 1) + quantity } as unknown as never)
-        .eq('id', existing.id)
-      if (error) throw error
-      return
-    }
-    const { error } = await supabase
-      .from('cart_items')
-      .insert({ product_id: productId, quantity } as unknown as never)
-    if (error) throw error
+    await refreshCart()
+    return
   }
+
+  const qty = Math.max(1, quantity)
+
+  const { error } = await supabase
+    .from('cart_items')
+    .upsert(
+      {
+        product_id: productId,
+        quantity: qty,
+      },
+      {
+        onConflict: 'user_id,product_id',
+      }
+    )
+
+  if (error) throw error
+
+  await refreshCart()
+}
 
   const updateQty = async (id: string, quantity: number): Promise<void> => {
     if (!user.value) {
@@ -134,33 +160,32 @@ export const useCart = () => {
     if (error) throw error
   }
 
-  const syncGuestToServer = async (): Promise<void> => {
-    if (!user.value) return
-    const items = guestItems.value || []
-    if (!items.length) return
-    for (const i of items) {
-      const { data: existingData, error: selErr } = await supabase
-        .from('cart_items')
-        .select('id,quantity')
-        .eq('product_id', i.product_id)
-        .maybeSingle()
-      if (selErr) throw selErr
-      const existing = existingData as unknown as { id: string; quantity: number } | null
-      if (existing?.id) {
-        const { error } = await supabase
-          .from('cart_items')
-          .update({ quantity: (existing.quantity ?? 1) + (i.quantity ?? 1) } as unknown as never)
-          .eq('id', existing.id)
-        if (error) throw error
-      } else {
-        const { error } = await supabase
-          .from('cart_items')
-          .insert({ product_id: i.product_id, quantity: i.quantity ?? 1 } as unknown as never)
-        if (error) throw error
-      }
-    }
-    guestItems.value = []
+const syncGuestToServer = async () => {
+  if (!user.value) return
+
+  const items = guestItems.value || []
+  if (!items.length) return
+
+  for (const i of items) {
+    const { error } = await supabase
+      .from('cart_items')
+      .upsert(
+        {
+          product_id: i.product_id,
+          quantity: i.quantity ?? 1,
+        } as any,
+        {
+          onConflict: 'user_id,product_id',
+        }
+      )
+
+    if (error) throw error
   }
+
+  guestItems.value = []
+  await refreshCart()
+}
+
 
   return {
     loadCart,
@@ -170,5 +195,7 @@ export const useCart = () => {
     removeFromCart,
     requireAuth,
     syncGuestToServer,
+    refreshCart,
+    cartCount,
   }
 }

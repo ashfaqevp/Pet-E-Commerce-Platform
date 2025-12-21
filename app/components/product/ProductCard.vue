@@ -1,5 +1,8 @@
 <template>
-  <Card class="border-none rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white py-3 md:py-4 md:pb-0">
+  <Card
+    class="border-none rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white py-3 md:py-4 md:pb-0 cursor-pointer"
+    @click="goToProduct"
+  >
     <div class="relative">
       <img :src="product.image || placeholder" alt="" class="w-full h-30 sm:h-48 object-contain bg-white rounded-t-2xl" />
       <span
@@ -23,7 +26,7 @@
           <span class="font-medium text-sm sm:text-xl text-secondary">{{ formatOMR(product.price) }}</span>
           <span v-if="product.discount && product.discount > 0" class="text-muted-foreground line-through text-[10px]">{{ formatOMR(originalPrice) }}</span>
         </div>
-        <Button class="size-7 md:size-8 p-0 rounded-full bg-accent text-accent-foreground hover:bg-accent/90" @click="$emit('add', product)">
+        <Button class="size-7 md:size-8 p-0 rounded-full bg-accent text-accent-foreground hover:bg-accent/90" @click.stop="onAdd">
           <Icon name="lucide:plus" color="white" />
         </Button>
       </div>
@@ -34,6 +37,9 @@
 <script setup lang="ts">
 import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { formatOMR } from '@/utils'
+import { useCart } from '@/composables/useCart'
+import { toast } from 'vue-sonner'
 
 interface Product {
   id: string
@@ -54,4 +60,28 @@ const originalPrice = computed(() => {
   const factor = 1 - discount / 100
   return factor > 0 ? props.product.price / factor : props.product.price
 })
+
+const router = useRouter()
+const { addToCart, refreshCart } = useCart()
+const adding = ref(false)
+
+const goToProduct = () => {
+  router.push(`/product/${props.product.id}`)
+}
+
+const onAdd = async () => {
+  if (adding.value) return
+  adding.value = true
+  try {
+    await addToCart({ productId: props.product.id, quantity: 1 })
+    await refreshCart()
+    toast.success('Added to cart')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to add'
+    if (msg === 'LOGIN_REQUIRED') toast.error('Please sign in to add items')
+    else toast.error(msg)
+  } finally {
+    adding.value = false
+  }
+}
 </script>

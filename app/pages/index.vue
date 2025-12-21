@@ -2,8 +2,12 @@
 import CategoryPill from '~/components/common/CategoryPill.vue'
 import ProductCard from '~/components/product/ProductCard.vue'
 import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import Autoplay from 'embla-carousel-autoplay'
 import type { UnwrapRefCarouselApi } from '@/components/ui/carousel/interface'
+const supabase = useSupabaseClient()
+const router = useRouter()
 // Carousel banners from public folder
 const banners: string[] = [
   // 'https://img.pikbest.com/backgrounds/20210612/pet-store-product-promotion-poster_6011205.jpg!bwr800',
@@ -11,26 +15,61 @@ const banners: string[] = [
   '/images/banners/2.png',
 ]
 const categories = [
-  { name: 'Cat', icon: 'emojione-v1:cat-face' },
-  { name: 'Dog', icon: 'fluent-emoji-flat:dog-face' },
-  { name: 'Bird', icon: 'emojione-v1:bird' },
-  { name: 'Fish', icon: 'fxemoji:fish' },
-  { name: 'Other', icon: 'fluent-color:animal-paw-print-20' },
-]
+  { id: 'cat', name: 'Cat', icon: 'emojione-v1:cat-face' },
+  { id: 'dog', name: 'Dog', icon: 'fluent-emoji-flat:dog-face' },
+  { id: 'bird', name: 'Bird', icon: 'emojione-v1:bird' },
+  { id: 'fish', name: 'Fish', icon: 'fxemoji:fish' },
+  { id: 'other', name: 'Other', icon: 'fluent-color:animal-paw-print-20' },
+] as const
 
-const products = [
-  { id: '1', name: 'Chicken & Green Pea Recipe', brand: 'Natural Balance', price: 28.99, rating: 4.8, image: 'https://www.wiggles.in/cdn/shop/products/Untitled-1-01_2.png?v=1706864479', discount: 0 },
-  { id: '2', name: 'Whitefish & Potato Recipe', brand: 'Blue Buffalo', price: 28.99, rating: 4.8, image: 'https://petstrong.in/cdn/shop/files/FOP_CV.webp?v=1732613363', discount: 25 },
-  { id: '3', name: "Nature's Evolutionary Diet", brand: 'Blue Buffalo', price: 42.99, rating: 4.9, image: 'https://images.apollo247.in/pub/media/catalog/product/p/e/ped0079_111_2_.jpg?tr=q-80,f-webp,w-100,dpr-3,c-at_max%20100w', discount: 0 },
-  { id: '4', name: 'Grain‑Free Turkey Recipe', brand: 'Wellness CORE', price: 32.50, rating: 4.7, image: 'https://m.media-amazon.com/images/I/61V-CvhDMwL._AC_UF1000,1000_QL80_.jpg', discount: 15 },
-  { id: '5', name: 'Chicken & Green Pea Recipe', brand: 'Natural Balance', price: 28.99, rating: 4.8, image: 'https://www.wiggles.in/cdn/shop/products/Untitled-1-01_2.png?v=1706864479', discount: 0 },
-  { id: '6', name: 'Whitefish & Potato Recipe', brand: 'Blue Buffalo', price: 28.99, rating: 4.8, image: 'https://petstrong.in/cdn/shop/files/FOP_CV.webp?v=1732613363', discount: 25 },
-  { id: '7', name: "Nature's Evolutionary Diet", brand: 'Blue Buffalo', price: 42.99, rating: 4.9, image: 'https://images.apollo247.in/pub/media/catalog/product/p/e/ped0079_111_2_.jpg?tr=q-80,f-webp,w-100,dpr-3,c-at_max%20100w', discount: 0 },
-  { id: '8', name: 'Grain‑Free Turkey Recipe', brand: 'Wellness CORE', price: 32.50, rating: 4.7, image: 'https://m.media-amazon.com/images/I/61V-CvhDMwL._AC_UF1000,1000_QL80_.jpg', discount: 15 },
-]
+interface ProductRow {
+  id: string
+  name: string
+  retail_price?: number | null
+  default_rating?: number | null
+  thumbnail_url?: string | null
+}
 
-const router = useRouter()
-const addToCart = (p: any) => router.push(`/product/${p.id}`)
+interface CardProduct {
+  id: string
+  name: string
+  brand: string
+  price: number
+  rating: number
+  discount?: number
+  image?: string
+}
+
+const mapRow = (row: ProductRow): CardProduct => ({
+  id: String(row.id),
+  name: row.name,
+  brand: '',
+  price: Number(row.retail_price || 0),
+  rating: Number(row.default_rating || 0),
+  discount: 0,
+  image: row.thumbnail_url || undefined,
+})
+
+const { data: featuredData, pending: featuredPending, error: featuredError, refresh: refreshFeatured } = await useLazyAsyncData(
+  'home-featured-products',
+  async () => {
+    let q = supabase
+      .from('products')
+      .select('id,name,retail_price,default_rating,thumbnail_url', { count: 'exact' })
+      .eq('is_active', true)
+      .eq('is_featured', true)
+      .order('created_at', { ascending: false })
+      .range(0, 11)
+    const { data, error } = await q
+    if (error) throw error
+    return (data ?? []) as ProductRow[]
+  },
+  { server: true }
+)
+
+const onCategoryClick = (id: typeof categories[number]['id']) => {
+  router.push({ path: '/products', query: { pet: id } })
+}
 definePageMeta({ layout: 'default' })
 
 // Carousel state for dots pagination
@@ -47,7 +86,7 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
   })
 }
 
-console.log('all is good')
+const featuredProducts = computed<CardProduct[]>(() => (featuredData.value ?? []).map(mapRow))
 </script>
 
 
@@ -91,26 +130,31 @@ console.log('all is good')
         <!-- <NuxtLink to="/browse"><Button variant="ghost">See All</Button></NuxtLink> -->
       </div>
       <div class="grid grid-cols-5 sm:grid-cols-12 gap-4">
-        <CategoryPill v-for="c in categories" :key="c.name" :item="c" />
+        <div v-for="c in categories" :key="c.id" @click="onCategoryClick(c.id)" class="cursor-pointer">
+          <CategoryPill :item="{ name: c.name, icon: c.icon }" />
+        </div>
       </div>
     </section>
 
-    <!-- Top Selling -->
+    <!-- Featured Products -->
     <section class="container mx-auto px-4 py-8">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl font-semibold">Products</h3>
-        <NuxtLink to="/products"><Button variant="ghost" class="underline">See All</Button></NuxtLink>
+        <h3 class="text-xl font-semibold">Featured</h3>
+        <NuxtLink :to="{ path: '/products' }"><Button variant="ghost" class="underline">See All</Button></NuxtLink>
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-        <ProductCard
-          v-for="product in products"
-          :key="product.id"
-          :product="product"
-          @add="addToCart"
-        />
+        <template v-if="featuredPending">
+          <Skeleton v-for="i in 8" :key="`feat-s-${i}`" class="h-64 w-full rounded-lg" />
+        </template>
+        <template v-else>
+          <ProductCard v-for="p in featuredProducts" :key="p.id" :product="p" />
+        </template>
       </div>
+      <Alert v-if="featuredError" variant="destructive" class="mt-4">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{{ featuredError.message || 'Failed to load featured' }}</AlertDescription>
+      </Alert>
     </section>
   </div>
   
 </template>
-

@@ -67,7 +67,8 @@ const isHome = computed(() => route.path === '/')
 
 function handleSearch() {
   if (searchQuery.value.trim()) {
-    router.push(`/search?q=${searchQuery.value}`);
+    router.push({ path: '/products', query: { q: searchQuery.value.trim() } })
+    isSearchFocused.value = false
   }
 }
 

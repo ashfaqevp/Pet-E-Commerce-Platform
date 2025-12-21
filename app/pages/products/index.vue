@@ -66,9 +66,8 @@ const products = ref<CardProduct[]>([])
 const page = ref(1)
 const pageSize = 12
 const totalCount = ref(0)
-const loading = ref(false)
-const initialLoading = ref(true)
-const error = ref<string | null>(null)
+const initialLoading = computed(() => pending.value && products.value.length === 0)
+const loading = computed(() => pending.value && products.value.length > 0)
 const listContainer = ref<HTMLElement | null>(null)
 const mobileFilterOpen = ref(false)
 
@@ -143,92 +142,80 @@ function mapProductRow(row: ProductRow): CardProduct {
   }
 }
 
-// Fetch products from Supabase
-async function fetchProducts(pageNum: number, resetList = false) {
-  try {
-    if (resetList) {
-      loading.value = true
-      products.value = []
-    } else {
-      loading.value = true
-    }
-    
-    error.value = null
+// Search and featured query params
+const qSearch = useRouteQuery<string>('q', '')
+const qFeatured = useRouteQuery<string>('featured', '')
 
-    // Build query
+const params = computed(() => ({
+  pet: qPet.value,
+  type: qType.value,
+  age: qAge.value,
+  unit: qUnit.value,
+  size: qSize.value,
+  flavour: qFlavour.value,
+  search: (qSearch.value || '').trim(),
+  featured: qFeatured.value === '1',
+  page: page.value,
+  pageSize,
+}))
+
+const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
+  'products-list',
+  async () => {
     let query = supabase
       .from('products')
       .select('*', { count: 'exact' })
       .eq('is_active', true)
       .order('created_at', { ascending: false })
 
-    // Apply filters
-    if (qPet.value.length > 0) {
-      query = query.in('pet_type', qPet.value)
-    }
-    if (qType.value.length > 0) {
-      query = query.in('product_type', qType.value)
-    }
-    if (qAge.value.length > 0) {
-      query = query.in('age', qAge.value)
-    }
-    if (qUnit.value.length > 0) {
-      query = query.in('unit', qUnit.value)
-    }
-    if (qSize.value.length > 0) {
-      query = query.in('size', qSize.value)
-    }
-    if (qFlavour.value.length > 0) {
-      query = query.in('flavour', qFlavour.value)
+    if (params.value.pet.length > 0) query = query.in('pet_type', params.value.pet)
+    if (params.value.type.length > 0) query = query.in('product_type', params.value.type)
+    if (params.value.age.length > 0) query = query.in('age', params.value.age)
+    if (params.value.unit.length > 0) query = query.in('unit', params.value.unit)
+    if (params.value.size.length > 0) query = query.in('size', params.value.size)
+    if (params.value.flavour.length > 0) query = query.in('flavour', params.value.flavour)
+    if (params.value.featured) query = query.eq('is_featured', true)
+
+    const term = params.value.search
+    if (term) {
+      const esc = term.replace(/%/g, '\\%').replace(/_/g, '\\_')
+      query = query.or(`name.ilike.%${esc}%,product_type.ilike.%${esc}%,flavour.ilike.%${esc}%`)
     }
 
-    // Pagination
-    const from = (pageNum - 1) * pageSize
-    const to = from + pageSize - 1
+    const from = (params.value.page - 1) * params.value.pageSize
+    const to = from + params.value.pageSize - 1
     query = query.range(from, to)
 
-    const { data, error: fetchError, count } = await query
+    const { data, error, count } = await query
+    if (error) throw error
+    return { items: (data ?? []) as ProductRow[], total: count ?? 0 }
+  },
+  { watch: [params], server: true }
+)
 
-    if (fetchError) {
-      throw fetchError
-    }
-
-    totalCount.value = count ?? 0
-
-    if (data) {
-      const newProducts = data.map(mapProductRow)
-      
-      if (resetList) {
-        products.value = newProducts
-      } else {
-        // Avoid duplicates when appending
-        const existingIds = new Set(products.value.map(p => p.id))
-        const uniqueNew = newProducts.filter(p => !existingIds.has(p.id))
-        products.value = [...products.value, ...uniqueNew]
-      }
-    }
-  } catch (e: any) {
-    error.value = e.message || 'Failed to fetch products'
-    console.error('Fetch error:', e)
-  } finally {
-    loading.value = false
-    initialLoading.value = false
+watch(pageData, (val) => {
+  if (!val) return
+  totalCount.value = val.total
+  const newProducts = val.items.map(mapProductRow)
+  if (page.value === 1) products.value = newProducts
+  else {
+    const existing = new Set(products.value.map(p => p.id))
+    const unique = newProducts.filter(p => !existing.has(p.id))
+    products.value = [...products.value, ...unique]
   }
-}
+})
 
-// Load initial data
-async function loadInitialProducts() {
+const resetAndRefresh = async () => {
   page.value = 1
-  await fetchProducts(1, true)
+  products.value = []
+  await refresh()
 }
 
-// Load next page
-async function loadNextPage() {
-  if (loading.value) return
+const loadNextPage = async () => {
+  if (pending.value) return
   if (products.value.length >= totalCount.value) return
-  
   page.value++
-  await fetchProducts(page.value, false)
+  await refresh()
 }
 
 // Check if more products available
@@ -240,7 +227,7 @@ const hasMore = computed(() => {
 useInfiniteScroll(
   listContainer,
   () => {
-    if (hasMore.value && !loading.value) {
+    if (hasMore.value && !pending.value) {
       loadNextPage()
     }
   },
@@ -252,7 +239,7 @@ let lastFilterSig = filterSignature.value
 watch(filterSignature, async (newSig) => {
   if (newSig !== lastFilterSig) {
     lastFilterSig = newSig
-    await loadInitialProducts()
+    await resetAndRefresh()
   }
 })
 
@@ -300,17 +287,16 @@ function clearAllFilters() {
   qUnit.value = []
   qSize.value = []
   qFlavour.value = []
+  resetAndRefresh()
 }
 
 // Apply filters (for mobile)
 function applyFilters() {
   mobileFilterOpen.value = false
+  resetAndRefresh()
 }
 
-// Initial load on mount
-onMounted(() => {
-  loadInitialProducts()
-})
+onMounted(() => { resetAndRefresh() })
 </script>
 
 <template>
@@ -404,7 +390,7 @@ onMounted(() => {
         <!-- Error Alert -->
         <Alert v-if="error" variant="destructive" class="mb-4">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{{ error }}</AlertDescription>
+          <AlertDescription>{{ error?.message }}</AlertDescription>
         </Alert>
 
         <!-- Products Grid -->
@@ -422,7 +408,6 @@ onMounted(() => {
               v-for="product in products"
               :key="product.id"
               :product="product"
-              @add="() => router.push(`/product/${product.id}`)"
             />
           </template>
         </div>

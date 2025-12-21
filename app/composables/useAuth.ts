@@ -5,10 +5,15 @@ export const useAuth = () => {
   const user = useSupabaseUser()
 
   const loginWithGoogle = async () => {
+    const supabase = useSupabaseClient()
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}`
+      }
     })
-  }
+}
 
   const logout = async () => {
     await supabase.auth.signOut()

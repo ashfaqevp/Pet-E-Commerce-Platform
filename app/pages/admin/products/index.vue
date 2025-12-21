@@ -131,11 +131,7 @@ const deleteProduct = async () => {
   }
 }
 
-const formatCurrency = (v?: number | null) =>
-  new Intl.NumberFormat(undefined, {
-    style: 'currency',
-    currency: 'OMR',
-  }).format(Number(v ?? 0))
+const formatCurrency = (v?: number | null) => formatOMR(Number(v ?? 0))
 
 
 const totalItems = computed(() => Number(data.value?.count || 0))

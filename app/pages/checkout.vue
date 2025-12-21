@@ -59,8 +59,8 @@ watchEffect(() => {
 
 const subtotal = computed(() => items.value.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0))
 const shipping = computed(() => (items.value.length ? 10 : 0))
-const tax = computed(() => Math.round(subtotal.value * 0.05 * 100) / 100)
-const total = computed(() => Math.round((subtotal.value + shipping.value + tax.value) * 100) / 100)
+const tax = computed(() => Math.round(subtotal.value * 0.05 * 1000) / 1000)
+const total = computed(() => Math.round((subtotal.value + shipping.value + tax.value) * 1000) / 1000)
 
 const { create, creating } = useCheckoutOrder()
 
@@ -190,8 +190,8 @@ const placeOrder = async () => {
                 <TableRow v-else v-for="i in items" :key="i.id">
                   <TableCell class="max-w-[220px] truncate">{{ i.product.name }}</TableCell>
                   <TableCell class="text-right">{{ i.quantity }}</TableCell>
-                  <TableCell class="text-right">${{ Number(i.product.retail_price || 0).toFixed(2) }}</TableCell>
-                  <TableCell class="text-right">${{ (Number(i.product.retail_price || 0) * Number(i.quantity || 1)).toFixed(2) }}</TableCell>
+                  <TableCell class="text-right">{{ formatOMR(Number(i.product.retail_price || 0)) }}</TableCell>
+                  <TableCell class="text-right">{{ formatOMR(Number(i.product.retail_price || 0) * Number(i.quantity || 1)) }}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -207,20 +207,20 @@ const placeOrder = async () => {
           <CardContent class="space-y-3">
             <div class="flex items-center justify-between">
               <span>Subtotal</span>
-              <span class="font-medium">${{ subtotal.toFixed(2) }}</span>
+              <span class="font-medium">{{ formatOMR(subtotal) }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span>Shipping</span>
-              <span class="font-medium">${{ shipping.toFixed(2) }}</span>
+              <span class="font-medium">{{ formatOMR(shipping) }}</span>
             </div>
             <div class="flex items-center justify-between">
               <span>Tax (5%)</span>
-              <span class="font-medium">${{ tax.toFixed(2) }}</span>
+              <span class="font-medium">{{ formatOMR(tax) }}</span>
             </div>
             <Separator />
             <div class="flex items-center justify-between text-lg font-bold">
               <span>Total</span>
-              <span>${{ total.toFixed(2) }}</span>
+              <span>{{ formatOMR(total) }}</span>
             </div>
             <Button
               class="mt-4 w-full"

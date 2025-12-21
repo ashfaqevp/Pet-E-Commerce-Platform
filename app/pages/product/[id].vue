@@ -329,13 +329,11 @@ const { data: _data_test } = await supabase.auth.getSession()
 
         <div class="flex items-center justify-between gap-3 mt-4">
           <div>
-            <span class="text-2xl font-semibold text-secondary"
-              >OMR {{ product.price.toFixed(3) }}</span
-            >
+            <span class="text-2xl font-semibold text-secondary">{{ formatOMR(product.price) }}</span>
             <span
               v-if="product.compareAt != null"
               class="line-through text-muted-foreground"
-              >OMR {{ product.compareAt?.toFixed(3) }}</span
+              >{{ formatOMR(product.compareAt ?? 0) }}</span
             >
           </div>
 

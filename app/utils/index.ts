@@ -6,3 +6,13 @@ export const formatOmanPhone = (v: string | null | undefined): string => {
   if (normalized.length < 8) return `+968 ${normalized}`
   return `+968 ${normalized.slice(0, 4)} ${normalized.slice(4, 8)}`
 }
+
+export const formatOMR = (v: number | string | null | undefined): string => {
+  const n = Number(v ?? 0)
+  return new Intl.NumberFormat('en-OM', {
+    style: 'currency',
+    currency: 'OMR',
+    minimumFractionDigits: 3,
+    maximumFractionDigits: 3,
+  }).format(n)
+}

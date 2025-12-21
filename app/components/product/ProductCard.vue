@@ -20,8 +20,8 @@
 
       <div class="flex items-center justify-between">
         <div class="flex items-baseline gap-1">
-          <span class="font-medium text-sm sm:text-xl text-secondary">OMR {{ product.price.toFixed(2) }}</span>
-          <span v-if="product.discount && product.discount > 0" class="text-muted-foreground line-through text-[10px]">{{ originalPrice.toFixed(2) }}</span>
+          <span class="font-medium text-sm sm:text-xl text-secondary">{{ formatOMR(product.price) }}</span>
+          <span v-if="product.discount && product.discount > 0" class="text-muted-foreground line-through text-[10px]">{{ formatOMR(originalPrice) }}</span>
         </div>
         <Button class="size-7 md:size-8 p-0 rounded-full bg-accent text-accent-foreground hover:bg-accent/90" @click="$emit('add', product)">
           <Icon name="lucide:plus" color="white" />

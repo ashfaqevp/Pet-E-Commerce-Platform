@@ -85,7 +85,7 @@ onMounted(() => {
   })
 })
 
-const formatCurrency = (v: number) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(v)
+const formatCurrency = (v: number) => formatOMR(v)
 const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(iso))
 </script>
 

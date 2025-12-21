@@ -42,7 +42,7 @@ export default defineEventHandler(async (event) => {
     tran_class: 'ecom',
     cart_id: order.id,
     cart_description: `Order ${order.id}`,
-    cart_currency: 'INR',
+    cart_currency: 'OMR',
     cart_amount: Number(order.total),
     callback: clean(config.paytabsCallbackUrl),
     return: clean(config.paytabsReturnUrl),

@@ -47,7 +47,7 @@ export const useCheckoutOrder = () => {
   const { loadCartWithProducts } = useCart()
   const { listAddresses } = useAddresses()
 
-  const round2 = (v: number) => Math.round(v * 100) / 100
+  const round3 = (v: number) => Math.round(v * 1000) / 1000
 
   const create = async (addressId: string): Promise<string> => {
     if (creating.value) throw new Error('ALREADY_CREATING')
@@ -61,16 +61,16 @@ export const useCheckoutOrder = () => {
       if (!addr) throw new Error('NO_ADDRESS')
       const subtotal = items.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0)
       const shipping = items.length ? 10 : 0
-      const tax = round2(subtotal * 0.05)
-      const total = round2(subtotal + shipping + tax)
+      const tax = round3(subtotal * 0.05)
+      const total = round3(subtotal + shipping + tax)
       const payload: OrderInsertRow = {
         user_id: user.value.id,
         status: 'awaiting_payment',
         payment_status: 'pending',
-        subtotal: round2(subtotal),
-        shipping_fee: round2(shipping),
-        tax: round2(tax),
-        total: round2(total),
+        subtotal: round3(subtotal),
+        shipping_fee: round3(shipping),
+        tax: round3(tax),
+        total: round3(total),
         shipping_address: {
           full_name: addr.full_name,
           phone: addr.phone,
@@ -91,7 +91,7 @@ export const useCheckoutOrder = () => {
         product_name: i.product.name,
         unit_price: Number(i.product.retail_price || 0),
         quantity: Number(i.quantity || 1),
-        total_price: round2(Number(i.product.retail_price || 0) * Number(i.quantity || 1)),
+        total_price: round3(Number(i.product.retail_price || 0) * Number(i.quantity || 1)),
       }))
       if (orderItems.length) {
         const { error: itemsErr } = await supabase.from('order_items').insert(orderItems as unknown as never)

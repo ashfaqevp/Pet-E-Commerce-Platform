@@ -97,7 +97,7 @@ const confirmStatusChange = async () => {
   refresh()
 }
 
-const formatCurrency = (v: number | null | undefined) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(Number(v || 0))
+const formatCurrency = (v: number | null | undefined) => formatOMR(Number(v || 0))
 const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(iso))
 </script>
 

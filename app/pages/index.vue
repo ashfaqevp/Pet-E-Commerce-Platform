@@ -46,6 +46,8 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
     activeIndex.value = api.selectedScrollSnap()
   })
 }
+
+console.log('all is good')
 </script>
 
 

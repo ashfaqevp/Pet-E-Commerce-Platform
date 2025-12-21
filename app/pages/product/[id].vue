@@ -2,6 +2,7 @@
 import { computed, ref, watch, onMounted, onUnmounted } from "vue";
 import { useRoute, definePageMeta, useLazyAsyncData, useSupabaseClient } from "#imports";
 import { Button } from "@/components/ui/button";
+import { useCart, type CartItemWithProduct } from "@/composables/useCart";
 import AddToCartButton from "@/components/AddToCartButton.vue";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import type { UnwrapRefCarouselApi } from "@/components/ui/carousel/interface";
@@ -83,6 +84,16 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
 
 const current = computed(() => data.value?.current as ProductRow | undefined);
 const variantRows = computed(() => (data.value?.variants || []) as ProductRow[]);
+
+const { loadCartWithProducts } = useCart()
+const { data: cartData } = await useLazyAsyncData(
+  'product-cart',
+  async () => {
+    return await loadCartWithProducts()
+  },
+  { server: true }
+)
+const cartItems = computed(() => (cartData.value as CartItemWithProduct[]) || [])
 
 const variantGroups = ref<VariantGroup[]>([]);
 
@@ -215,6 +226,13 @@ const product = computed(() => {
     variants?: VariantGroup[];
   };
 });
+
+watch([product, cartItems], () => {
+  const pid = product.value?.id
+  if (!pid) return
+  const match = cartItems.value.find(i => i.product_id === pid)
+  qty.value = Number(match?.quantity || 1)
+}, { immediate: true })
 
 const onInitApi = (api: UnwrapRefCarouselApi) => {
   if (!api) return;

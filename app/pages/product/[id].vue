@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
-import { useRoute, definePageMeta } from "#imports";
+import { computed, ref, watch, onMounted, onUnmounted } from "vue";
+import { useRoute, definePageMeta, useLazyAsyncData, useSupabaseClient } from "#imports";
 import { Button } from "@/components/ui/button";
 import AddToCartButton from "@/components/AddToCartButton.vue";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import type { UnwrapRefCarouselApi } from "@/components/ui/carousel/interface";
-import Autoplay from "embla-carousel-autoplay";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -14,10 +15,10 @@ import {
   BreadcrumbSeparator,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb";
+import { CATEGORY_CONFIG } from "~/domain/categories/category.config";
 
-const route = useRoute();
-const id = route.params.id as string;
-// Using static product data for this page
+definePageMeta({ layout: "default" });
+
 type VariantOption = {
   id: string;
   label?: string;
@@ -27,157 +28,196 @@ type VariantOption = {
 };
 
 type VariantGroup = {
-  name: "Flavor" | "Size" | "Age" | string;
-  key: "flavor" | "size" | "age" | string;
+  name: "Flavour" | "Size" | "Age" | string;
+  key: "flavour" | "size" | "age" | string;
   options: VariantOption[];
 };
 
-type Product = {
+interface ProductRow {
   id: string;
   name: string;
-  brand?: string;
-  price: number;
-  rating: number;
-  thumbnail?: string;
-  images?: string[];
-  compareAt?: number;
-  discount?: number;
-  variants?: VariantGroup[];
-};
+  brand?: string | null;
+  pet_type?: string | null;
+  product_type?: string | null;
+  age?: string | null;
+  unit?: string | null;
+  size?: string | null;
+  flavour?: string | null;
+  retail_price?: number | null;
+  default_rating?: number | null;
+  thumbnail_url?: string | null;
+  base_product_id?: string | null;
+  is_active?: boolean | null;
+}
 
-// Sample product used only when API data is missing, for UI demonstration
-const sampleProduct: Product = {
-  id: "sample",
-  name: "Bestpet Kitten Chicken 85g",
-  brand: "Bestpet",
-  price: 0.300,
-  rating: 4.8,
-  thumbnail:
-    "https://www.wiggles.in/cdn/shop/products/Untitled-1-01_2.png?v=1706864479",
-  images: [
-    "https://www.wiggles.in/cdn/shop/products/Untitled-1-01_2.png?v=1706864479",
-    "https://www.wiggles.in/cdn/shop/products/Untitled-1-01_3.png?v=1706864479",
-    "https://www.wiggles.in/cdn/shop/products/Untitled-1-01_4.png?v=1706864479",
-  ],
-  discount: 0,
-  variants: [
-    {
-      name: "Flavor",
-      key: "flavor",
-      options: [
-        { id: "flv-chicken", label: "Chicken & Green Pea", value: "chicken-green-pea" },
-        { id: "flv-duck", label: "Duck & Green Pea", value: "duck-green-pea" },
-        { id: "flv-salmon", label: "Salmon & Green Pea", value: "salmon-green-pea" },
-      ],
-    },
-    {
-      name: "Size",
-      key: "size",
-      options: [
-        { id: "size-2", label: "2 lb", value: 2 },
-        { id: "size-4", label: "4 lb", value: 4 },
-        { id: "size-5", label: "5 lb", value: 5 },
-        { id: "size-8", label: "8 lb", value: 8 },
-        { id: "size-10", label: "10 lb", value: 10 },
-      ],
-    },
-    {
-      name: "Age",
-      key: "age",
-      options: [
-        { id: "age-puppy", label: "Puppy", value: "puppy" },
-        { id: "age-adult", label: "Adult", value: "adult" },
-        { id: "age-senior", label: "Senior", value: "senior" },
-      ],
-    },
-  ],
-};
+const route = useRoute();
+const id = route.params.id as string;
+const supabase = useSupabaseClient();
 
-
-
-const product = computed<Product>(() => {
-  const p = sampleProduct
-  const price = typeof p.price === "number" ? p.price : 0;
-  const discount = typeof p.discount === "number" ? p.discount : 0;
-  const compareAt =
-    typeof p.compareAt === "number"
-      ? p.compareAt
-      : discount > 0 && price > 0
-      ? price / (1 - discount / 100)
-      : undefined;
-
-  // Build images array: prepend thumbnail to images if present
-  const images = (() => {
-    const list = p.images ?? [];
-    if (p.thumbnail) {
-      return [p.thumbnail, ...list.filter((u) => u !== p.thumbnail)];
-    }
-    return list.length ? list : undefined;
-  })();
-
-  return {
-    id,
-    name: p.name ?? "Product",
-    brand: p.brand, // hide when missing
-    price,
-    rating: typeof p.rating === "number" ? p.rating : 0,
-    thumbnail: p.thumbnail,
-    images,
-    compareAt,
-    discount,
-    variants: p.variants ?? [],
-  };
-});
-
-const variants = computed(() => product.value.variants ?? []);
-const flavorGroup = computed(() => variants.value.find((v) => v.key === "flavor"));
-const sizeGroup = computed(() => variants.value.find((v) => v.key === "size"));
-const ageGroup = computed(() => variants.value.find((v) => v.key === "age"));
-
-const selectedFlavor = ref<VariantOption | null>(null);
-const selectedSize = ref<VariantOption | null>(null);
-const selectedAge = ref<VariantOption | null>(null);
-
-watch(flavorGroup, (g) => {
-  selectedFlavor.value = g?.options?.[0] ?? null;
-}, { immediate: true });
-
-watch(sizeGroup, (g) => {
-  selectedSize.value = g?.options?.[0] ?? null;
-}, { immediate: true });
-
-watch(ageGroup, (g) => {
-  selectedAge.value = g?.options?.[0] ?? null;
-}, { immediate: true });
-
-// Narrow variant values to satisfy CartItem types
-const flavorValue = computed<string | undefined>(() => {
-  const v = selectedFlavor.value?.value;
-  return typeof v === 'string' ? v : undefined;
-});
-
-const sizeValue = computed<number | undefined>(() => {
-  const v = selectedSize.value?.value;
-  if (typeof v === 'number') return v;
-  if (typeof v === 'string') {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : undefined;
-  }
-  return undefined;
-});
-
-const ageValue = computed<string | number | undefined>(() => selectedAge.value?.value);
 const qty = ref(1);
-
-// Carousel state
 const activeIndex = ref(0);
 const carouselApiRef = ref<UnwrapRefCarouselApi | null>(null);
 
-// Initialize carousel API and keep dots in sync
-const onInitApi = (api: UnwrapRefCarouselApi) => {
-  if (!api)
-    return;
+const { data, pending, error, refresh } = await useLazyAsyncData(
+  `product-${id}`,
+  async () => {
+    const { data: row, error: e } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (e) throw e;
+    const current = row as unknown as ProductRow;
+    const baseId = current.base_product_id || current.id;
+    const { data: variantsData, error: ve } = await supabase
+      .from("products")
+      .select("*")
+      .or(`id.eq.${baseId},base_product_id.eq.${baseId}`)
+      .eq("is_active", true);
+    if (ve) throw ve;
+    const variants = (variantsData || []) as unknown as ProductRow[];
+    return { current, variants, baseId };
+  },
+  { server: true }
+);
 
+const current = computed(() => data.value?.current as ProductRow | undefined);
+const variantRows = computed(() => (data.value?.variants || []) as ProductRow[]);
+
+const variantGroups = ref<VariantGroup[]>([]);
+
+function buildGroups() {
+  const cur = current.value;
+  const rows = variantRows.value;
+  if (!cur) {
+    variantGroups.value = [];
+    return;
+  }
+  const flavourSet = new Map<string, VariantOption>();
+  const sizeSet = new Map<string, VariantOption>();
+  const ageSet = new Map<string, VariantOption>();
+  for (const r of rows) {
+    if (r.flavour) {
+      const opts = CATEGORY_CONFIG.flavour.rules?.flatMap(x => x.options) || [];
+      const label = opts.find(o => o.id === r.flavour)?.label || r.flavour;
+      flavourSet.set(r.flavour, { id: r.flavour, label, value: r.flavour });
+    }
+    if (r.size) {
+      const unit = cur.unit ?? r.unit ?? undefined;
+      const rules = CATEGORY_CONFIG.size.rules || [];
+      const rule = unit ? rules.find(x => x.when.values.includes(unit)) : undefined;
+      const label = rule?.options.find(o => o.id === r.size)?.label || r.size;
+      sizeSet.set(r.size, { id: r.size, label, value: r.size });
+    }
+    if (r.age) {
+      const pet = cur.pet_type ?? r.pet_type ?? undefined;
+      const rules = CATEGORY_CONFIG.age.rules || [];
+      const rule = pet ? rules.find(x => x.when.values.includes(pet)) : undefined;
+      const label = rule?.options.find(o => o.id === r.age)?.label || r.age;
+      ageSet.set(r.age, { id: r.age, label, value: r.age });
+    }
+  }
+  const groups: VariantGroup[] = [];
+  const type = cur.product_type || undefined;
+  const showFlavour = !!type && CATEGORY_CONFIG.flavour.requiredWhen?.some(x => x.values.includes(type));
+  if (showFlavour && flavourSet.size > 0) groups.push({ name: "Flavour", key: "flavour", options: Array.from(flavourSet.values()) });
+  if (sizeSet.size > 0) groups.push({ name: "Size", key: "size", options: Array.from(sizeSet.values()) });
+  const pet = cur.pet_type || undefined;
+  const showAge = !!pet && CATEGORY_CONFIG.age.requiredWhen?.some(x => x.values.includes(pet));
+  if (showAge && ageSet.size > 0) groups.push({ name: "Age", key: "age", options: Array.from(ageSet.values()) });
+  variantGroups.value = groups;
+}
+
+watch([current, variantRows], buildGroups, { immediate: true });
+
+const flavourGroup = computed(() => variantGroups.value.find(v => v.key === "flavour"));
+const sizeGroup = computed(() => variantGroups.value.find(v => v.key === "size"));
+const ageGroup = computed(() => variantGroups.value.find(v => v.key === "age"));
+
+const selectedFlavour = ref<VariantOption | null>(null);
+const selectedSize = ref<VariantOption | null>(null);
+const selectedAge = ref<VariantOption | null>(null);
+
+function initSelections() {
+  const cur = current.value;
+  if (!cur) return;
+  selectedFlavour.value = flavourGroup.value?.options.find(o => o.id === cur.flavour) || flavourGroup.value?.options[0] || null;
+  selectedSize.value = sizeGroup.value?.options.find(o => o.id === cur.size) || sizeGroup.value?.options[0] || null;
+  selectedAge.value = ageGroup.value?.options.find(o => o.id === cur.age) || ageGroup.value?.options[0] || null;
+}
+
+watch([flavourGroup, sizeGroup, ageGroup], initSelections, { immediate: true });
+
+function moveSelectedToFront(group: VariantGroup | undefined, selected: VariantOption | null) {
+  if (!group || !selected) return;
+  const idx = group.options.findIndex(o => o.id === selected.id);
+  if (idx > 0) {
+    const opt = group.options[idx]!;
+    group.options.splice(idx, 1);
+    group.options.unshift(opt);
+  }
+}
+
+watch(selectedFlavour, (v) => moveSelectedToFront(flavourGroup.value, v));
+watch(selectedSize, (v) => moveSelectedToFront(sizeGroup.value, v));
+watch(selectedAge, (v) => moveSelectedToFront(ageGroup.value, v));
+
+const selectedVariant = computed<ProductRow | undefined>(() => {
+  const rows = variantRows.value;
+  const f = selectedFlavour.value?.id;
+  const s = selectedSize.value?.id;
+  const a = selectedAge.value?.id;
+  let r = rows.find(x => (!f || x.flavour === f) && (!s || x.size === s) && (!a || x.age === a));
+  if (r) return r;
+  r = rows.find(x => (!s || x.size === s) && (!f || x.flavour === f));
+  if (r) return r;
+  r = rows.find(x => (!s || x.size === s));
+  if (r) return r;
+  r = rows.find(x => (!f || x.flavour === f));
+  if (r) return r;
+  r = rows.find(x => (!a || x.age === a));
+  return r || current.value;
+});
+
+const images = computed(() => {
+  const list: string[] = [];
+  const thumb = selectedVariant.value?.thumbnail_url || current.value?.thumbnail_url || undefined;
+  if (thumb) list.push(thumb);
+  return list.length ? list : ["/images/placeholder.svg"];
+});
+
+const product = computed(() => {
+  const cur = current.value;
+  const sel = selectedVariant.value || cur;
+  const price = Number(sel?.retail_price ?? cur?.retail_price ?? 0) || 0;
+  const rating = Number(sel?.default_rating ?? cur?.default_rating ?? 0) || 0;
+  return {
+    id: String(sel?.id ?? id),
+    name: String(cur?.name || "Product"),
+    brand: cur?.brand || undefined,
+    price,
+    rating,
+    thumbnail: sel?.thumbnail_url || undefined,
+    images: images.value,
+    compareAt: undefined as number | undefined,
+    discount: 0,
+    variants: variantGroups.value,
+  } as {
+    id: string;
+    name: string;
+    brand?: string;
+    price: number;
+    rating: number;
+    thumbnail?: string;
+    images?: string[];
+    compareAt?: number;
+    discount?: number;
+    variants?: VariantGroup[];
+  };
+});
+
+const onInitApi = (api: UnwrapRefCarouselApi) => {
+  if (!api) return;
   carouselApiRef.value = api;
   activeIndex.value = api.selectedScrollSnap();
   api.on("select", () => {
@@ -185,19 +225,34 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
   });
 };
 
-
-
-
+onMounted(() => {
+  const channel = supabase
+    .channel("public:products-detail")
+    .on("postgres_changes", { event: "*", schema: "public", table: "products", filter: `id=eq.${data.value?.baseId}` }, () => refresh())
+    .on("postgres_changes", { event: "*", schema: "public", table: "products", filter: `base_product_id=eq.${data.value?.baseId}` }, () => refresh())
+    .subscribe();
+  onUnmounted(() => {
+    supabase.removeChannel(channel);
+  });
+});
 
 const reviews = ref([
   { author: "Jane Doe", rating: 5, comment: "My dog loves it!" },
   { author: "Michael Chen", rating: 4, comment: "Great quality, fair price." },
 ]);
-definePageMeta({ layout: "default" });
+
+const user = useSupabaseUser()
+
+const { data: _data_test } = await supabase.auth.getSession()
 </script>
 
 <template>
   <div class="container mx-auto px-4 py-6 md:py-8 bg-white">
+    {{ user?.id }}
+    <Alert v-if="error" variant="destructive" class="mb-4">
+      <AlertTitle>Error</AlertTitle>
+      <AlertDescription>{{ (error as any)?.message || 'Failed to load product' }}</AlertDescription>
+    </Alert>
     <!-- Desktop breadcrumbs -->
     <div class="hidden md:block mb-4">
       <Breadcrumb>
@@ -217,7 +272,19 @@ definePageMeta({ layout: "default" });
       </Breadcrumb>
     </div>
 
-    <div class="grid lg:grid-cols-2 gap-8">
+    <div v-if="pending" class="grid lg:grid-cols-2 gap-8">
+      <div class="rounded-2xl p-4 md:p-6">
+        <Skeleton class="h-80 md:h-[70vh] w-full rounded-2xl" />
+      </div>
+      <div class="space-y-3">
+        <Skeleton class="h-8 w-2/3" />
+        <Skeleton class="h-6 w-1/3" />
+        <Skeleton class="h-10 w-1/2" />
+        <Skeleton class="h-24 w-full" />
+      </div>
+    </div>
+
+    <div v-else class="grid lg:grid-cols-2 gap-8">
       <div class="rounded-2xl p-4 md:p-6">
         <Carousel
           class="w-full"
@@ -292,20 +359,20 @@ definePageMeta({ layout: "default" });
 
         </div>
 
-        <div v-if="flavorGroup?.options?.length" class="mt-6">
-          <h3 class="font-semibold mb-2 text-foreground">Flavor</h3>
+        <div v-if="flavourGroup?.options?.length" class="mt-6">
+          <h3 class="font-semibold mb-2 text-foreground">Flavour</h3>
           <div class="flex flex-wrap gap-2">
             <Button
-              v-for="opt in flavorGroup!.options"
+              v-for="opt in flavourGroup!.options"
               :key="opt.id"
               variant="outline"
               :class="
-                selectedFlavor?.id === opt.id
+                selectedFlavour?.id === opt.id
                   ? 'border-accent text-foreground'
                   : 'border-muted-foreground text-muted-foreground'
               "
               class="rounded-md px-4 py-2"
-              @click="selectedFlavor = opt"
+              @click="selectedFlavour = opt"
             >
               {{ opt.label ?? opt.value }}
             </Button>
@@ -373,7 +440,7 @@ definePageMeta({ layout: "default" });
           </div>
 
           <div class="flex-1">
-            <AddToCartButton :product-id="id" />
+            <AddToCartButton :product-id="product.id" :quantity="qty" />
           </div>
         </div>
 

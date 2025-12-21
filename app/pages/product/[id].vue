@@ -266,7 +266,6 @@ const { data: _data_test } = await supabase.auth.getSession()
 
 <template>
   <div class="container mx-auto px-4 py-6 md:py-8 bg-white">
-    {{ user?.id }}
     <Alert v-if="error" variant="destructive" class="mb-4">
       <AlertTitle>Error</AlertTitle>
       <AlertDescription>{{ (error as any)?.message || 'Failed to load product' }}</AlertDescription>

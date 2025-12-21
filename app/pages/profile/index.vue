@@ -193,6 +193,7 @@ const logout = async () => {
     <PageHeader :title="'Profile'" :items="breadcrumbs" />
     <div class="space-y-6">
       <div class="flex items-center justify-between">
+        <div></div>
         <Button variant="outline" class="text-red-600 border-red-300" :disabled="loggingOut" @click="logout">
             <Icon name="lucide:log-out" />
             Logout

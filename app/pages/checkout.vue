@@ -64,6 +64,32 @@ const total = computed(() => Math.round((subtotal.value + shipping.value + tax.v
 
 const { create, creating } = useCheckoutOrder()
 
+interface PayTabsCreateResponse {
+  redirect_url?: string
+  tran_ref?: string
+  payment_result?: {
+    response_status?: string
+  }
+}
+
+const pay = async (orderId: string) => {
+  const res = await $fetch<PayTabsCreateResponse>('/api/paytabs/create', {
+    method: 'POST',
+    body: { orderId },
+  })
+  if (res.redirect_url) {
+    window.location.href = res.redirect_url
+    return
+  }
+  if (res.payment_result?.response_status === 'A') {
+    toast.success('Payment authorized')
+    navigateTo('/orders/success')
+  } else {
+    toast.error('Payment failed')
+    navigateTo('/orders/failed')
+  }
+}
+
 const placeOrder = async () => {
   if (!user.value) {
     toast.error('Please sign in')
@@ -79,8 +105,8 @@ const placeOrder = async () => {
   }
   try {
     const orderId = await create(selectedAddressId.value)
-    toast.success('Order placed')
-    navigateTo('/profile')
+    toast.success('Order created')
+    await pay(orderId)
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Order failed'
     toast.error(msg)
@@ -211,4 +237,3 @@ const placeOrder = async () => {
     </div>
   </div>
 </template>
-

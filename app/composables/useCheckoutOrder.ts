@@ -7,7 +7,7 @@ type PaymentStatus = 'unpaid' | 'paid' | 'refunded' | 'failed'
 
 interface Totals {
   subtotal_amount: number
-  shipping_amount: number
+  shipping_fee: number
   tax_amount: number
   total_amount: number
 }
@@ -68,7 +68,7 @@ export const useCheckoutOrder = () => {
         status: 'pending',
         payment_status: 'unpaid',
         subtotal_amount: round2(subtotal),
-        shipping_amount: round2(shipping),
+        shipping_fee: round2(shipping),
         tax_amount: round2(tax),
         total_amount: round2(total),
         shipping_address: {

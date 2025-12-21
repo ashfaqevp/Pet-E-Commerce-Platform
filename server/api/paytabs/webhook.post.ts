@@ -1,4 +1,5 @@
 import crypto from 'crypto'
+import { serverSupabaseClient } from '#supabase/server'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -26,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
   // Payment success
   if (body.respStatus === 'A') {
-    const supabase = useSupabaseServerClient(event)
+    const supabase = await serverSupabaseClient(event)
 
     await supabase
       .from('orders')
@@ -34,7 +35,7 @@ export default defineEventHandler(async (event) => {
         payment_status: 'paid',
         status: 'confirmed',
         paid_at: new Date().toISOString(),
-      })
+      } as unknown as never)
       .eq('id', body.cartId)
   }
 

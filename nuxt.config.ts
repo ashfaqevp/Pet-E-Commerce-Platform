@@ -26,6 +26,11 @@ export default defineNuxtConfig({
       razorpayKeyId: process.env.RAZORPAY_KEY_ID,
       supabaseFunctionUrl: process.env.SUPABASE_FUNCTION_URL,
     },
+    paytabsBaseUrl: process.env.PAYTABS_BASE_URL || 'https://secure-global.paytabs.com',
+    paytabsServerKey: process.env.PAYTABS_SERVER_KEY,
+    paytabsProfileId: process.env.PAYTABS_PROFILE_ID,
+    paytabsCallbackUrl: process.env.PAYTABS_CALLBACK_URL,
+    paytabsReturnUrl: process.env.PAYTABS_RETURN_URL,
   },
 
   veeValidate: {

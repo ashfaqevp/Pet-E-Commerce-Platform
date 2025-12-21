@@ -1,8 +1,10 @@
+import { serverSupabaseClient } from '#supabase/server'
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { orderId } = body
 
-  const supabase = useSupabaseServerClient(event)
+  const supabase = await serverSupabaseClient(event)
   const config = useRuntimeConfig()
 
   // 1. Load order
@@ -17,14 +19,16 @@ export default defineEventHandler(async (event) => {
   }
 
   // 2. Create PayTabs request
+  const row = order as unknown as { id: string; total_amount: number }
+
   const payload = {
     profile_id: Number(config.paytabsProfileId),
     tran_type: 'sale',
     tran_class: 'ecom',
-    cart_id: order.id,
-    cart_description: `Order ${order.id}`,
+    cart_id: row.id,
+    cart_description: `Order ${row.id}`,
     cart_currency: 'OMR',
-    cart_amount: Number(order.total),
+    cart_amount: Number(row.total_amount),
     callback: config.paytabsCallbackUrl,
     return: config.paytabsReturnUrl,
   }
@@ -42,8 +46,20 @@ export default defineEventHandler(async (event) => {
   if ((res as any).tran_ref) {
     await supabase
       .from('orders')
-      .update({ tran_ref: (res as any).tran_ref })
-      .eq('id', order.id)
+      .update({ tran_ref: (res as any).tran_ref } as unknown as never)
+      .eq('id', row.id)
+  }
+
+  // 4. Immediate success handling
+  if ((res as any).payment_result?.response_status === 'A') {
+    await supabase
+      .from('orders')
+      .update({
+        payment_status: 'paid',
+        status: 'confirmed',
+        paid_at: new Date().toISOString(),
+      } as unknown as never)
+      .eq('id', row.id)
   }
 
   return res

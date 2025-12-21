@@ -12,7 +12,6 @@ export interface CartItemRow {
 export interface ProductRow {
   id: string
   name: string
-  brand?: string | null
   thumbnail_url?: string | null
   retail_price?: number | null
   default_rating?: number | null
@@ -72,7 +71,7 @@ export const useCart = () => {
       const ids = items.map(i => i.product_id)
       const { data: products, error } = await supabase
         .from('products')
-        .select('id,name,brand,thumbnail_url,retail_price,default_rating,base_product_id')
+        .select('id,name,thumbnail_url,retail_price,default_rating,base_product_id')
         .in('id', ids)
       if (error) throw error
       const map = new Map<string, ProductRow>()
@@ -86,7 +85,7 @@ export const useCart = () => {
     const ids = rows.map(r => r.product_id)
     const { data: products, error } = await supabase
       .from('products')
-      .select('id,name,brand,thumbnail_url,retail_price,default_rating,base_product_id')
+      .select('id,name,thumbnail_url,retail_price,default_rating,base_product_id')
       .in('id', ids)
     if (error) throw error
     const map = new Map<string, ProductRow>()
@@ -123,7 +122,7 @@ const addToCart = async ({
       {
         product_id: productId,
         quantity: qty,
-      },
+      } as unknown as never,
       {
         onConflict: 'user_id,product_id',
       }
@@ -173,7 +172,7 @@ const syncGuestToServer = async () => {
         {
           product_id: i.product_id,
           quantity: i.quantity ?? 1,
-        } as any,
+        } as unknown as never,
         {
           onConflict: 'user_id,product_id',
         }

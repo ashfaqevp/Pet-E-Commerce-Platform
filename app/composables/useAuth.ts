@@ -15,6 +15,12 @@ export const useAuth = () => {
     })
 }
 
+  const loginWithEmailPassword = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+    return data.user ?? null
+  }
+
   const logout = async () => {
     await supabase.auth.signOut()
   }
@@ -22,6 +28,7 @@ export const useAuth = () => {
   return {
     user,
     loginWithGoogle,
+    loginWithEmailPassword,
     logout,
   }
 }

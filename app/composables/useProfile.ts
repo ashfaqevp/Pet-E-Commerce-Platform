@@ -12,26 +12,31 @@ export const useProfile = () => {
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
 
-  const requireAuth = () => {
-    if (!user.value) throw new Error('LOGIN_REQUIRED')
+  const ensureUserId = async (): Promise<string> => {
+    if (user.value?.id) return user.value.id
+    const { data, error } = await supabase.auth.getSession()
+    if (error) throw error
+    const id = data.session?.user?.id
+    if (!id) throw new Error('LOGIN_REQUIRED')
+    return id
   }
 
   const getProfile = async (): Promise<ProfileRow | null> => {
-    requireAuth()
+    const userId = await ensureUserId()
     const { data, error } = await supabase
       .from('profiles')
       .select('id,phone,role,created_at,updated_at')
-      .eq('id', user.value!.id)
+      .eq('id', userId)
       .maybeSingle()
     if (error) throw error
     return (data ?? null) as unknown as ProfileRow | null
   }
 
   const updatePhone = async (phone: string): Promise<void> => {
-    requireAuth()
+    const userId = await ensureUserId()
     const { error } = await supabase
       .from('profiles')
-      .upsert({ id: user.value!.id, phone } as unknown as never)
+      .upsert({ id: userId, phone } as unknown as never)
     if (error) throw error
   }
 

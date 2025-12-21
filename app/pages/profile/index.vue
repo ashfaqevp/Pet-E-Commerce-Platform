@@ -176,7 +176,6 @@ const logout = async () => {
     loggingOut.value = true
     await supabase.auth.signOut()
     useAuthStore().showAuthDialog = false
-    useAuthStore().showPhoneDialog = false
     navigateTo('/')
   } finally {
     loggingOut.value = false

@@ -348,7 +348,7 @@ const logout = async () => {
               </div>
               <div class="flex items-center gap-3">
                 <Badge variant="outline">{{ o.status }}</Badge>
-                <p class="font-medium">${{ o.total_amount.toFixed(2) }}</p>
+                <p class="font-medium">${{ o.total.toFixed(2) }}</p>
                 <Button variant="outline" @click="navigateTo(`/orders/${o.id}`)">View / Track</Button>
               </div>
             </div>

@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // 2. Create PayTabs request
-  const row = order as unknown as { id: string; total_amount: number }
+  const row = order as unknown as { id: string; total: number }
 
   const payload = {
     profile_id: Number(config.paytabsProfileId),
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
     cart_id: row.id,
     cart_description: `Order ${row.id}`,
     cart_currency: 'OMR',
-    cart_amount: Number(row.total_amount),
+    cart_amount: Number(row.total),
     callback: config.paytabsCallbackUrl,
     return: config.paytabsReturnUrl,
   }

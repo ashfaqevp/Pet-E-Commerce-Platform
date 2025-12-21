@@ -12,13 +12,13 @@ type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancell
 interface AdminOrder {
   id: string
   user_id?: string | null
-  total_amount: number | null
+  total: number | null
   status: OrderStatus
   created_at: string
 }
 
 const status = ref<OrderStatus | 'all'>('all')
-const sortBy = ref<'created_at' | 'total_amount'>('created_at')
+const sortBy = ref<'created_at' | 'total'>('created_at')
 const ascending = ref(false)
 const page = ref(1)
 const pageSize = ref(10)
@@ -35,7 +35,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   'admin-orders',
   async () => {
     const supabase = useSupabaseClient()
-    let q = supabase.from('orders').select('id,total_amount,status,created_at,user_id', { count: 'exact' })
+    let q = supabase.from('orders').select('id,total,status,created_at,user_id', { count: 'exact' })
     if (params.value.status) q = q.eq('status', params.value.status)
     q = q.order(params.value.sortBy, { ascending: params.value.ascending })
     const from = (params.value.page - 1) * params.value.pageSize
@@ -43,10 +43,10 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
     q = q.range(from, to)
     const { data, error, count } = await q
     if (error) throw error
-    const rows = ((data || []) as unknown as Array<{ id: string; total_amount: number | null; status: string | null; created_at: string | Date; user_id?: string | null }>)
+    const rows = ((data || []) as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date; user_id?: string | null }>)
       .map((r) => ({
         id: String(r.id),
-        total_amount: r.total_amount ?? 0,
+        total: r.total ?? 0,
         status: (r.status || 'pending') as OrderStatus,
         created_at: typeof r.created_at === 'string' ? r.created_at : new Date(r.created_at).toISOString(),
         user_id: r.user_id || null,
@@ -127,7 +127,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem as="button" @click="sortBy = 'created_at'; ascending = false">Newest</DropdownMenuItem>
-            <DropdownMenuItem as="button" @click="sortBy = 'total_amount'; ascending = false">Amount</DropdownMenuItem>
+            <DropdownMenuItem as="button" @click="sortBy = 'total'; ascending = false">Amount</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -173,7 +173,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
               </TableCell>
               <TableCell>{{ formatDate(o.created_at) }}</TableCell>
               <TableCell>{{ o.user_id || '—' }}</TableCell>
-              <TableCell class="text-right">{{ formatCurrency(o.total_amount) }}</TableCell>
+              <TableCell class="text-right">{{ formatCurrency(o.total) }}</TableCell>
               <TableCell>
                 <Badge :variant="o.status === 'completed' || o.status === 'delivered' ? 'default' : o.status === 'cancelled' || o.status === 'returned' ? 'destructive' : 'secondary'">
                   {{ o.status }}

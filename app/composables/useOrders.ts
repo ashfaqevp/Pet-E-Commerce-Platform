@@ -5,7 +5,7 @@ export type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | '
 export interface OrderRow {
   id: string
   user_id: string
-  total_amount: number
+  total: number
   status: OrderStatus
   created_at: string
 }
@@ -22,7 +22,7 @@ export const useOrders = () => {
     requireAuth()
     const { data, error } = await supabase
       .from('orders')
-      .select('id,user_id,total_amount,status,created_at')
+      .select('id,user_id,total,status,created_at')
       .eq('user_id', user.value!.id)
       .order('created_at', { ascending: false })
       .limit(limit)

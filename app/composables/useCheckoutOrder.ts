@@ -6,10 +6,10 @@ import { useAddresses, type AddressRow } from '@/composables/useAddresses'
 type PaymentStatus = 'unpaid' | 'paid' | 'refunded' | 'failed'
 
 interface Totals {
-  subtotal_amount: number
+  subtotal: number
   shipping_fee: number
-  tax_amount: number
-  total_amount: number
+  tax: number
+  total: number
 }
 
 interface ShippingAddressSnapshot {
@@ -67,10 +67,10 @@ export const useCheckoutOrder = () => {
         user_id: user.value.id,
         status: 'pending',
         payment_status: 'unpaid',
-        subtotal_amount: round2(subtotal),
+        subtotal: round2(subtotal),
         shipping_fee: round2(shipping),
-        tax_amount: round2(tax),
-        total_amount: round2(total),
+        tax: round2(tax),
+        total: round2(total),
         shipping_address: {
           full_name: addr.full_name,
           phone: addr.phone,
@@ -109,4 +109,3 @@ export const useCheckoutOrder = () => {
 
   return { create, creating }
 }
-

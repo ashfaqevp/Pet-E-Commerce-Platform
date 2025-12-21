@@ -10,7 +10,7 @@ type OrderStatus = 'pending' | 'shipped' | 'delivered' | 'cancelled' | 'returned
 interface OrderRow {
   id: string
   customer_email?: string | null
-  total_amount: number
+  total: number
   status: OrderStatus
   created_at: string
 }
@@ -23,7 +23,7 @@ const { data: metrics, pending: metricsPending, error: metricsError, refresh: re
     const productsCountReq = supabase.from('products').select('*', { count: 'exact', head: true })
     const ordersCountReq = supabase.from('orders').select('*', { count: 'exact', head: true })
     const customersCountReq = supabase.from('user_profiles').select('*', { count: 'exact', head: true })
-    const completedSalesReq = supabase.from('orders').select('total_amount').eq('status', 'completed')
+    const completedSalesReq = supabase.from('orders').select('total').eq('status', 'completed')
 
     const [productsCountRes, ordersCountRes, customersCountRes, completedSalesRes] = await Promise.all([
       productsCountReq,
@@ -37,8 +37,8 @@ const { data: metrics, pending: metricsPending, error: metricsError, refresh: re
     if (customersCountRes.error) throw customersCountRes.error
     if (completedSalesRes.error) throw completedSalesRes.error
 
-    const completed = (completedSalesRes.data as unknown as Array<{ total_amount: number | null }> | null) || []
-    const totalSales = completed.reduce((sum, o) => sum + Number(o.total_amount || 0), 0)
+    const completed = (completedSalesRes.data as unknown as Array<{ total: number | null }> | null) || []
+    const totalSales = completed.reduce((sum, o) => sum + Number(o.total || 0), 0)
 
     return {
       totalSales,
@@ -56,14 +56,14 @@ const { data: recentOrders, pending: ordersPending, error: ordersError, refresh:
     const supabase = useSupabaseClient()
     const { data, error } = await supabase
       .from('orders')
-      .select('id,total_amount,status,created_at,user_id')
+      .select('id,total,status,created_at,user_id')
       .order('created_at', { ascending: false })
       .limit(10)
     if (error) throw error
-    const rows = (data as unknown as Array<{ id: string; total_amount: number | null; status: string | null; created_at: string | Date }> | null) || []
+    const rows = (data as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date }> | null) || []
     return rows.map((row) => ({
       id: String(row.id),
-      total_amount: Number(row.total_amount || 0),
+      total: Number(row.total || 0),
       status: (row.status || 'pending') as OrderStatus,
       created_at: typeof row.created_at === 'string' ? row.created_at : new Date(row.created_at).toISOString(),
     })) as OrderRow[]
@@ -175,7 +175,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
                   <NuxtLink :to="`/admin/orders/${row.id}`" class="text-foreground underline">#{{ row.id }}</NuxtLink>
                 </TableCell>
                 <TableCell>{{ formatDate(row.created_at) }}</TableCell>
-                <TableCell class="text-right">{{ formatCurrency(row.total_amount) }}</TableCell>
+                <TableCell class="text-right">{{ formatCurrency(row.total) }}</TableCell>
                 <TableCell>
                   <Badge
                     :variant="row.status === 'completed' || row.status === 'delivered' ? 'default' : row.status === 'cancelled' || row.status === 'returned' ? 'destructive' : 'secondary'"

@@ -9,7 +9,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     .from('profiles')
     .select('role')
     .eq('id', user.id)
-    .single()
+    .single<{ role: string | null }>()
 
   const isAdmin = !error && profile?.role === 'admin'
   if (!isAdmin) {

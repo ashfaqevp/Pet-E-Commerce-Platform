@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import Logo from "@/components/common/Logo.vue";
+import { toast } from 'vue-sonner'
 
 interface MenuItem {
   label: string
@@ -39,10 +40,57 @@ const toggleMobile = () => {
   mobileOpen.value = !mobileOpen.value
 }
 
-const supabase = useSupabaseClient()
-const logout = async () => {
-  await supabase.auth.signOut()
-  navigateTo('/login')
+const { data: sessionData } = await useLazyAsyncData(
+  'admin-layout-session',
+  async () => {
+    const supabase = useSupabaseClient()
+    const { data, error } = await supabase.auth.getSession()
+    if (error) throw error
+    return data.session || null
+  },
+  { server: true }
+)
+const user = computed(() => sessionData.value?.user || null)
+const meta = computed(() => (user.value?.user_metadata as Record<string, unknown>) || {})
+const displayName = computed(() => (meta.value.full_name as string | undefined) || (user.value?.email || 'Admin'))
+const avatarUrl = computed(() => (meta.value.avatar_url as string | undefined) || (meta.value.picture as string | undefined) || '/favicon.ico')
+const initials = computed(() => {
+  const name = ((meta.value.full_name as string | undefined) || (user.value?.email || 'BH'))
+  const parts = name.split(' ')
+  const letters = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : name.slice(0, 2)
+  return letters.toUpperCase()
+})
+
+const { data: profile } = await useLazyAsyncData(
+  'admin-layout-role',
+  async () => {
+    const supabase = useSupabaseClient()
+    if (!user.value?.id) return null
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.value.id)
+      .single<{ role: string | null }>()
+    if (error) throw error
+    return data
+  },
+  { server: true }
+)
+const role = computed(() => profile.value?.role || null)
+
+const confirmLogoutOpen = ref(false)
+const performLogout = async () => {
+  const supabase = useSupabaseClient()
+  try {
+    await supabase.auth.signOut()
+    toast.success('Signed out')
+    navigateTo('/admin/login')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Sign out failed'
+    toast.error(msg)
+  } finally {
+    confirmLogoutOpen.value = false
+  }
 }
 
 const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.meta.title as string) : '')
@@ -146,18 +194,23 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
                 <DropdownMenuTrigger as-child>
                   <Button variant="ghost" class="gap-2">
                     <Avatar class="h-6 w-6">
-                      <AvatarImage src="/favicon.ico" />
-                      <AvatarFallback>BH</AvatarFallback>
+                      <AvatarImage :src="avatarUrl" />
+                      <AvatarFallback>{{ initials }}</AvatarFallback>
                     </Avatar>
-                    Admin
+                    {{ displayName }}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>{{ displayName }}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem v-if="role" disabled>
+                    <Badge variant="outline" class="border-[#0f766e] text-[#0f766e]">{{ role }}</Badge>
+                  </DropdownMenuItem>
                   <DropdownMenuItem as="button" @click="navigateTo('/admin/settings')">
                     <Icon name="lucide:settings" class="h-4 w-4 mr-2" />Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem as="button" @click="logout">
+                  <DropdownMenuItem as="button" @click="confirmLogoutOpen = true">
                     <Icon name="lucide:log-out" class="h-4 w-4 mr-2" />Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -169,6 +222,18 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
         <main class="p-4 md:p-6">
           <slot />
         </main>
+        <AlertDialog :open="confirmLogoutOpen" @update:open="(v) => confirmLogoutOpen = v">
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Sign out?</AlertDialogTitle>
+              <AlertDialogDescription />
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction class="bg-secondary text-white" @click="performLogout">Confirm</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </SidebarInset>
   </SidebarProvider>

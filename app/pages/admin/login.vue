@@ -46,7 +46,7 @@ const onSubmit = handleSubmit(async (values) => {
       .from('profiles')
       .select('role')
       .eq('id', user.id)
-      .single()
+      .single<{ role: string | null }>()
 
     if (error || profile?.role !== 'admin') {
       toast.error('Admin access required')

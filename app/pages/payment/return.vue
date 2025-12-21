@@ -25,10 +25,12 @@ const { data: order } = await supabase
   .eq('id', orderId)
   .single()
 
-if (order?.payment_status === 'paid') {
+type PaymentStatus = 'unpaid' | 'paid' | 'refunded' | 'failed'
+const paid = ((order as { payment_status?: PaymentStatus } | null)?.payment_status) === 'paid'
+
+if (paid) {
   navigateTo('/orders/success')
 } else {
   navigateTo('/orders/failed')
 }
 </script>
-

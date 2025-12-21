@@ -3,25 +3,30 @@ import { serverSupabaseClient } from '#supabase/server'
 import { readRawBody } from 'h3'
 
 export default defineEventHandler(async (event) => {
+
+  console.log('PayTabs webhook callback received')
   const rawBody = await readRawBody(event)
 
   if (!rawBody) {
     throw createError({ statusCode: 400, message: 'Empty callback body' })
   }
 
-  // PayTabs sends form-urlencoded
-  const body = Object.fromEntries(new URLSearchParams(rawBody.toString()))
+  const form = Object.fromEntries(new URLSearchParams(rawBody.toString()))
 
   const config = useRuntimeConfig()
 
-  const receivedSignature = body.signature
-  delete body.signature
+  const receivedSignature = form.signature
+  delete form.signature
+
+  const filtered = Object.fromEntries(
+    Object.entries(form).filter(([, v]) => typeof v === 'string' && v.trim().length > 0)
+  ) as Record<string, string>
 
   // Sort fields alphabetically
-  const sorted = Object.keys(body)
+  const sorted = Object.keys(filtered)
     .sort()
     .reduce((acc, k) => {
-      acc[k] = body[k]
+      acc[k] = filtered[k] as string
       return acc
     }, {} as Record<string, string>)
 
@@ -32,33 +37,33 @@ export default defineEventHandler(async (event) => {
     .update(query)
     .digest('hex')
 
-  if (expectedSignature !== receivedSignature) {
-    console.error('❌ Invalid PayTabs signature', { body })
+  if (!receivedSignature || expectedSignature !== receivedSignature) {
+    console.error('Invalid PayTabs signature', { receivedSignature, expectedSignature, query })
     throw createError({ statusCode: 400, message: 'Invalid signature' })
   }
 
   // ✅ VERIFIED CALLBACK
   const supabase = await serverSupabaseClient(event)
 
-  if (body.respStatus === 'A') {
+  if (filtered.respStatus === 'A') {
     await supabase
       .from('orders')
       .update({
         payment_status: 'paid',
         status: 'confirmed',
-        tran_ref: body.tranRef,
+        tran_ref: filtered.tranRef,
         paid_at: new Date().toISOString(),
       } as unknown as never)
-      .eq('id', body.cartId)
+      .eq('id', filtered.cartId)
   } else {
     await supabase
       .from('orders')
       .update({
         payment_status: 'failed',
         status: 'payment_failed',
-        tran_ref: body.tranRef,
+        tran_ref: filtered.tranRef,
       } as unknown as never)
-      .eq('id', body.cartId)
+      .eq('id', filtered.cartId)
   }
 
   return { ok: true }

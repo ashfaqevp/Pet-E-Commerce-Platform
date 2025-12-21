@@ -1,5 +1,8 @@
 import { serverSupabaseClient } from '#supabase/server'
 
+interface OrderRow { id: string; total: number }
+interface CreateResponse { tran_ref?: string; redirect_url?: string }
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const { orderId } = body
@@ -7,16 +10,21 @@ export default defineEventHandler(async (event) => {
   const supabase = await serverSupabaseClient(event)
   const config = useRuntimeConfig()
 
+  if (!config.paytabsServerKey || !config.paytabsProfileId || !config.paytabsBaseUrl || !config.paytabsCallbackUrl || !config.paytabsReturnUrl) {
+    throw createError({ statusCode: 500, message: 'PayTabs configuration incomplete' })
+  }
+
   // 1. Load order
-  const { data: order, error } = await supabase
+  const { data: orderRow, error } = await supabase
     .from('orders')
-    .select('*')
+    .select('id,total')
     .eq('id', orderId)
     .single()
 
-  if (error || !order) {
+  if (error || !orderRow) {
     throw createError({ statusCode: 404, message: 'Order not found' })
   }
+  const order = orderRow as unknown as OrderRow
 
   // 2. Create PayTabs request
   const payload = {
@@ -33,7 +41,8 @@ export default defineEventHandler(async (event) => {
     return: config.paytabsReturnUrl,
   }
 
-  const res = await $fetch<any>(
+  console.log('Creating PayTabs payment', payload)
+  const res = await $fetch<CreateResponse>(
     `${config.paytabsBaseUrl}/payment/request`,
     {
       method: 'POST',
@@ -44,6 +53,8 @@ export default defineEventHandler(async (event) => {
       body: payload,
     }
   )
+
+  console.log('PayTabs request response', res)
 
   // 3. Save transaction reference ONLY
   if (res.tran_ref) {

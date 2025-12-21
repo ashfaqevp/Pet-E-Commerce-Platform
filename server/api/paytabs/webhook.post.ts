@@ -58,12 +58,68 @@ export default defineEventHandler(async (event) => {
 
   const tranRef = filtered.tranRef || filtered.tran_ref || (form as Record<string, string>)['tranRef'] || (form as Record<string, string>)['tran_ref']
   const cartId = filtered.cartId || filtered.cart_id || (form as Record<string, string>)['cartId'] || (form as Record<string, string>)['cart_id']
-  const respStatus = filtered.respStatus || filtered.resp_status || (form as Record<string, string>)['respStatus'] || (form as Record<string, string>)['resp_status']
+  // const respStatus = filtered.respStatus || filtered.resp_status || (form as Record<string, string>)['respStatus'] || (form as Record<string, string>)['resp_status']
+  let respStatus:
+  | string
+  | undefined =
+  filtered.respStatus ||
+  filtered.resp_status ||
+  (form as Record<string, string>)['respStatus'] ||
+  (form as Record<string, string>)['resp_status']
+  // console.info('[paytabs:webhook] payload', { cartId, tranRef, respStatus })
+
+  // if (!verified) {
+  //   throw createError({ statusCode: 400, message: 'Invalid signature' })
+  // }
+
   console.info('[paytabs:webhook] payload', { cartId, tranRef, respStatus })
 
-  if (!verified) {
+  // ---------------------------------------------
+  // 🔁 PAYTABS FALLBACK QUERY (CRITICAL FIX)
+  // ---------------------------------------------
+  if (!respStatus && tranRef) {
+    console.info('[paytabs:webhook] no respStatus, querying PayTabs')
+
+    const queryRes = await $fetch<{
+      payment_result?: { response_status?: string }
+      cart_id?: string
+      tran_ref?: string
+    }>(`${config.paytabsBaseUrl}/payment/query`, {
+      method: 'POST',
+      headers: {
+        Authorization: config.paytabsServerKey,
+        'Content-Type': 'application/json',
+      },
+      body: {
+        profile_id: Number(config.paytabsProfileId),
+        tran_ref: tranRef,
+      },
+    })
+
+    respStatus = queryRes?.payment_result?.response_status
+    console.info('[paytabs:webhook] queried status', respStatus)
+  }
+
+  // ---------------------------------------------
+  // 🔐 SIGNATURE CHECK (ONLY FOR FINAL STATUS)
+  // ---------------------------------------------
+  const isFinalStatus = respStatus === 'A' || respStatus === 'D' || respStatus === 'E' || respStatus === 'C'
+
+  if (isFinalStatus && !verified) {
+    console.error('[paytabs:webhook] invalid signature for final status')
     throw createError({ statusCode: 400, message: 'Invalid signature' })
   }
+
+
+  // const isFinalStatus = respStatus === 'A' || respStatus === 'D' || respStatus === 'E' || respStatus === 'C'
+  // console.info('[paytabs:webhook] is final status', respStatus, isFinalStatus)
+
+  // // Only require signature IF PayTabs claims final status
+  // if (isFinalStatus && !verified) {
+  //   console.error('[paytabs:webhook] invalid signature for final status')
+  //   throw createError({ statusCode: 400, message: 'Invalid signature' })
+  // }
+
 
   // Determine target order by id or tran_ref
   const targetKey = cartId ? 'id' : 'tran_ref'

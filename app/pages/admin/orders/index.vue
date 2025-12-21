@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
+import { orderStatusStyle, paymentStatusStyle, canOrderTransition } from '@/utils'
 
 definePageMeta({
   layout: 'admin',
@@ -7,7 +8,8 @@ definePageMeta({
   title: 'Orders',
 })
 
-type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned' | 'completed'
+type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned' | 'completed' | 'confirmed' | 'awaiting_payment'
+type PaymentStatus = 'paid' | 'unpaid' | 'failed' | 'pending'
 
 interface AdminOrder {
   id: string
@@ -15,6 +17,7 @@ interface AdminOrder {
   total: number | null
   status: OrderStatus
   created_at: string
+  payment_status: PaymentStatus
 }
 
 const status = ref<OrderStatus | 'all'>('all')
@@ -35,7 +38,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   'admin-orders',
   async () => {
     const supabase = useSupabaseClient()
-    let q = supabase.from('orders').select('id,total,status,created_at,user_id', { count: 'exact' })
+    let q = supabase.from('orders').select('id,total,status,created_at,user_id,payment_status', { count: 'exact' })
     if (params.value.status) q = q.eq('status', params.value.status)
     q = q.order(params.value.sortBy, { ascending: params.value.ascending })
     const from = (params.value.page - 1) * params.value.pageSize
@@ -43,15 +46,38 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
     q = q.range(from, to)
     const { data, error, count } = await q
     if (error) throw error
-    const rows = ((data || []) as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date; user_id?: string | null }>)
+    const rows = ((data || []) as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date; user_id?: string | null; payment_status: string | null }>)
       .map((r) => ({
         id: String(r.id),
         total: r.total ?? 0,
         status: (r.status || 'pending') as OrderStatus,
         created_at: typeof r.created_at === 'string' ? r.created_at : new Date(r.created_at).toISOString(),
         user_id: r.user_id || null,
+        payment_status: ((r.payment_status || 'pending') as PaymentStatus),
       })) as AdminOrder[]
     return { rows, count: count ?? rows.length }
+  },
+  { server: true }
+)
+
+const { data: metrics, pending: metricsPending, error: metricsError, refresh: refreshMetrics } = await useLazyAsyncData(
+  'admin-orders-metrics',
+  async () => {
+    const supabase = useSupabaseClient()
+    const paidCountReq = supabase.from('orders').select('*', { count: 'exact', head: true }).eq('payment_status', 'paid')
+    const pendingCountReq = supabase.from('orders').select('*', { count: 'exact', head: true }).in('payment_status', ['pending', 'unpaid'])
+    const paidTotalsReq = supabase.from('orders').select('total').eq('payment_status', 'paid')
+    const [paidCountRes, pendingCountRes, paidTotalsRes] = await Promise.all([paidCountReq, pendingCountReq, paidTotalsReq])
+    if (paidCountRes.error) throw paidCountRes.error
+    if (pendingCountRes.error) throw pendingCountRes.error
+    if (paidTotalsRes.error) throw paidTotalsRes.error
+    const totals = (paidTotalsRes.data as unknown as Array<{ total: number | null }> | null) || []
+    const revenue = totals.reduce((sum, o) => sum + Number(o.total || 0), 0)
+    return {
+      paidCount: paidCountRes.count || 0,
+      pendingCount: pendingCountRes.count || 0,
+      revenue,
+    }
   },
   { server: true }
 )
@@ -66,6 +92,7 @@ onMounted(() => {
     .channel('public:orders')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
       refresh()
+      refreshMetrics()
     })
     .subscribe()
   onUnmounted(() => {
@@ -86,8 +113,18 @@ const openStatusChange = (id: string, s: OrderStatus) => {
 
 const confirmStatusChange = async () => {
   if (!editingId.value) return
+  const current = rows.value.find(r => r.id === editingId.value)
+  const check = canOrderTransition(current?.status, nextStatus.value, current?.payment_status)
+  if (!check.allowed) {
+    toast.error(check.reason || 'Status update blocked')
+    editingId.value = null
+    return
+  }
   const supabase = useSupabaseClient()
-  const { error: e } = await supabase.from('orders').update({ status: nextStatus.value } as unknown as never).eq('id', editingId.value)
+  const { error: e } = await supabase
+    .from('orders')
+    .update({ status: nextStatus.value, updated_at: new Date().toISOString() } as unknown as never)
+    .eq('id', editingId.value)
   if (e) {
     toast.error(e.message)
   } else {
@@ -95,6 +132,7 @@ const confirmStatusChange = async () => {
   }
   editingId.value = null
   refresh()
+  refreshMetrics()
 }
 
 const formatCurrency = (v: number | null | undefined) => formatOMR(Number(v || 0))
@@ -103,6 +141,35 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
 
 <template>
   <div class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card class="bg-white rounded-sm">
+        <CardHeader>
+          <CardTitle class="text-sm">Paid Orders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton v-if="metricsPending" class="h-6 w-12" />
+          <p v-else class="text-2xl font-semibold">{{ metrics?.paidCount || 0 }}</p>
+        </CardContent>
+      </Card>
+      <Card class="bg-white rounded-sm">
+        <CardHeader>
+          <CardTitle class="text-sm">Revenue</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton v-if="metricsPending" class="h-6 w-24" />
+          <p v-else class="text-2xl font-semibold">{{ formatCurrency(metrics?.revenue || 0) }}</p>
+        </CardContent>
+      </Card>
+      <Card class="bg-white rounded-sm">
+        <CardHeader>
+          <CardTitle class="text-sm">Pending Payments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Skeleton v-if="metricsPending" class="h-6 w-12" />
+          <p v-else class="text-2xl font-semibold">{{ metrics?.pendingCount || 0 }}</p>
+        </CardContent>
+      </Card>
+    </div>
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
       <div class="flex items-center gap-2">
         <Select v-model="status">
@@ -147,6 +214,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
               <TableHead>User</TableHead>
               <TableHead class="text-right">Amount</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Payment</TableHead>
               <TableHead class="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -175,9 +243,10 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
               <TableCell>{{ o.user_id || '—' }}</TableCell>
               <TableCell class="text-right">{{ formatCurrency(o.total) }}</TableCell>
               <TableCell>
-                <Badge :variant="o.status === 'completed' || o.status === 'delivered' ? 'default' : o.status === 'cancelled' || o.status === 'returned' ? 'destructive' : 'secondary'">
-                  {{ o.status }}
-                </Badge>
+                <Badge :variant="orderStatusStyle(o.status).variant">{{ o.status }}</Badge>
+              </TableCell>
+              <TableCell>
+                <Badge :variant="paymentStatusStyle(o.payment_status).variant">{{ o.payment_status }}</Badge>
               </TableCell>
               <TableCell class="text-right">
                 <DropdownMenu>
@@ -187,21 +256,24 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem as="button" @click="openStatusChange(o.id, 'processing')">
+                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'processing', o.payment_status).allowed" @click="openStatusChange(o.id, 'processing')">
                       <Icon name="lucide:badge" class="h-4 w-4 mr-2" /> Processing
                     </DropdownMenuItem>
-                    <DropdownMenuItem as="button" @click="openStatusChange(o.id, 'shipped')">
+                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'shipped', o.payment_status).allowed" @click="openStatusChange(o.id, 'shipped')">
                       <Icon name="lucide:truck" class="h-4 w-4 mr-2" /> Shipped
                     </DropdownMenuItem>
-                    <DropdownMenuItem as="button" @click="openStatusChange(o.id, 'delivered')">
+                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'delivered', o.payment_status).allowed" @click="openStatusChange(o.id, 'delivered')">
                       <Icon name="lucide:package-check" class="h-4 w-4 mr-2" /> Delivered
                     </DropdownMenuItem>
-                    <DropdownMenuItem as="button" @click="openStatusChange(o.id, 'completed')">
+                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'completed', o.payment_status).allowed" @click="openStatusChange(o.id, 'completed')">
                       <Icon name="lucide:check-circle" class="h-4 w-4 mr-2" /> Completed
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem as="button" class="text-destructive" @click="openStatusChange(o.id, 'cancelled')">
+                    <DropdownMenuItem as="button" class="text-destructive" :disabled="!canOrderTransition(o.status, 'cancelled', o.payment_status).allowed" @click="openStatusChange(o.id, 'cancelled')">
                       <Icon name="lucide:x-circle" class="h-4 w-4 mr-2" /> Cancel
+                    </DropdownMenuItem>
+                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'returned', o.payment_status).allowed" @click="openStatusChange(o.id, 'returned')">
+                      <Icon name="lucide:undo-2" class="h-4 w-4 mr-2" /> Return
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

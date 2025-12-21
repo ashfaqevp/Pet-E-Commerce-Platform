@@ -73,3 +73,42 @@ export const paymentStatusStyle = (status: string | null | undefined): StatusSty
   }
   return { category, variant: STATUS_VARIANT[category] }
 }
+
+export type AdminOrderStatus =
+  | 'pending'
+  | 'processing'
+  | 'shipped'
+  | 'delivered'
+  | 'cancelled'
+  | 'returned'
+  | 'completed'
+  | 'confirmed'
+  | 'awaiting_payment'
+
+const ALLOWED_TRANSITIONS: Record<AdminOrderStatus, AdminOrderStatus[]> = {
+  pending: ['processing', 'cancelled'],
+  processing: ['shipped', 'cancelled'],
+  shipped: ['delivered', 'returned'],
+  delivered: ['completed', 'returned'],
+  cancelled: [],
+  returned: [],
+  completed: [],
+  confirmed: ['processing', 'cancelled'],
+  awaiting_payment: ['confirmed', 'cancelled'],
+}
+
+const REQUIRE_PAID: Set<AdminOrderStatus> = new Set(['shipped', 'delivered', 'completed'])
+
+export const canOrderTransition = (
+  from: string | null | undefined,
+  to: string,
+  payment_status: string | null | undefined,
+): { allowed: boolean; reason?: string } => {
+  const current = ((from || 'pending') as string).toLowerCase() as AdminOrderStatus
+  const target = (to as string).toLowerCase() as AdminOrderStatus
+  const allowedTargets = ALLOWED_TRANSITIONS[current] || []
+  if (!allowedTargets.includes(target)) return { allowed: false, reason: 'Not allowed from current status' }
+  const pay = ((payment_status || '').toLowerCase())
+  if (REQUIRE_PAID.has(target) && pay !== 'paid') return { allowed: false, reason: 'Payment required before shipping or completing' }
+  return { allowed: true }
+}

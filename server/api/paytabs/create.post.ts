@@ -27,6 +27,8 @@ export default defineEventHandler(async (event) => {
   const order = orderRow as unknown as OrderRow
 
   // 2. Create PayTabs request
+  const clean = (s: string | undefined) => (s || '').replace(/`/g, '').trim()
+
   const payload = {
     profile_id: Number(config.paytabsProfileId),
     tran_type: 'sale',
@@ -34,11 +36,11 @@ export default defineEventHandler(async (event) => {
 
     cart_id: order.id,
     cart_description: `Order ${order.id}`,
-    cart_currency: 'INR', // TODO: change OMR
+    cart_currency: 'INR',
     cart_amount: Number(order.total),
 
-    callback: config.paytabsCallbackUrl,
-    return: config.paytabsReturnUrl,
+    callback: clean(config.paytabsCallbackUrl),
+    return: clean(config.paytabsReturnUrl),
   }
 
   console.log('Creating PayTabs payment', payload)

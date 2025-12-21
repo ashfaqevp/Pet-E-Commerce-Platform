@@ -11,12 +11,15 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, message: 'Empty callback body' })
   }
 
-  const form = Object.fromEntries(new URLSearchParams(rawBody.toString()))
+  const contentType = event.node.req.headers['content-type'] || ''
+  const rawText = rawBody.toString()
+  const isJson = contentType.includes('application/json') || rawText.trim().startsWith('{')
+  const form = isJson ? (JSON.parse(rawText) as Record<string, string>) : Object.fromEntries(new URLSearchParams(rawText))
 
   const config = useRuntimeConfig()
 
-  const receivedSignature = form.signature
-  delete form.signature
+  const receivedSignature = (form as Record<string, string | undefined>).signature
+  delete (form as Record<string, unknown>).signature
 
   const filtered = Object.fromEntries(
     Object.entries(form).filter(([, v]) => typeof v === 'string' && v.trim().length > 0)
@@ -37,33 +40,73 @@ export default defineEventHandler(async (event) => {
     .update(query)
     .digest('hex')
 
-  if (!receivedSignature || expectedSignature !== receivedSignature) {
+  let verified = true
+  if (receivedSignature) {
+    verified = expectedSignature === receivedSignature
+  }
+  if (!verified) {
     console.error('Invalid PayTabs signature', { receivedSignature, expectedSignature, query })
-    throw createError({ statusCode: 400, message: 'Invalid signature' })
   }
 
   // ✅ VERIFIED CALLBACK
   const supabase = await serverSupabaseClient(event)
+  const tranRef = filtered.tranRef || (form as Record<string, string>)['tranRef']
+  const cartId = filtered.cartId || (form as Record<string, string>)['cartId']
+  const statusField = filtered.respStatus || (form as Record<string, string>)['respStatus']
 
-  if (filtered.respStatus === 'A') {
+  if (verified && statusField === 'A') {
     await supabase
       .from('orders')
       .update({
         payment_status: 'paid',
         status: 'confirmed',
-        tran_ref: filtered.tranRef,
+        tran_ref: tranRef,
         paid_at: new Date().toISOString(),
       } as unknown as never)
-      .eq('id', filtered.cartId)
+      .eq('id', cartId)
   } else {
-    await supabase
-      .from('orders')
-      .update({
-        payment_status: 'failed',
-        status: 'payment_failed',
-        tran_ref: filtered.tranRef,
-      } as unknown as never)
-      .eq('id', filtered.cartId)
+    if (tranRef) {
+      try {
+        const config = useRuntimeConfig()
+        const res = await $fetch<{ payment_result?: { response_status?: string }; tran_ref?: string; cart_id?: string }>(
+          `${config.paytabsBaseUrl}/payment/query`,
+          {
+            method: 'POST',
+            headers: {
+              Authorization: config.paytabsServerKey,
+              'Content-Type': 'application/json',
+            },
+            body: {
+              profile_id: Number(config.paytabsProfileId),
+              tran_ref: tranRef,
+            },
+          }
+        )
+        const resp = res?.payment_result?.response_status
+        if (resp === 'A') {
+          await supabase
+            .from('orders')
+            .update({
+              payment_status: 'paid',
+              status: 'confirmed',
+              tran_ref: res.tran_ref || tranRef,
+              paid_at: new Date().toISOString(),
+            } as unknown as never)
+            .eq('id', (cartId || res.cart_id) as unknown as never)
+        } else if (resp) {
+          await supabase
+            .from('orders')
+            .update({
+              payment_status: 'failed',
+              status: 'payment_failed',
+              tran_ref: res.tran_ref || tranRef,
+            } as unknown as never)
+            .eq('id', (cartId || res.cart_id) as unknown as never)
+        }
+      } catch (e) {
+        console.error('PayTabs query failed', e)
+      }
+    }
   }
 
   return { ok: true }

@@ -41,13 +41,25 @@ const { data, pending, error } = await useLazyAsyncData(
   { server: false }
 )
 
-if (error.value) {
-  navigateTo('/orders/failed')
-} else if (data.value?.status === 'paid') {
-  navigateTo('/orders/success')
-} else if (!pending.value) {
-  navigateTo('/orders/failed')
-}
+watchEffect(() => {
+  if (pending.value) return
+
+  const status = data.value?.status
+  console.info('[payment:return] final status', status)
+
+  if (status === 'paid') {
+    navigateTo('/orders/success')
+    return
+  }
+
+  if (status === 'failed') {
+    navigateTo('/orders/failed')
+    return
+  }
+
+  // still pending → stay on page
+})
+
 </script>
 
 <template>

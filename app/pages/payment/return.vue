@@ -22,7 +22,7 @@ const orderId = route.query.cartId as string
 const { data: order } = await supabase
   .from('orders')
   .select('payment_status')
-  .eq('id', orderId)P
+  .eq('id', orderId)
   .single()
 
 if (order?.payment_status === 'paid') {

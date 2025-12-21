@@ -3,8 +3,12 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
+import { toTypedSchema } from '@vee-validate/zod'
+import { useForm, useField } from 'vee-validate'
 import { useLazyAsyncData, useSupabaseClient, useSupabaseUser } from '#imports'
 import type { AddressInput } from '@/composables/useAddresses'
+import { useAddresses } from '@/composables/useAddresses'
 import { z } from 'zod'
 import { toast } from 'vue-sonner'
 
@@ -21,32 +25,50 @@ const emit = defineEmits<{
 
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
+const { createAddress, updateAddress } = useAddresses()
 
-const PHONE_SCHEMA = z.string().refine(v => /^\+968[927]\d{7}$/.test(v), 'Enter a valid Oman mobile number')
+const schema = toTypedSchema(
+  z.object({
+    full_name: z.string().min(1, 'Full name is required'),
+    phone: z.string().refine(v => /^\+968[927]\d{7}$/.test(v), 'Enter a valid Oman mobile number'),
+    address_line_1: z.string().min(3, 'Address line 1 is required'),
+    address_line_2: z.string().optional(),
+    city: z.string().min(2, 'City is required'),
+    state: z.string().min(2, 'State is required'),
+    postal_code: z.string().min(2, 'Postal code is required'),
+    is_default: z.boolean().optional(),
+  })
+)
 
-const Schema = z.object({
-  full_name: z.string().min(2, 'Full name is required'),
-  phone: PHONE_SCHEMA,
-  address_line_1: z.string().min(3, 'Address line 1 is required'),
-  address_line_2: z.string().optional(),
-  city: z.string().min(2, 'City is required'),
-  state: z.string().min(2, 'State is required'),
-  postal_code: z.string().min(2, 'Postal code is required'),
-  country: z.string().min(2, 'Country is required'),
-  is_default: z.boolean().optional(),
+const { handleSubmit, isSubmitting } = useForm({
+  validationSchema: schema,
+  initialValues: {
+    full_name: props.modelValue.full_name,
+    phone: props.modelValue.phone,
+    address_line_1: props.modelValue.address_line_1,
+    address_line_2: props.modelValue.address_line_2 ?? '',
+    city: props.modelValue.city,
+    state: props.modelValue.state,
+    postal_code: props.modelValue.postal_code,
+    is_default: !!props.modelValue.is_default,
+  },
 })
 
-const errors = ref<Record<keyof AddressInput | 'form', string | undefined>>({} as any)
-const submitting = ref(false)
+const { value: fullName, errorMessage: fullNameError, meta: fullNameMeta } = useField<string>('full_name')
+const { value: phone, errorMessage: phoneError, meta: phoneMeta } = useField<string>('phone')
+const { value: address1, errorMessage: address1Error, meta: address1Meta } = useField<string>('address_line_1')
+const { value: address2 } = useField<string | undefined>('address_line_2')
+const { value: city, errorMessage: cityError, meta: cityMeta } = useField<string>('city')
+const { value: state, errorMessage: stateError, meta: stateMeta } = useField<string>('state')
+const { value: postalCode, errorMessage: postalCodeError, meta: postalCodeMeta } = useField<string>('postal_code')
+const { value: isDefault } = useField<boolean | undefined>('is_default')
 const COUNTRY_CODE = '+968'
 const localNumber = ref('')
 const sanitize = (v: string) => v.replace(/[^0-9]/g, '').slice(0, 8)
-const isValidOmanNumber = (v: string) => /^[927]\d{7}$/.test(v)
 
-const onField = <K extends keyof AddressInput>(key: K, v: AddressInput[K]) => {
-  const next = { ...props.modelValue, [key]: v }
-  emit('update:modelValue', next)
-  errors.value[key] = undefined
+const onDefaultChecked = (v: boolean | 'indeterminate') => {
+  if (v === 'indeterminate') return
+  isDefault.value = !!v
 }
 
 const { data: defaultsData } = await useLazyAsyncData(
@@ -68,75 +90,66 @@ const { data: defaultsData } = await useLazyAsyncData(
 watchEffect(() => {
   const d = defaultsData.value
   if (!d) return
-  if (!props.modelValue.full_name && d.name) onField('full_name', d.name)
-  if (!props.modelValue.phone && d.phone) {
+  if (!fullName.value && d.name) fullName.value = d.name
+  if (!phone.value && d.phone) {
     const raw = d.phone.replace(/[^0-9]/g, '')
     const local = raw.startsWith('968') ? raw.slice(3) : raw
     localNumber.value = sanitize(local)
-    if (localNumber.value.length === 8) onField('phone', COUNTRY_CODE + localNumber.value)
+    if (localNumber.value.length === 8) phone.value = COUNTRY_CODE + localNumber.value
   } else {
-    const raw = (props.modelValue.phone || '').replace(/[^0-9]/g, '')
+    const raw = (phone.value || '').replace(/[^0-9]/g, '')
     const local = raw.startsWith('968') ? raw.slice(3) : raw
     localNumber.value = sanitize(local)
   }
 })
 
-const save = async () => {
-  const parsed = Schema.safeParse(props.modelValue)
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0]
-    if (issue) {
-      const path = (issue.path?.[0] as keyof AddressInput | undefined) || 'form'
-      errors.value[path] = issue.message
-    }
-    return
-  }
+watch(fullName, (v) => emit('update:modelValue', { ...props.modelValue, full_name: v }))
+watch(phone, (v) => emit('update:modelValue', { ...props.modelValue, phone: v }))
+watch(address1, (v) => emit('update:modelValue', { ...props.modelValue, address_line_1: v }))
+watch(address2, (v) => emit('update:modelValue', { ...props.modelValue, address_line_2: v ?? '' }))
+watch(city, (v) => emit('update:modelValue', { ...props.modelValue, city: v }))
+watch(state, (v) => emit('update:modelValue', { ...props.modelValue, state: v }))
+watch(postalCode, (v) => emit('update:modelValue', { ...props.modelValue, postal_code: v }))
+watch(isDefault, (v) => emit('update:modelValue', { ...props.modelValue, is_default: !!v }))
+
+const onSubmit = handleSubmit(async (values) => {
   if (!user.value) {
     toast.error('Please sign in')
     return
   }
   try {
-    submitting.value = true
-    const input = parsed.data
-    if (input.is_default) {
-      const { error: e1 } = await supabase
-        .from('addresses')
-        .update({ is_default: false } as unknown as never)
-        .eq('user_id', user.value.id)
-      if (e1) throw e1
+    const payload: AddressInput = {
+      full_name: values.full_name,
+      phone: values.phone,
+      address_line_1: values.address_line_1,
+      address_line_2: values.address_line_2 || '',
+      city: values.city,
+      state: values.state,
+      postal_code: values.postal_code,
+      country: 'Oman',
+      is_default: !!values.is_default,
     }
     if (props.addressId) {
-      const { error } = await supabase
-        .from('addresses')
-        .update({ ...input, is_default: !!input.is_default } as unknown as never)
-        .eq('id', props.addressId)
-        .eq('user_id', user.value.id)
-      if (error) throw error
+      await updateAddress(props.addressId, payload)
       toast.success('Address updated')
     } else {
-      const payload = { ...input, user_id: user.value.id, is_default: !!input.is_default }
-      const { error } = await supabase
-        .from('addresses')
-        .insert([payload as unknown as never])
-      if (error) throw error
+      await createAddress(payload)
       toast.success('Address added')
     }
     emit('save')
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Save failed'
     toast.error(msg)
-  } finally {
-    submitting.value = false
   }
-}
+})
 </script>
 
 <template>
   <div class="space-y-4">
     <div class="space-y-2">
       <Label class="text-sm">Full name</Label>
-      <Input :value="props.modelValue.full_name" placeholder="Full name" @input="onField('full_name', ($event.target as HTMLInputElement).value)" />
-      <p v-if="errors.full_name" class="text-xs text-red-600">{{ errors.full_name }}</p>
+      <Input v-model="fullName" placeholder="Full name" />
+      <p v-if="fullNameError && fullNameMeta.touched" class="text-xs text-red-600">{{ fullNameError }}</p>
     </div>
     <div class="space-y-2">
       <Label class="text-sm">Phone</Label>
@@ -148,54 +161,54 @@ const save = async () => {
           inputmode="numeric"
           autocomplete="tel-national"
           placeholder="91234567"
-          @input="(e: Event) => { const v = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '').slice(0, 8); localNumber = v; errors.phone = undefined; onField('phone', COUNTRY_CODE + v) }"
-          :aria-invalid="!!errors.phone"
+          @input="(e: Event) => { const v = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '').slice(0, 8); localNumber = v; phone = COUNTRY_CODE + v }"
+          :aria-invalid="!!phoneError"
         />
       </div>
-      <p v-if="errors.phone" class="text-xs text-red-600">{{ errors.phone }}</p>
+      <p v-if="phoneError && phoneMeta.touched" class="text-xs text-red-600">{{ phoneError }}</p>
     </div>
     <div class="space-y-2">
       <Label class="text-sm">Address line 1</Label>
-      <Textarea :value="props.modelValue.address_line_1" placeholder="Address line 1" @input="onField('address_line_1', ($event.target as HTMLTextAreaElement).value)" />
-      <p v-if="errors.address_line_1" class="text-xs text-red-600">{{ errors.address_line_1 }}</p>
+      <Textarea v-model="address1" placeholder="Address line 1" />
+      <p v-if="address1Error && address1Meta.touched" class="text-xs text-red-600">{{ address1Error }}</p>
     </div>
     <div class="space-y-2">
       <Label class="text-sm">Address line 2 (optional)</Label>
-      <Textarea :value="props.modelValue.address_line_2 || ''" placeholder="Address line 2 (optional)" @input="onField('address_line_2', ($event.target as HTMLTextAreaElement).value)" />
+      <Textarea v-model="address2" placeholder="Address line 2 (optional)" />
     </div>
     <div class="grid grid-cols-2 gap-3">
       <div class="space-y-2">
         <Label class="text-sm">City</Label>
-        <Input :value="props.modelValue.city" placeholder="City" @input="onField('city', ($event.target as HTMLInputElement).value)" />
-        <p v-if="errors.city" class="text-xs text-red-600">{{ errors.city }}</p>
+        <Input v-model="city" placeholder="City" />
+        <p v-if="cityError && cityMeta.touched" class="text-xs text-red-600">{{ cityError }}</p>
       </div>
       <div class="space-y-2">
         <Label class="text-sm">State</Label>
-        <Input :value="props.modelValue.state" placeholder="State" @input="onField('state', ($event.target as HTMLInputElement).value)" />
-        <p v-if="errors.state" class="text-xs text-red-600">{{ errors.state }}</p>
+        <Input v-model="state" placeholder="State" />
+        <p v-if="stateError && stateMeta.touched" class="text-xs text-red-600">{{ stateError }}</p>
       </div>
     </div>
       <div class="space-y-2">
         <Label class="text-sm">Postal code</Label>
-        <Input :value="props.modelValue.postal_code" placeholder="Postal code" @input="onField('postal_code', ($event.target as HTMLInputElement).value)" />
-        <p v-if="errors.postal_code" class="text-xs text-red-600">{{ errors.postal_code }}</p>
+        <Input v-model="postalCode" placeholder="Postal code" />
+        <p v-if="postalCodeError && postalCodeMeta.touched" class="text-xs text-red-600">{{ postalCodeError }}</p>
       </div>
       <!-- <div class="space-y-2">
         <Label class="text-sm">Country</Label>
         <Input :value="props.modelValue.country" placeholder="Country" @input="onField('country', ($event.target as HTMLInputElement).value)" />
         <p v-if="errors.country" class="text-xs text-red-600">{{ errors.country }}</p>
       </div> -->
-    <div class="flex items-center justify-between w-full">
+  <div class="flex items-center justify-between w-full">
       <div class="flex items-center gap-2 justify-end w-full">
-        <input id="is_default" type="checkbox" :checked="!!props.modelValue.is_default" class="rounded" @change="onField('is_default', ($event.target as HTMLInputElement).checked)" />
+        <Checkbox id="is_default" :checked="!!isDefault" @update:checked="onDefaultChecked" />
         <Label for="is_default" class="text-sm mt-1.5">Set as default</Label>
       </div>
     </div>
       <Button
         class="bg-secondary text-white hover:bg-secondary/90 w-full"
         size="lg"
-        :disabled="submitting || props.submitting"
-        @click="save"
+        :disabled="isSubmitting || props.submitting"
+        @click="onSubmit()"
       >
         Save
       </Button>

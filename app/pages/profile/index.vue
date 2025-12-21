@@ -114,8 +114,8 @@ const addressForm = ref<AddressInput>({
 const openAddAddress = () => {
   editingAddress.value = null
   addressForm.value = {
-    full_name: (user.value?.user_metadata as Record<string, unknown>)?.full_name as string || '',
-    phone: phoneInput.value || '',
+    full_name: '',
+    phone: '',
     address_line_1: '',
     address_line_2: '',
     city: '',
@@ -270,23 +270,55 @@ const logout = async () => {
           </div>
           <div v-else-if="addresses.length === 0" class="text-sm text-muted-foreground">No addresses saved.</div>
           <div v-else class="space-y-3">
-            <div v-for="a in addresses" :key="a.id" class="rounded-xl border p-4">
-              <div class="flex items-start justify-between gap-2">
-                <div>
+            <div v-for="a in addresses" :key="a.id" class="rounded-xl border p-4 md:p-5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="flex-1 space-y-1.5">
                   <div class="flex items-center gap-2">
                     <p class="font-medium">{{ a.full_name }}</p>
                     <Badge v-if="a.is_default" variant="outline">Default</Badge>
                   </div>
-                  <p class="text-sm text-muted-foreground">{{ a.phone }}</p>
-                  <p class="text-sm">{{ a.address_line_1 }}</p>
-                  <p v-if="a.address_line_2" class="text-sm">{{ a.address_line_2 }}</p>
-                  <p class="text-sm">{{ a.city }}, {{ a.state }} {{ a.postal_code }}</p>
-                  <p class="text-sm">{{ a.country }}</p>
+                  <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Icon name="lucide:phone" class="h-4 w-4" />
+                    <span>{{ formatOmanPhone(a.phone) }}</span>
+                  </div>
+                  <div class="text-sm">
+                    <p class="leading-tight">{{ a.address_line_1 }}</p>
+                    <p v-if="a.address_line_2" class="leading-tight">{{ a.address_line_2 }}</p>
+                    <p class="leading-tight">{{ a.city }}, {{ a.state }} {{ a.postal_code }}</p>
+                    <p class="leading-tight">{{ a.country }}</p>
+                  </div>
                 </div>
-                <div class="flex flex-col gap-2">
-                  <Button variant="outline" @click="openEditAddress(a)">Edit</Button>
-                  <Button variant="outline" @click="removeAddressClick(a.id)">Delete</Button>
-                  <Button v-if="!a.is_default" @click="setDefaultClick(a.id)">Make Default</Button>
+                <div class="flex items-center gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <Button variant="outline" size="icon-sm" aria-label="Edit" @click="openEditAddress(a)">
+                          <Icon name="lucide:pencil" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <Button variant="outline" size="icon-sm" class="text-destructive" aria-label="Delete" @click="removeAddressClick(a.id)">
+                          <Icon name="lucide:trash-2" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Delete</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider v-if="!a.is_default">
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <Button size="icon-sm" aria-label="Make default" @click="setDefaultClick(a.id)">
+                          <Icon name="lucide:star" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Make default</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </div>

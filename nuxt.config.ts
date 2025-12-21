@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  ssr: false,
 
   modules: [
     '@pinia/nuxt',
@@ -12,7 +13,9 @@ export default defineNuxtConfig({
   ],
 
   supabase: {
-    redirect: false, // This disables the default redirect
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY,
+    redirect: false,
   },
 
 

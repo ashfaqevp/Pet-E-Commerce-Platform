@@ -25,10 +25,6 @@ const user = useSupabaseUser()
 const { width } = useWindowSize()
 const isLg = computed(() => width.value >= 1024)
 
-watchEffect(() => {
-  if (!user.value) navigateTo('/')
-})
-
 const { getProfile } = useProfile()
 const { listAddresses, deleteAddress, setDefault } = useAddresses()
 const { listRecent } = useOrders()
@@ -59,6 +55,15 @@ const { data: ordersData, pending: ordersPending, error: ordersError } = await u
   },
   { server: true }
 )
+
+watch(user, async (u) => {
+  if (!u) {
+    useAuthStore().requireAuth()
+  } else {
+    await refreshProfile()
+    await refreshAddresses()
+  }
+}, { immediate: true })
 
 const profile = computed(() => profileData.value as ProfileRow | null)
 const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
@@ -161,6 +166,8 @@ const logout = async () => {
 
 <template>
   <div class="container mx-auto px-4 py-6">
+
+    
     <div class="space-y-6">
       <div class="flex items-center justify-between">
         <h1 class="text-2xl font-semibold">Profile</h1>

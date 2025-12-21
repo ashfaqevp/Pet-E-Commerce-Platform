@@ -69,8 +69,8 @@ const onSave = async () => {
     }
 
     const { error } = await supabase
-      .from<ProfileRow>('profiles')
-      .upsert(payload, { onConflict: 'id' })
+      .from('profiles')
+      .upsert({ id: user.value.id, phone: fullPhone } as unknown as never, { onConflict: 'id' })
 
     if (error) throw error
 

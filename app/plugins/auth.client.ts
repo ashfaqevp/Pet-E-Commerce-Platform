@@ -2,18 +2,18 @@ export default defineNuxtPlugin(async () => {
   const supabase = useSupabaseClient()
   const authStore = useAuthStore()
 
-  supabase.auth.onAuthStateChange(async (_event, session) => {
-    if (!session?.user) return
+  await supabase.auth.getSession()
 
-    const { data } = await supabase
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (!session?.user) return
+    if (!['INITIAL_SESSION', 'SIGNED_IN', 'USER_UPDATED', 'TOKEN_REFRESHED'].includes(event)) return
+    const { data, error } = await supabase
       .from('profiles')
       .select('phone')
       .eq('id', session.user.id)
       .single()
-
+    if (error) return
     const profile = data as unknown as { phone?: string | null } | null
-    if (!profile?.phone) {
-      authStore.showPhoneDialog = true
-    }
+    if (!profile?.phone) authStore.showPhoneDialog = true
   })
 })

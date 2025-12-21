@@ -52,9 +52,13 @@ export default defineEventHandler(async (event) => {
   console.info('[paytabs:webhook] signature verified', { verified, hasSignature: !!receivedSignature })
 
   const adminUrl = process.env.SUPABASE_URL
-  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_API_KEY
-  const adminClient = adminUrl && adminKey ? createClient(adminUrl, adminKey, { auth: { persistSession: false } }) : null
-  const supabase = adminClient || (await serverSupabaseClient(event))
+  // const config = useRuntimeConfig()
+
+  const supabase = createClient(
+    config.public.supabaseUrl,
+    config.supabaseServiceKey,
+    { auth: { persistSession: false } }
+  )
 
   const tranRef = filtered.tranRef || filtered.tran_ref || (form as Record<string, string>)['tranRef'] || (form as Record<string, string>)['tran_ref']
   const cartId = filtered.cartId || filtered.cart_id || (form as Record<string, string>)['cartId'] || (form as Record<string, string>)['cart_id']
@@ -142,7 +146,19 @@ export default defineEventHandler(async (event) => {
 
   // Apply update based on webhook status
   if (respStatus === 'A') {
-    await supabase
+    // await supabase
+    //   .from('orders')
+    //   .update({
+    //     payment_status: 'paid',
+    //     status: 'confirmed',
+    //     tran_ref: tranRef,
+    //     paid_at: new Date().toISOString(),
+    //   })
+    //   .eq(targetKey, targetVal as never)
+
+    // console.info('[paytabs:webhook] order marked paid')
+    // return { ok: true }
+    const { data, error } = await supabase
       .from('orders')
       .update({
         payment_status: 'paid',
@@ -150,11 +166,16 @@ export default defineEventHandler(async (event) => {
         tran_ref: tranRef,
         paid_at: new Date().toISOString(),
       })
-      .eq(targetKey, targetVal as never)
+      .eq('id', cartId)
+      .select('id')
 
-    console.info('[paytabs:webhook] order marked paid')
-    return { ok: true }
-  }
+    if (error) {
+      console.error('[paytabs:webhook] update failed', error.message)
+      throw error
+    }
+
+    console.info('[paytabs:webhook] updated rows', data)
+    }
 
   if (respStatus) {
     await supabase

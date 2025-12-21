@@ -31,6 +31,7 @@ export default defineNuxtConfig({
     paytabsProfileId: process.env.PAYTABS_PROFILE_ID,
     paytabsCallbackUrl: process.env.PAYTABS_CALLBACK_URL,
     paytabsReturnUrl: process.env.PAYTABS_RETURN_URL,
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
   },
 
   veeValidate: {

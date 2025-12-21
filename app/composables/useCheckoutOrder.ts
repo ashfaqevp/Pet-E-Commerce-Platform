@@ -34,7 +34,6 @@ interface OrderItemInsertRow {
   order_id: string
   product_id: string
   product_name: string
-  thumbnail?: string | null
   unit_price: number
   quantity: number
   total_price: number
@@ -89,7 +88,6 @@ export const useCheckoutOrder = () => {
         order_id: orderId,
         product_id: i.product_id,
         product_name: i.product.name,
-        thumbnail: i.product.thumbnail_url || null,
         unit_price: Number(i.product.retail_price || 0),
         quantity: Number(i.quantity || 1),
         total_price: round2(Number(i.product.retail_price || 0) * Number(i.quantity || 1)),

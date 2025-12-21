@@ -2,6 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  ssr: false,
 
   modules: [
     '@pinia/nuxt',
@@ -12,7 +13,9 @@ export default defineNuxtConfig({
   ],
 
   supabase: {
-    redirect: false, // This disables the default redirect
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY,
+    redirect: false,
   },
 
 
@@ -23,6 +26,11 @@ export default defineNuxtConfig({
       razorpayKeyId: process.env.RAZORPAY_KEY_ID,
       supabaseFunctionUrl: process.env.SUPABASE_FUNCTION_URL,
     },
+    paytabsBaseUrl: process.env.PAYTABS_BASE_URL || 'https://secure-global.paytabs.com',
+    paytabsServerKey: process.env.PAYTABS_SERVER_KEY,
+    paytabsProfileId: process.env.PAYTABS_PROFILE_ID,
+    paytabsCallbackUrl: process.env.PAYTABS_CALLBACK_URL,
+    paytabsReturnUrl: process.env.PAYTABS_RETURN_URL,
   },
 
   veeValidate: {
@@ -31,6 +39,10 @@ export default defineNuxtConfig({
 
   pinia: {
     storesDirs: ['./app/stores/**'],
+  },
+
+  imports: {
+    dirs: ['./app/utils'],
   },
 
   shadcn: {

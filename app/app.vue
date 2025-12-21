@@ -4,6 +4,8 @@
   </NuxtLayout>
   <NuxtRouteAnnouncer />
   <Toaster richColors position="top-right" />
+  <AuthGateDialog />
+  <PhoneRequiredDialog />
 </template>
 
 <script setup lang="ts">

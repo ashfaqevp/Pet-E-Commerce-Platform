@@ -1,28 +1,17 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-
-type UserType = 'retail' | 'wholesale'
+import { ref } from 'vue'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<{ id: string; email: string } | null>(null)
-  const userType = ref<UserType | null>(null)
+  const showAuthDialog = ref<boolean>(false)
+  const showPhoneDialog = ref<boolean>(false)
 
-  const register = async (email: string, _password: string, type: UserType) => {
-    // Placeholder: integrate Supabase later
-    user.value = { id: 'demo', email }
-    userType.value = type
+  const requireAuth = () => {
+    showAuthDialog.value = true
   }
 
-  const login = (payload: { id: string; email: string }) => {
-    user.value = payload
+  return {
+    showAuthDialog,
+    showPhoneDialog,
+    requireAuth,
   }
-
-  const logout = () => {
-    user.value = null
-    userType.value = null
-  }
-
-  const isAuthenticated = computed(() => !!user.value)
-
-  return { user, userType, register, login, logout, isAuthenticated }
 })

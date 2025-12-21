@@ -460,7 +460,7 @@ const { data: _data_test } = await supabase.auth.getSession()
         </div>
 
         <!-- Details section -->
-        <section class="mt-10">
+        <!-- <section class="mt-10">
           <h2 class="text-lg font-medium text-foreground">Details</h2>
           <div class="pt-2">
             <p class="text-sm text-muted-foreground">
@@ -473,10 +473,10 @@ const { data: _data_test } = await supabase.auth.getSession()
               <li>No artificial flavors or preservatives</li>
             </ul>
           </div>
-        </section>
+        </section> -->
 
         <!-- Reviews section stacked below details -->
-        <section class="mt-8">
+        <!-- <section class="mt-8">
           <h2 class="text-lg font-medium text-foreground">Reviews</h2>
           <div class="pt-2">
             <div v-if="reviews.length" class="space-y-4">
@@ -493,7 +493,7 @@ const { data: _data_test } = await supabase.auth.getSession()
             </div>
             <p v-else class="text-sm text-muted-foreground">No reviews yet.</p>
           </div>
-        </section>
+        </section> -->
       </div>
     </div>
   </div>

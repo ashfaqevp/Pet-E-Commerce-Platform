@@ -57,7 +57,7 @@ const loadingById = ref<Record<string, boolean>>({})
 const isItemLoading = (id: string) => !!loadingById.value[id]
 const setItemLoading = (id: string, v: boolean) => { loadingById.value[id] = v }
 
-const formatOMR = (v: number) => new Intl.NumberFormat('en-OM', { style: 'currency', currency: 'OMR', minimumFractionDigits: 3 }).format(v)
+const formatOMR = (v: number) => new Intl.NumberFormat('en-OM', { style: 'currency', currency: 'OMR', minimumFractionDigits: 2 }).format(v)
 
 const subtotal = computed(() => items.value.reduce((sum, i) => sum + (Number(i.product.retail_price ?? 0) * Number(qtyById.value[i.id] ?? i.quantity ?? 1)), 0))
 
@@ -165,10 +165,10 @@ const goCheckout = () => {
                           type="number"
                           min="1"
                           class="w-16 text-center"
-                          :value="qtyById[item.id] ?? item.quantity"
+                          v-model.number="qtyById[item.id]"
+                          :default-value="item.quantity ?? 1"
                           :disabled="isItemLoading(item.id) || pending"
                           aria-label="Quantity"
-                          @input="onQtyInput(item.id, $event)"
                           @change="onQtyCommit(item)"
                         />
                         <Button

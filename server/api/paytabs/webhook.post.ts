@@ -144,20 +144,11 @@ export default defineEventHandler(async (event) => {
     throw loadErr
   }
 
-  // Apply update based on webhook status
-  if (respStatus === 'A') {
-    // await supabase
-    //   .from('orders')
-    //   .update({
-    //     payment_status: 'paid',
-    //     status: 'confirmed',
-    //     tran_ref: tranRef,
-    //     paid_at: new Date().toISOString(),
-    //   })
-    //   .eq(targetKey, targetVal as never)
+  // ---------------------------------------------
+  // ✅ FINAL PAYMENT DECISION (DO NOT FALL THROUGH)
+  // ---------------------------------------------
 
-    // console.info('[paytabs:webhook] order marked paid')
-    // return { ok: true }
+  if (respStatus === 'A') {
     const { data, error } = await supabase
       .from('orders')
       .update({
@@ -166,19 +157,21 @@ export default defineEventHandler(async (event) => {
         tran_ref: tranRef,
         paid_at: new Date().toISOString(),
       })
-      .eq('id', cartId)
+      .eq(targetKey, targetVal as never)
       .select('id')
 
     if (error) {
-      console.error('[paytabs:webhook] update failed', error.message)
+      console.error('[paytabs:webhook] paid update failed', error.message)
       throw error
     }
 
-    console.info('[paytabs:webhook] updated rows', data)
-    }
+    console.info('[paytabs:webhook] order marked PAID', data)
+    return { ok: true, status: 'paid' } // ⛔ STOP HERE
+  }
 
+  // ❌ ONLY non-A statuses reach here
   if (respStatus) {
-    await supabase
+    const { data, error } = await supabase
       .from('orders')
       .update({
         payment_status: 'failed',
@@ -186,11 +179,20 @@ export default defineEventHandler(async (event) => {
         tran_ref: tranRef,
       })
       .eq(targetKey, targetVal as never)
+      .select('id')
 
-    console.info('[paytabs:webhook] order marked failed')
-    return { ok: true }
+    if (error) {
+      console.error('[paytabs:webhook] failed update error', error.message)
+      throw error
+    }
+
+    console.warn('[paytabs:webhook] order marked FAILED', {
+      respStatus,
+      data,
+    })
+
+    return { ok: true, status: 'failed', respStatus }
   }
-
   // No status provided
   throw createError({ statusCode: 502, message: 'Invalid webhook payload' })
 })

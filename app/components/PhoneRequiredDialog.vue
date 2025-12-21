@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
+import { Label } from '@/components/ui/label'
 
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()

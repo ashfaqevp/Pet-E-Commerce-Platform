@@ -4,8 +4,8 @@ import { definePageMeta, useLazyAsyncData, useSupabaseClient, useSupabaseUser, n
 import { toast } from 'vue-sonner'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Avatar } from '@/components/ui/avatar'
-import { AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarImage } from '@/components/ui/avatar'
+import { AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet'
@@ -24,6 +24,26 @@ const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const { width } = useWindowSize()
 const isLg = computed(() => width.value >= 1024)
+
+const userMeta = computed(() => (user.value?.user_metadata as Record<string, unknown>) ?? {})
+const avatarUrl = computed(() => {
+  const meta = userMeta.value
+  const s = (meta.avatar_url || meta.picture || meta.avatar) as string | undefined
+  return s && s.length ? s : undefined
+})
+const userName = computed(() => {
+  const full = userMeta.value.full_name as string | undefined
+  return full && full.length ? full : (user.value?.email || '')
+})
+const initials = computed(() => {
+  const name = userName.value || ''
+  if (!name) return 'U'
+  const parts = name.trim().split(/\s+/).slice(0, 2)
+  const chars = parts.map(p => p[0]?.toUpperCase()).filter(Boolean)
+  if (chars.length) return chars.join('')
+  const email = user.value?.email || ''
+  return email ? email[0]!.toUpperCase() : 'U'
+})
 
 const { getProfile } = useProfile()
 const { listAddresses, deleteAddress, setDefault } = useAddresses()
@@ -166,7 +186,6 @@ const logout = async () => {
 
 <template>
   <div class="container mx-auto px-4 py-6">
-
     
     <div class="space-y-6">
       <div class="flex items-center justify-between">
@@ -179,7 +198,10 @@ const logout = async () => {
 
       <Card class="border-none rounded-2xl overflow-hidden shadow-sm bg-white">
         <CardHeader>
-          <CardTitle>User Info</CardTitle>
+          <div class="flex items-center gap-2 ">
+            <Icon name="lucide:user" class="h-5 w-5 " />
+            <CardTitle>User Info</CardTitle>
+          </div>
           <CardDescription />
         </CardHeader>
         <CardContent>
@@ -188,14 +210,15 @@ const logout = async () => {
             <Skeleton class="h-6 w-56" />
           </div>
           <div v-else class="flex items-center justify-between gap-4">
-            <Avatar class="size-12">
-              <AvatarImage :src="((user?.user_metadata as Record<string, unknown>)?.avatar_url as string) || '/images/placeholder.svg'" />
+            <Avatar class="size-20">
+              <AvatarImage v-if="avatarUrl" :src="avatarUrl" />
+              <AvatarFallback>{{ initials }}</AvatarFallback>
             </Avatar>
-            <div class="flex-1">
+            <div class="flex-1 space-y-2">
               <p class="font-medium">{{ (user?.user_metadata as Record<string, unknown>)?.full_name as string || '—' }}</p>
               <p class="text-sm text-muted-foreground">{{ user?.email || '—' }}</p>
-              <div class="flex items-center justify-between mt-2">
-                <p class="text-sm text-muted-foreground">{{ profile?.phone ? `Phone: ${profile.phone}` : 'Phone: —' }}</p>
+              <div class="flex items-start justify-between ">
+                <p class="text-sm text-muted-foreground">Phone: {{ formatOmanPhone(profile?.phone) }}</p>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger as-child>
@@ -223,7 +246,10 @@ const logout = async () => {
       <Card>
         <CardHeader>
           <div class="flex items-center justify-between">
-            <CardTitle>Delivery Addresses</CardTitle>
+            <div class="flex items-center gap-2">
+              <Icon name="lucide:map-pin" class="h-5 w-5 " />
+              <CardTitle>Delivery Addresses</CardTitle>
+            </div>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger as-child>
@@ -270,7 +296,10 @@ const logout = async () => {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Orders</CardTitle>
+          <div class="flex items-center gap-2">
+            <Icon name="lucide:shopping-bag" class="h-5 w-5 " />
+            <CardTitle>Recent Orders</CardTitle>
+          </div>
           <CardDescription />
         </CardHeader>
         <CardContent>

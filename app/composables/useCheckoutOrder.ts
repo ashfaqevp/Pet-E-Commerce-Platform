@@ -34,7 +34,6 @@ interface OrderItemInsertRow {
   order_id: string
   product_id: string
   product_name: string
-  thumbnail?: string | null
   unit_price: number
   quantity: number
   total_price: number
@@ -44,7 +43,7 @@ export const useCheckoutOrder = () => {
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
   const creating = ref(false)
-  const { loadCartWithProducts, refreshCart } = useCart()
+  const { loadCartWithProducts } = useCart()
   const { listAddresses } = useAddresses()
 
   const round2 = (v: number) => Math.round(v * 100) / 100
@@ -89,7 +88,6 @@ export const useCheckoutOrder = () => {
         order_id: orderId,
         product_id: i.product_id,
         product_name: i.product.name,
-        thumbnail: i.product.thumbnail_url || null,
         unit_price: Number(i.product.retail_price || 0),
         quantity: Number(i.quantity || 1),
         total_price: round2(Number(i.product.retail_price || 0) * Number(i.quantity || 1)),
@@ -98,9 +96,6 @@ export const useCheckoutOrder = () => {
         const { error: itemsErr } = await supabase.from('order_items').insert(orderItems as unknown as never)
         if (itemsErr) throw itemsErr
       }
-      const { error: clearErr } = await supabase.from('cart_items').delete().eq('user_id', user.value.id)
-      if (clearErr) throw clearErr
-      await refreshCart()
       return orderId
     } finally {
       creating.value = false

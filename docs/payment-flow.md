@@ -1,21 +1,18 @@
-Cart
+Checkout
  ↓
-Checkout (address + summary)
+Create order (status = pending)
  ↓
-Create Order (status: pending, payment_status: unpaid)
+Redirect to PayTabs
  ↓
-Create PayTabs Transaction (SERVER)
+PayTabs processes payment
  ↓
-Redirect user to PayTabs Hosted Page
- ↓
-3DS / Card auth (PayTabs)
- ↓
-PayTabs → Webhook (SERVER)
+PayTabs → CALLBACK URL (server)
  ↓
 Verify signature
  ↓
-Update order:
-   payment_status = paid
-   status = confirmed
+Update order in DB (paid / failed)
  ↓
-Redirect user to success page
+User browser → RETURN URL
+ ↓
+Frontend checks DB order status
+

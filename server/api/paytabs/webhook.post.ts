@@ -4,7 +4,7 @@ import { readRawBody } from 'h3'
 
 export default defineEventHandler(async (event) => {
 
-  console.log('PayTabs webhook callback received')
+  console.log('PayTabs webhook callback received', { event })
   const rawBody = await readRawBody(event)
 
   if (!rawBody) {

@@ -289,6 +289,16 @@ const logout = async () => {
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
+                  <TooltipProvider v-if="!a.is_default">
+                    <Tooltip>
+                      <TooltipTrigger as-child>
+                        <Button variant="outline" size="icon-sm" aria-label="Make default" @click="setDefaultClick(a.id)">
+                          <Icon name="lucide:star" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Make default</TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger as-child>
@@ -307,16 +317,6 @@ const logout = async () => {
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>Delete</TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <TooltipProvider v-if="!a.is_default">
-                    <Tooltip>
-                      <TooltipTrigger as-child>
-                        <Button size="icon-sm" aria-label="Make default" @click="setDefaultClick(a.id)">
-                          <Icon name="lucide:star" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Make default</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </div>

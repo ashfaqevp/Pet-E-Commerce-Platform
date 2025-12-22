@@ -22,7 +22,7 @@ const menu: SidebarSection[] = [
   },
   { label: 'Orders', icon: 'lucide:shopping-cart', href: '/admin/orders' },
   { label: 'Payments', icon: 'lucide:credit-card', href: '/admin/payments' },
-  { label: 'Customers', icon: 'lucide:users', href: '/admin/users' },
+  { label: 'Customers', icon: 'lucide:users', href: '/admin/customers' },
 ]
 
 const openSections = ref<Record<string, boolean>>({ Products: true })

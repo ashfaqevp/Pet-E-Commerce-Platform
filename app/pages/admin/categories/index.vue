@@ -132,7 +132,7 @@ const selectedTab = ref('explorer')
       </div>
     </div>
 
-    <Tabs v-model="selectedTab" defaultValue="explorer" class="w-full">
+    <Tabs v-model="selectedTab" defaultValue="definitions" class="w-full">
       <TabsList class="w-full justify-start h-12">
         <TabsTrigger value="definitions">All Categories</TabsTrigger>
         <TabsTrigger value="explorer">Explorer</TabsTrigger>

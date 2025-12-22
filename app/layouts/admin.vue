@@ -53,7 +53,7 @@ const { data: sessionData } = await useLazyAsyncData(
 const user = computed(() => sessionData.value?.user || null)
 const meta = computed(() => (user.value?.user_metadata as Record<string, unknown>) || {})
 const displayName = computed(() => (meta.value.full_name as string | undefined) || (user.value?.email || 'Admin'))
-const avatarUrl = computed(() => (meta.value.avatar_url as string | undefined) || (meta.value.picture as string | undefined) || '/favicon.ico')
+const avatarUrl = computed(() => (meta.value.avatar_url as string | undefined) || (meta.value.picture as string | undefined))
 const initials = computed(() => {
   const name = ((meta.value.full_name as string | undefined) || (user.value?.email || 'BH'))
   const parts = name.split(' ')
@@ -171,14 +171,14 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
               </NuxtLink> -->
             </div>
             <div class="flex items-center gap-3">
-              <div class="hidden md:flex items-center gap-2">
+              <!-- <div class="hidden md:flex items-center gap-2">
                 <Input placeholder="Search" class="w-64" />
                 <Button variant="secondary" class="bg-secondary text-white">
                   <Icon name="lucide:search" class="h-4 w-4 mr-2" />
                   Search
                 </Button>
-              </div>
-              <DropdownMenu>
+              </div> -->
+              <!-- <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                   <Button variant="ghost" size="icon">
                     <Icon name="lucide:bell" class="h-5 w-5" />
@@ -189,7 +189,7 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>No new notifications</DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu>
+              </DropdownMenu> -->
               <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                   <Button variant="ghost" class="gap-2">

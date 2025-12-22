@@ -15,6 +15,8 @@ interface CustomerProfile {
   id: string
   phone?: string | null
   role?: string | null
+  full_name?: string | null
+  avatar_url?: string | null
   created_at?: string | null
 }
 
@@ -68,7 +70,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
     const supabase = useSupabaseClient()
     const profileReq = supabase
       .from('profiles')
-      .select('id,phone,role,created_at')
+      .select('id,phone,role,created_at,full_name,avatar_url')
       .eq('id', params.value.id)
       .maybeSingle()
     const addressesReq = supabase
@@ -120,7 +122,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
     const totalPaid = totals.reduce((sum, o) => sum + Number(o.total || 0), 0)
     const lastOrderDate = ((lastOrderRes.data as unknown as Array<{ created_at: string | Date }> | null)?.[0]?.created_at) || null
 
-    const profile = (profileRes.data as unknown as { id: string; phone?: string | null; role?: string | null; created_at?: string | Date | null } | null)
+    const profile = (profileRes.data as unknown as { id: string; phone?: string | null; role?: string | null; full_name?: string | null; avatar_url?: string | null; created_at?: string | Date | null } | null)
     const addresses = ((addressesRes.data || []) as unknown as Array<CustomerAddress>)
     const orders = ((ordersPageRes.data || []) as unknown as Array<{ id: string; status: string | null; payment_status: string | null; payment_provider?: string | null; total: number | string | null; created_at: string | Date }>)
       .map((o) => ({
@@ -137,6 +139,8 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
           id: String(profile.id),
           phone: profile.phone || null,
           role: profile.role || null,
+          full_name: profile.full_name || null,
+          avatar_url: profile.avatar_url || null,
           created_at: profile.created_at ? (typeof profile.created_at === 'string' ? profile.created_at : new Date(profile.created_at).toISOString()) : null,
         }
       : null
@@ -225,13 +229,40 @@ const formatDate = (iso: string | null | undefined) => {
   return isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(d)
 }
 const formatPhone = (v: string | null | undefined) => formatOmanPhone(v || '')
+const getInitials = (name?: string | null, fallback?: string | null) => {
+  const n = (name || '').trim()
+  if (n) {
+    const parts = n.split(' ').filter(Boolean)
+    const a = parts[0]?.[0] || ''
+    const b = parts[1]?.[0] || ''
+    const letters = (a + b) || n.slice(0, 2)
+    return letters.toUpperCase()
+  }
+  const f = (fallback || '').replace(/[^A-Za-z0-9]/g, '')
+  const letters = f.slice(0, 2) || 'CU'
+  return letters.toUpperCase()
+}
+const getDisplayName = (name?: string | null, id?: string | null) => {
+  if (name && name.trim().length) return name
+  const short = (id || '').slice(0, 5)
+  return short ? `Customer ${short}` : 'Customer'
+}
 </script>
 
 <template>
   <div class="space-y-6">
     <div class="flex items-center justify-between">
       <div class="space-y-1">
-        <h1 class="text-xl font-semibold">Customer #{{ profile?.id }}</h1>
+        <div class="flex items-center gap-2">
+          <Avatar>
+            <AvatarImage v-if="profile?.avatar_url" :src="profile?.avatar_url" :alt="profile?.full_name || profile?.id || 'Customer'" />
+            <AvatarFallback>{{ getInitials(profile?.full_name, profile?.phone) }}</AvatarFallback>
+          </Avatar>
+          <div class="flex flex-col">
+            <span class="text-xl font-semibold">{{ getDisplayName(profile?.full_name, profile?.id) }}</span>
+            <span class="text-xs text-muted-foreground">#{{ profile?.id }}</span>
+          </div>
+        </div>
         <div class="flex items-center gap-2">
           <Badge variant="outline">{{ formatPhone(profile?.phone || null) }}</Badge>
           <Badge variant="outline">{{ profile?.role || 'customer' }}</Badge>
@@ -402,4 +433,3 @@ const formatPhone = (v: string | null | undefined) => formatOmanPhone(v || '')
     </Card>
   </div>
 </template>
-

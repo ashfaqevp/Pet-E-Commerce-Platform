@@ -11,6 +11,8 @@ interface AdminCustomer {
   id: string
   phone?: string | null
   role?: string | null
+  name?: string | null
+  avatar_url?: string | null
   joined_at: string
   total_orders: number
   total_spent: number
@@ -35,13 +37,15 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   'admin-customers',
   async () => {
     const supabase = useSupabaseClient()
-    let q = supabase.from('profiles').select('id,phone,role,created_at', { count: 'exact' })
+    let q = supabase.from('profiles').select('id,phone,role,created_at,full_name,avatar_url', { count: 'exact' })
     q = q.eq('role', 'customer')
     if (params.value.search) {
       const term = params.value.search
       const digits = term.replace(/[^0-9]/g, '')
       const ors: string[] = []
       if (digits) ors.push(`phone.ilike.%${digits}%`)
+      const text = term.trim()
+      if (text) ors.push(`full_name.ilike.%${text}%`)
       ors.push(`id.eq.${term}`)
       q = q.or(ors.join(','))
     }
@@ -51,7 +55,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
     q = q.range(from, to)
     const { data, error, count } = await q
     if (error) throw error
-    const profiles = ((data || []) as unknown as Array<{ id: string; phone?: string | null; role?: string | null; created_at: string | Date }>)
+    const profiles = ((data || []) as unknown as Array<{ id: string; phone?: string | null; role?: string | null; created_at: string | Date; full_name?: string | null; avatar_url?: string | null }>)
     const ids = profiles.map(p => String(p.id))
     let orders: Array<{ id: string; user_id: string; total: number | string | null; payment_status?: string | null; created_at: string | Date }> = []
     if (ids.length) {
@@ -77,6 +81,8 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
       id: String(p.id),
       phone: p.phone || null,
       role: p.role || null,
+      name: p.full_name || null,
+      avatar_url: p.avatar_url || null,
       joined_at: typeof p.created_at === 'string' ? p.created_at : new Date(p.created_at).toISOString(),
       total_orders: agg.get(String(p.id))?.total_orders || 0,
       total_spent: agg.get(String(p.id))?.total_spent || 0,
@@ -136,6 +142,24 @@ const formatDate = (iso: string | null | undefined) => {
   return isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(d)
 }
 const formatPhone = (v: string | null | undefined) => formatOmanPhone(v || '')
+const getInitials = (name?: string | null, fallback?: string | null) => {
+  const n = (name || '').trim()
+  if (n) {
+    const parts = n.split(' ').filter(Boolean)
+    const a = parts[0]?.[0] || ''
+    const b = parts[1]?.[0] || ''
+    const letters = (a + b) || n.slice(0, 2)
+    return letters.toUpperCase()
+  }
+  const f = (fallback || '').replace(/[^A-Za-z0-9]/g, '')
+  const letters = f.slice(0, 2) || 'CU'
+  return letters.toUpperCase()
+}
+const getDisplayName = (name?: string | null, id?: string | null) => {
+  if (name && name.trim().length) return name
+  const short = (id || '').slice(0, 5)
+  return short ? `Customer ${short}` : 'Customer'
+}
 </script>
 
 <template>
@@ -173,12 +197,12 @@ const formatPhone = (v: string | null | undefined) => formatOmanPhone(v || '')
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Customer ID</TableHead>
+              <TableHead>Customer</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Orders</TableHead>
               <TableHead class="text-right">Total Spent</TableHead>
               <TableHead>Joined</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead class="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -199,14 +223,25 @@ const formatPhone = (v: string | null | undefined) => formatOmanPhone(v || '')
               </TableCell>
             </TableRow>
             <TableRow v-else v-for="c in rows" :key="c.id">
-              <TableCell>{{ c.id }}</TableCell>
+              <TableCell>
+                <div class="flex items-center gap-2">
+                  <Avatar>
+                    <AvatarImage v-if="c.avatar_url" :src="c.avatar_url" :alt="c.name || c.id" />
+                    <AvatarFallback>{{ getInitials(c.name, c.phone) }}</AvatarFallback>
+                  </Avatar>
+                  <div class="flex flex-col">
+                    <span class="font-medium">{{ getDisplayName(c.name, c.id) }}</span>
+                    <span class="text-xs text-muted-foreground">#{{ c.id }}</span>
+                  </div>
+                </div>
+              </TableCell>
               <TableCell>{{ formatPhone(c.phone) }}</TableCell>
               <TableCell>{{ c.total_orders }}</TableCell>
               <TableCell class="text-right">{{ formatCurrency(c.total_spent) }}</TableCell>
               <TableCell>{{ formatDate(c.joined_at) }}</TableCell>
-              <TableCell>
-                <div class="flex items-center gap-2">
-                  <NuxtLink :to="`/admin/customers/${c.id}`" class="underline text-foreground">View</NuxtLink>
+              <TableCell class="text-right">
+                <div class="flex items-center justify-end gap-2">
+                  <Button size="sm" variant="default" @click="$router.push(`/admin/customers/${c.id}`)">View</Button>
                   <AlertDialog>
                     <AlertDialogTrigger as-child>
                       <Button variant="destructive" size="sm" @click="deletingId = c.id">Delete</Button>
@@ -240,4 +275,3 @@ const formatPhone = (v: string | null | undefined) => formatOmanPhone(v || '')
     </Card>
   </div>
 </template>
-

@@ -57,7 +57,7 @@ const avatarUrl = computed(() => (meta.value.avatar_url as string | undefined) |
 const initials = computed(() => {
   const name = ((meta.value.full_name as string | undefined) || (user.value?.email || 'BH'))
   const parts = name.split(' ')
-  const letters = parts.length >= 2 ? (parts[0][0] + parts[1][0]) : name.slice(0, 2)
+  const letters = parts.length >= 2 ? ((parts[0]?.[0] || '') + (parts[1]?.[0] || '')) : name.slice(0, 2)
   return letters.toUpperCase()
 })
 
@@ -149,7 +149,7 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton as-child class="rounded-md py-5">
-              <button type="button" @click="logout">
+              <button type="button" @click="performLogout">
                 <Icon name="lucide:log-out" />
                 <span>Logout</span>
               </button>
@@ -194,7 +194,7 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
                 <DropdownMenuTrigger as-child>
                   <Button variant="ghost" class="gap-2">
                     <Avatar class="h-6 w-6">
-                      <AvatarImage :src="avatarUrl" />
+                      <AvatarImage :src="avatarUrl || ''" />
                       <AvatarFallback>{{ initials }}</AvatarFallback>
                     </Avatar>
                     {{ displayName }}

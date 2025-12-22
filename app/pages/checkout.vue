@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo, useHead, useState } from '#imports'
+import { definePageMeta, useLazyAsyncData, useSupabaseUser, useSupabaseClient, navigateTo, useHead, useState } from '#imports'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell, TableEmpty } from '@/components/ui/table'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -69,10 +69,34 @@ const setSelectedAsDefault = async () => {
   await refreshAddresses()
 }
 
+const round3 = (v: number) => Math.round(v * 1000) / 1000
 const subtotal = computed(() => items.value.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0))
-const shipping = computed(() => (items.value.length ? 10 : 0))
-const tax = computed(() => Math.round(subtotal.value * 0.05 * 1000) / 1000)
-const total = computed(() => Math.round((subtotal.value + shipping.value + tax.value) * 1000) / 1000)
+
+interface SiteConfigRow { shipping_fee: number; tax_rate: number }
+const { data: configData } = await useLazyAsyncData(
+  'checkout-site-config',
+  async () => {
+    const supabase = useSupabaseClient()
+    const { data, error } = await supabase
+      .from('site_config')
+      .select('shipping_fee, tax_rate')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+    if (error) throw error
+    const row = (data?.[0] ?? null) as Partial<SiteConfigRow> | null
+    return {
+      shipping_fee: Number(row?.shipping_fee ?? 10),
+      tax_rate: Number(row?.tax_rate ?? 0.05),
+    } as SiteConfigRow
+  },
+  { server: true }
+)
+const siteConfig = computed<SiteConfigRow>(() => (configData.value as SiteConfigRow) || { shipping_fee: 10, tax_rate: 0.05 })
+
+const shipping = computed(() => (items.value.length ? siteConfig.value.shipping_fee : 0))
+const tax = computed(() => round3(subtotal.value * siteConfig.value.tax_rate))
+const total = computed(() => round3(subtotal.value + shipping.value + tax.value))
+const taxLabel = computed(() => `Tax (${Math.round((siteConfig.value.tax_rate || 0) * 100)}%)`)
 
 const { create, creating } = useCheckoutOrder()
 
@@ -112,7 +136,7 @@ const placeOrder = async () => {
     return
   }
   try {
-    const orderId = await create(selectedAddressId.value)
+    const orderId = await create(selectedAddressId.value, { shippingFee: siteConfig.value.shipping_fee, taxRate: siteConfig.value.tax_rate })
     if (process.client) {
       localStorage.setItem('last_order_id', orderId)
     }
@@ -237,7 +261,7 @@ const placeOrder = async () => {
               <span class="font-medium">{{ formatOMR(shipping) }}</span>
             </div>
             <div class="flex items-center justify-between">
-              <span>Tax (5%)</span>
+              <span>{{ taxLabel }}</span>
               <span class="font-medium">{{ formatOMR(tax) }}</span>
             </div>
             <Separator />

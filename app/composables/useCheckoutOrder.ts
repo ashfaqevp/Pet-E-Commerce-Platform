@@ -49,7 +49,9 @@ export const useCheckoutOrder = () => {
 
   const round3 = (v: number) => Math.round(v * 1000) / 1000
 
-  const create = async (addressId: string): Promise<string> => {
+  interface CreateOptions { shippingFee?: number; taxRate?: number }
+
+  const create = async (addressId: string, opts?: CreateOptions): Promise<string> => {
     if (creating.value) throw new Error('ALREADY_CREATING')
     if (!user.value) throw new Error('LOGIN_REQUIRED')
     creating.value = true
@@ -60,8 +62,10 @@ export const useCheckoutOrder = () => {
       const addr = addresses.find(a => a.id === addressId) || addresses.find(a => a.is_default) || addresses[0]
       if (!addr) throw new Error('NO_ADDRESS')
       const subtotal = items.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0)
-      const shipping = items.length ? 10 : 0
-      const tax = round3(subtotal * 0.05)
+      const cfgShipping = typeof opts?.shippingFee === 'number' ? Number(opts!.shippingFee) : 10
+      const cfgTaxRate = typeof opts?.taxRate === 'number' ? Number(opts!.taxRate) : 0.05
+      const shipping = items.length ? Number(cfgShipping || 0) : 0
+      const tax = round3(subtotal * Number(cfgTaxRate || 0))
       const total = round3(subtotal + shipping + tax)
       const payload: OrderInsertRow = {
         user_id: user.value.id,

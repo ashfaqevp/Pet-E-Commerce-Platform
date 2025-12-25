@@ -8,11 +8,17 @@ import Autoplay from 'embla-carousel-autoplay'
 import type { UnwrapRefCarouselApi } from '@/components/ui/carousel/interface'
 const supabase = useSupabaseClient()
 const router = useRouter()
+import { useWindowSize } from '@vueuse/core'
+
+interface Banner {
+  mobile: string
+  desktop: string
+}
 // Carousel banners from public folder
-const banners: string[] = [
-  // 'https://img.pikbest.com/backgrounds/20210612/pet-store-product-promotion-poster_6011205.jpg!bwr800',
-  '/images/banners/1.png',
-  '/images/banners/2.png',
+const banners: Banner[] = [
+  { mobile: '/images/banners/1-mobile.png', desktop: '/images/banners/1-desktop.png' },
+  { mobile: '/images/banners/2-desktop.png', desktop: '/images/banners/2-desktop.png' },
+  { mobile: '/images/banners/3-desktop.png', desktop: '/images/banners/3-desktop.png' },
 ]
 const categories = [
   { id: 'cat', name: 'Cat', icon: 'emojione-v1:cat-face' },
@@ -87,6 +93,9 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
 }
 
 const featuredProducts = computed<CardProduct[]>(() => (featuredData.value ?? []).map(mapRow))
+
+const { width } = useWindowSize()
+const isMobile = computed(() => width.value < 768)
 </script>
 
 
@@ -101,9 +110,9 @@ const featuredProducts = computed<CardProduct[]>(() => (featuredData.value ?? []
         @init-api="onInitApi"
       >
         <CarouselContent>
-          <CarouselItem v-for="src in banners" :key="src">
+          <CarouselItem v-for="(b, idx) in banners" :key="idx">
             <img
-              :src="src"
+              :src="isMobile ? b.mobile : b.desktop"
               alt="Promotion banner"
               class="w-full h-48 sm:h-48 md:h-64 lg:h-80 object-cover rounded-2xl"
             />
@@ -112,7 +121,7 @@ const featuredProducts = computed<CardProduct[]>(() => (featuredData.value ?? []
         <!-- Dots pagination -->
         <div class="flex justify-center gap-2 mt-3">
           <button
-            v-for="(_, idx) in banners"
+            v-for="(b, idx) in banners"
             :key="idx"
             type="button"
             class="w-2 h-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ring"

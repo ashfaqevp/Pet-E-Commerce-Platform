@@ -249,7 +249,7 @@ watch(petType, (val) => {
   }
 })
 
-const onSubmitSheet = async (payload: { name: string; description: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[] }) => {
+const onSubmitSheet = async (payload: { name: string; description?: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[] }) => {
   const { create, update, uploadProductImages } = useAdminProducts()
   try {
     if (editProduct.value?.id) {
@@ -260,7 +260,7 @@ const onSubmitSheet = async (payload: { name: string; description: string; pet_t
       const finalGallery = [...existingGallery, ...(uploaded.image_urls || [])]
       await update(productId, {
         name: payload.name,
-        description: payload.description,
+        description: payload.description ?? null,
         pet_type: payload.pet_type,
         product_type: payload.product_type,
         age: payload.age ?? null,
@@ -278,7 +278,7 @@ const onSubmitSheet = async (payload: { name: string; description: string; pet_t
     } else {
       const created = await create({
         name: payload.name,
-        description: payload.description,
+        description: payload.description ?? null,
         pet_type: payload.pet_type,
         product_type: payload.product_type,
         age: payload.age ?? null,

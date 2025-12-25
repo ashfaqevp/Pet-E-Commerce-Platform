@@ -19,7 +19,7 @@ interface Emits {
     flavour?: string
     retail_price: number
     stock_quantity: number
-    description: string
+    description?: string
     default_rating: number | null
     is_base_product: boolean
     base_product_id?: string | null
@@ -48,7 +48,7 @@ const schema = toTypedSchema(
   z
     .object({
       name: z.string().min(1),
-      description: z.string().min(1),
+      description: z.string().optional(),
       pet: z.string().min(1),
       type: z.string().min(1),
       age: z.string().optional(),
@@ -91,7 +91,7 @@ const { handleSubmit, isSubmitting, setValues, submitCount, resetForm } = useFor
 })
 
 const { value: name, errorMessage: nameError, meta: nameMeta } = useField<string>('name')
-const { value: description, errorMessage: descriptionError, meta: descriptionMeta } = useField<string>('description')
+const { value: description, errorMessage: descriptionError, meta: descriptionMeta } = useField<string | undefined>('description')
 const { value: pet, errorMessage: petError, meta: petMeta } = useField<string>('pet')
 const { value: type, errorMessage: typeError, meta: typeMeta } = useField<string>('type')
 const { value: age, errorMessage: ageError, meta: ageMeta } = useField<string | undefined>('age')

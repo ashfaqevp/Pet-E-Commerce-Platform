@@ -58,8 +58,8 @@ const schema = toTypedSchema(
       flavour: z.string().optional(),
       price: z.number().min(0),
       offer_percentage: z.number().min(0).max(90).optional(),
-      stock_quantity: z.number().min(0).default(0),
-      default_rating: z.number().max(5).optional().nullable(),
+      stock_quantity: z.number().min(0).default(1000),
+      default_rating: z.number().min(0).max(5).default(4.5),
       product_kind: z.enum(['base','variant']).default('base'),
       base_product_id: z.string().optional(),
     })
@@ -87,7 +87,7 @@ const { handleSubmit, isSubmitting, setValues, submitCount, resetForm } = useFor
   validationSchema: schema,
   initialValues: {
     name: '', description: '', pet: '', type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
-    price: 0, offer_percentage: undefined, stock_quantity: 0, default_rating: undefined, product_kind: 'base', base_product_id: undefined,
+    price: 0, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
   },
 })
 
@@ -102,7 +102,7 @@ const { value: flavour, errorMessage: flavourError, meta: flavourMeta } = useFie
 const { value: price, errorMessage: priceError, meta: priceMeta } = useField<number>('price')
 const { value: offerPct, errorMessage: offerPctError, meta: offerPctMeta } = useField<number | undefined>('offer_percentage')
 const { value: stockQty, errorMessage: stockQtyError, meta: stockQtyMeta } = useField<number>('stock_quantity')
-const { value: defaultRating, errorMessage: defaultRatingError, meta: defaultRatingMeta } = useField<number | undefined>('default_rating')
+const { value: defaultRating, errorMessage: defaultRatingError, meta: defaultRatingMeta } = useField<number>('default_rating')
 const { value: productKind, errorMessage: productKindError, meta: productKindMeta } = useField<'base' | 'variant'>('product_kind')
 const { value: baseProductId, errorMessage: baseProductIdError, meta: baseProductIdMeta } = useField<string | undefined>('base_product_id')
 
@@ -136,8 +136,8 @@ watch(() => props.open, async (open) => {
       flavour: initialFlavour ?? undefined,
       price: Number(props.initial?.retail_price ?? 0),
       offer_percentage: undefined,
-      stock_quantity: Number(props.initial?.stock_quantity ?? 0),
-      default_rating: props.initial?.default_rating ?? undefined,
+      stock_quantity: 1000,
+      default_rating: 4.5,
       product_kind: props.initial?.id ? (props.initial?.base_product_id === props.initial.id ? 'base' : 'variant') : 'base',
       base_product_id: props.initial?.id && props.initial.base_product_id !== props.initial.id
         ? (props.initial.base_product_id ?? undefined)
@@ -151,6 +151,7 @@ watch(() => props.open, async (open) => {
     valueMap.size.value = initialSize || undefined
     valueMap.flavour.value = initialFlavour || undefined
     existingThumbnailUrl.value = props.initial?.thumbnail_url ?? null
+    hasThumbnailRef.value = !!(existingThumbnailUrl.value || thumbnailFile.value)
     existingGalleryUrls.value = Array.isArray(props.initial?.image_urls) ? (props.initial!.image_urls as string[]) : []
     initializing.value = false
   } else {
@@ -158,7 +159,7 @@ watch(() => props.open, async (open) => {
     resetForm({
       values: {
         name: '', description: '', pet: '', type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
-        price: 0, offer_percentage: undefined, stock_quantity: 0, default_rating: undefined, product_kind: 'base', base_product_id: undefined,
+        price: 0, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
       },
     })
     existingThumbnailUrl.value = null
@@ -167,6 +168,7 @@ watch(() => props.open, async (open) => {
     galleryFiles.value = []
     galleryPreviews.value = []
     existingGalleryUrls.value = []
+    hasThumbnailRef.value = false
     clearCategory('pet')
     clearCategory('type')
     clearCategory('age')
@@ -216,33 +218,43 @@ watch(productKind, (v) => {
   if (v === 'base') baseProductId.value = undefined
 })
 
-const onSubmit = handleSubmit(async (values) => {
-  const dr = values.default_rating
-  const default_rating = dr != null && Number.isFinite(dr as number) ? (dr as number) : null
-  emit('submit', {
-    name: values.name,
-    description: values.description,
-    pet_type: values.pet,
-    product_type: values.type,
-    age: values.age,
-    unit: values.unit,
-    size: values.size,
-    flavour: values.flavour,
-    retail_price: values.price,
-    stock_quantity: values.stock_quantity ?? 0,
-    default_rating,
-    is_base_product: values.product_kind === 'base',
-    base_product_id: values.product_kind === 'variant' ? (values.base_product_id ?? null) : null,
-    thumbnailFile: thumbnailFile.value,
-    galleryFiles: galleryFiles.value,
-    existingThumbnailUrl: existingThumbnailUrl.value,
-    existingGalleryUrls: existingGalleryUrls.value,
-  })
-})
+const onSubmit = async () => {
+  await handleSubmit(async (values) => {
+    const hasThumb = !!(thumbnailFile.value || existingThumbnailUrl.value)
+    if (!hasThumb) {
+      thumbnailError.value = 'Thumbnail is required'
+      toast.error('Thumbnail is required')
+      return
+    }
+    emit('submit', {
+      name: values.name,
+      description: values.description,
+      pet_type: values.pet,
+      product_type: values.type,
+      age: values.age,
+      unit: values.unit,
+      size: values.size,
+      flavour: values.flavour,
+      retail_price: values.price,
+      stock_quantity: 1000,
+      default_rating: 4.5,
+      is_base_product: values.product_kind === 'base',
+      base_product_id: values.product_kind === 'variant' ? (values.base_product_id ?? null) : null,
+      thumbnailFile: thumbnailFile.value,
+      galleryFiles: galleryFiles.value,
+      existingThumbnailUrl: existingThumbnailUrl.value,
+      existingGalleryUrls: existingGalleryUrls.value,
+    })
+  })()
+}
 
 const thumbnailFile = ref<File | null>(null)
 const thumbnailPreview = ref<string | null>(null)
 const existingThumbnailUrl = ref<string | null>(null)
+const hasThumbnailRef = ref(false)
+const thumbnailError = ref<string | null>(null)
+const allowedThumbTypes = ['image/jpeg', 'image/png', 'image/webp'] as const
+const maxThumbSizeBytes = 2 * 1024 * 1024
 
 
 const galleryFiles = ref<File[]>([])
@@ -252,18 +264,37 @@ const existingGalleryUrls = ref<string[]>([])
 const onThumbChange = (e: Event) => {
   const target = e.target as HTMLInputElement
   const file = target.files?.[0] || null
-  thumbnailFile.value = file
+  thumbnailError.value = null
   if (file) {
+    const typeOk = allowedThumbTypes.includes(file.type as (typeof allowedThumbTypes)[number])
+    const sizeOk = file.size <= maxThumbSizeBytes
+    if (!typeOk) {
+      thumbnailError.value = 'Only PNG, JPEG, or WEBP allowed'
+      thumbnailFile.value = null
+      thumbnailPreview.value = null
+      return
+    }
+    if (!sizeOk) {
+      thumbnailError.value = 'Image too large (max 2 MB)'
+      thumbnailFile.value = null
+      thumbnailPreview.value = null
+      return
+    }
+    thumbnailFile.value = file
     thumbnailPreview.value = URL.createObjectURL(file)
     existingThumbnailUrl.value = null
   } else {
+    thumbnailFile.value = null
     thumbnailPreview.value = null
   }
+  hasThumbnailRef.value = !!(thumbnailFile.value || existingThumbnailUrl.value)
 }
 
 const clearThumbnail = () => {
   thumbnailFile.value = null
   thumbnailPreview.value = null
+  thumbnailError.value = null
+  hasThumbnailRef.value = !!(existingThumbnailUrl.value)
 }
 
 const onGalleryChange = (e: Event) => {
@@ -335,10 +366,11 @@ const baseProductsErrored = computed(() => !!baseProductsState.error.value)
                     <AvatarFallback>IMG</AvatarFallback>
                   </Avatar>
                   <div class="flex items-center gap-2">
-                    <Input id="thumbnail" type="file" accept="image/*" class="w-56" @change="onThumbChange" />
+                    <Input id="thumbnail" type="file" accept="image/png,image/jpeg,image/webp" class="w-56" @change="onThumbChange" />
                     <Button variant="outline" @click.prevent="clearThumbnail">Remove</Button>
                   </div>
                 </div>
+                <p v-if="thumbnailError || (!hasThumbnailRef && submitCount > 0)" class="text-destructive text-xs">{{ thumbnailError || 'Thumbnail is required' }}</p>
                 
               </div>
               <div class="flex flex-col gap-1.5 md:col-span-2">
@@ -365,11 +397,6 @@ const baseProductsErrored = computed(() => !!baseProductsState.error.value)
                 <Label for="offer">Offer %</Label>
                 <Input id="offer" type="number" step="1" min="0" max="90" v-model.number="offerPct" class="w-full" />
                 <p v-if="offerPctError && offerPctMeta.touched" class="text-destructive text-xs">{{ offerPctError }}</p>
-              </div>
-              <div class="flex flex-col gap-1.5">
-                <Label for="stock">Stock</Label>
-                <Input id="stock" type="number" v-model.number="stockQty" class="w-full" />
-                <p v-if="stockQtyError && stockQtyMeta.touched" class="text-destructive text-xs">{{ stockQtyError }}</p>
               </div>
               <div class="flex flex-col gap-1.5">
                 <Label for="default-rating">Default Rating</Label>

@@ -88,9 +88,14 @@ export const CATEGORY_CONFIG: CategoryConfig = {
       {
         when: { category: 'unit', values: ['gram'] },
         options: [
+          { id: '85g', label: '85 g' },
+          { id: '100g', label: '100 g' },
           { id: '250g', label: '250 g' },
           { id: '500g', label: '500 g' },
           { id: '1kg', label: '1 kg' },
+            // Multipack sizes (Felix specific)
+          { id: '85g-x12', label: '85 g × 12' },
+          { id: '85g-x13', label: '85 g × 13' },
         ],
       },
       {
@@ -112,22 +117,36 @@ export const CATEGORY_CONFIG: CategoryConfig = {
     ],
   },
 
-  flavour: {
-    label: 'Flavour',
-    dependsOn: 'type',
-    requiredWhen: [
-      { category: 'type', values: ['food', 'treats'] },
-    ],
-    rules: [
-      {
-        when: { category: 'type', values: ['food', 'treats'] },
-        options: [
-          { id: 'chicken', label: 'Chicken' },
-          { id: 'fish', label: 'Fish' },
-          { id: 'lamb', label: 'Lamb' },
-          { id: 'vanilla', label: 'Vanilla' },
-        ],
-      },
-    ],
-  },
+flavour: {
+  label: 'Flavour',
+  dependsOn: 'type',
+  requiredWhen: [
+    { category: 'type', values: ['food', 'treats'] },
+  ],
+  rules: [
+    {
+      when: { category: 'type', values: ['food', 'treats'] },
+      options: [
+        // Meat flavours
+        { id: 'chicken', label: 'Chicken' },
+        { id: 'lamb', label: 'Lamb' },
+        { id: 'meat_mix', label: 'Meat Mix' },
+
+        // Fish flavours
+        { id: 'tuna', label: 'Tuna' },
+        { id: 'salmon', label: 'Salmon' },
+        { id: 'sardine', label: 'Sardine' },
+        { id: 'mackerel', label: 'Mackerel' },
+        { id: 'fish_mix', label: 'Fish Mix' },
+        { id: 'ocean_mix', label: 'Ocean Mix' },
+
+        // With vegetables / special recipes
+        { id: 'chicken_spinach', label: 'Chicken & Spinach' },
+        { id: 'tuna_spinach', label: 'Tuna & Spinach' },
+        { id: 'salmon_tomato', label: 'Salmon & Tomato' },
+      ],
+    },
+  ],
+},
+
 } as const

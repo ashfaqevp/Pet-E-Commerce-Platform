@@ -100,7 +100,8 @@ watch(user, () => {
       >
         <!-- Mobile: Logo + optional search input (shown on the right) -->
         <div v-if="isMobile && (isHome || (!isProductDetail && !pageTitle))" class="md:hidden flex-1 flex items-center gap-2 w-full">
-          <Logo />
+          <!-- <Logo /> -->
+           <img src="/images/logo-name.png" alt="Logo" class="h-11 w-auto" />
         </div>
 
         <!-- Mobile: page header with back and title -->
@@ -138,7 +139,7 @@ watch(user, () => {
 
         <!-- Desktop: Logo -->
         <div v-if="!isMobile" class="hidden md:flex md:items-center w-fit">
-          <Logo />
+          <img src="/images/logo-name.png" alt="Logo" class="h-12 w-auto" />
         </div>
 
         <!-- Desktop: Search -->
@@ -247,8 +248,8 @@ watch(user, () => {
           class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8"
         >
           <div class="max-w-sm">
-            <Logo />
-            <p class="mt-4 text-sm text-muted-foreground">
+            <img src="/images/logo-name.png" alt="Logo" class="h-14 w-auto" />
+            <p class=" text-sm text-muted-foreground">
               Your one-stop shop for all pet needs. High-quality food, toys, and
               accessories.
             </p>

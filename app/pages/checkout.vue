@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { definePageMeta, useLazyAsyncData, useSupabaseUser, useSupabaseClient, navigateTo, useHead, useState } from '#imports'
+import { definePageMeta, useLazyAsyncData, useSupabaseUser, useSupabaseClient, navigateTo, useHead, useState, useSeoMeta } from '#imports'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell, TableEmpty } from '@/components/ui/table'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -20,6 +20,12 @@ useHead({ title: 'Checkout' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'Checkout'
 const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Checkout' }]
+
+useSeoMeta({
+  title: 'Checkout | Blackhorse',
+  description: 'Secure checkout for your pet products order.',
+  robots: 'noindex, nofollow',
+})
 
 const user = useSupabaseUser()
 watchEffect(() => {

@@ -12,12 +12,22 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetTr
 import type { CategoryKey, CategoryRule, CategoryOption } from '@/domain/categories/category.types'
 import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
 import PageHeader from '@/components/common/PageHeader.vue'
+import { useSeoMeta } from '#imports'
 
 definePageMeta({ layout: 'default' })
 useHead({ title: 'Products' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'Products'
 const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Products' }]
+
+useSeoMeta({
+  title: 'Products | Blackhorse',
+  ogTitle: 'Products | Blackhorse',
+  description: 'Browse pet products by category, flavour, size and more.',
+  ogDescription: 'Browse pet products by category, flavour, size and more.',
+  ogImage: '/favicon-96x96.png',
+  twitterCard: 'summary_large_image',
+})
 
 interface ProductRow {
   id: string

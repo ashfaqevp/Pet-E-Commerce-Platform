@@ -9,6 +9,7 @@ import type { UnwrapRefCarouselApi } from '@/components/ui/carousel/interface'
 const supabase = useSupabaseClient()
 const router = useRouter()
 import { useWindowSize } from '@vueuse/core'
+import { useSeoMeta } from '#imports'
 
 interface Banner {
   mobile: string
@@ -96,6 +97,15 @@ const featuredProducts = computed<CardProduct[]>(() => (featuredData.value ?? []
 
 const { width } = useWindowSize()
 const isMobile = computed(() => width.value < 768)
+
+useSeoMeta({
+  title: 'Blackhorse — Quality Pet Products',
+  ogTitle: 'Blackhorse — Quality Pet Products',
+  description: 'Shop premium pet supplies for cats, dogs, birds and fish. Fast delivery and great prices.',
+  ogDescription: 'Shop premium pet supplies for cats, dogs, birds and fish. Fast delivery and great prices.',
+  ogImage: '/favicon-96x96.png',
+  twitterCard: 'summary_large_image',
+})
 </script>
 
 

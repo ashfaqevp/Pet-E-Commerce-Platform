@@ -2,7 +2,7 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  ssr: false,
+  ssr: true,
 
     // app: {
     // head: {
@@ -35,6 +35,7 @@ export default defineNuxtConfig({
       supabaseAnonKey: process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY,
       razorpayKeyId: process.env.RAZORPAY_KEY_ID,
       supabaseFunctionUrl: process.env.SUPABASE_FUNCTION_URL,
+      siteUrl: process.env.SITE_URL || 'http://localhost:3000',
     },
     paytabsBaseUrl: process.env.PAYTABS_BASE_URL || 'https://secure-global.paytabs.com',
     paytabsServerKey: process.env.PAYTABS_SERVER_KEY,
@@ -65,10 +66,16 @@ export default defineNuxtConfig({
 
   app: {
     head: {
+      htmlAttrs: { lang: 'en' },
       title: 'Blackhorse - Pet E-Commerce',
       meta: [
         { name: 'description', content: 'Quality pet products online' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { name: 'robots', content: 'index,follow' },
+        { name: 'theme-color', content: '#000000' },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:site_name', content: 'Blackhorse' },
+        { name: 'twitter:card', content: 'summary_large_image' },
       ],
       link: [
         { rel: 'icon', type: 'image/png', sizes: '96x96', href: '/favicon-96x96.png' },

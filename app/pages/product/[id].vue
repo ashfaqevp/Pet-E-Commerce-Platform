@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from "vue";
-import { useRoute, definePageMeta, useLazyAsyncData, useSupabaseClient, useHead, useState } from "#imports";
+import { useRoute, definePageMeta, useLazyAsyncData, useSupabaseClient, useHead, useState, useSeoMeta, useRuntimeConfig } from "#imports";
 import { Button } from "@/components/ui/button";
 import { useCart, type CartItemWithProduct } from "@/composables/useCart";
 import AddToCartButton from "@/components/AddToCartButton.vue";
@@ -220,7 +220,52 @@ const product = computed(() => {
     variants?: VariantGroup[];
   };
 });
+const runtimeConfig = useRuntimeConfig()
+const siteUrl = String(runtimeConfig.public.siteUrl || '').replace(/\/+$/, '')
+const ogUrl = computed(() => `${siteUrl}${route.fullPath.split('?')[0]}`)
+const firstImage = computed(() => (product.value?.images?.[0] || product.value?.thumbnail || '/favicon-96x96.png'))
+const seoTitle = computed(() => (product.value?.name ? `${product.value.name} | Blackhorse` : 'Product | Blackhorse'))
+const seoDescription = computed(() => {
+  const name = product.value?.name || 'Product'
+  const brand = product.value?.brand ? ` by ${product.value.brand}` : ''
+  const price = Number(product.value?.price || 0)
+  const priceStr = price > 0 ? ` at ${new Intl.NumberFormat('en-OM', { style: 'currency', currency: 'OMR', minimumFractionDigits: 2 }).format(price)}` : ''
+  return `Buy ${name}${brand}${priceStr}. Premium pet supplies with fast delivery.`
+})
 useHead({ title: computed(() => (product.value?.name ? `${product.value.name}` : 'Product')) })
+useSeoMeta({
+  title: () => seoTitle.value,
+  ogTitle: () => seoTitle.value,
+  description: () => seoDescription.value,
+  ogDescription: () => seoDescription.value,
+  ogImage: () => firstImage.value,
+  ogUrl: () => ogUrl.value,
+  twitterCard: 'summary_large_image',
+})
+useHead({
+  script: [
+    {
+      type: 'application/ld+json',
+      key: 'ld-product',
+      children: () => JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: product.value?.name || 'Product',
+        image: product.value?.images || (firstImage.value ? [firstImage.value] : []),
+        sku: product.value?.id,
+        brand: product.value?.brand ? { '@type': 'Brand', name: product.value.brand } : undefined,
+        offers: {
+          '@type': 'Offer',
+          url: ogUrl.value,
+          priceCurrency: 'OMR',
+          price: Number(product.value?.price || 0),
+          availability: 'https://schema.org/InStock',
+        },
+        aggregateRating: product.value?.rating ? { '@type': 'AggregateRating', ratingValue: Number(product.value.rating), reviewCount: 0 } : undefined,
+      }),
+    },
+  ],
+})
 watch(product, (p) => { pageTitle.value = p?.name || 'Details' }, { immediate: true })
 const productBreadcrumbs = computed(() => [{ label: 'Home', href: '/' }, { label: 'Products', href: '/products' }, { label: product.value?.name || 'Product' }])
 
@@ -386,7 +431,7 @@ const { data: _data_test } = await supabase.auth.getSession()
                   ? 'border-accent text-foreground'
                   : 'border-muted-foreground text-muted-foreground'
               "
-              class="w-12 h-12 rounded-full"
+              class="w-fit h-fit rounded-full"
               @click="selectedSize = opt"
             >
               {{ opt.label ?? opt.value }}

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo, useHead, useState } from '#imports'
+import { definePageMeta, useLazyAsyncData, useSupabaseUser, navigateTo, useHead, useState, useSeoMeta } from '#imports'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,6 +16,12 @@ useHead({ title: 'Cart' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'Cart'
 const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Cart' }]
+
+useSeoMeta({
+  title: 'Cart | Blackhorse',
+  description: 'View items in your cart and proceed to checkout.',
+  robots: 'noindex, nofollow',
+})
 
 const { loadCartWithProducts, updateQty, removeFromCart, refreshCart } = useCart()
 const supabaseUser = useSupabaseUser()

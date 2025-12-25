@@ -89,6 +89,17 @@ export const CATEGORY_CONFIG: CategoryConfig = {
             // Multipack sizes (Felix specific)
           { id: '85g-x12', label: '85 g × 12' },
           { id: '85g-x13', label: '85 g × 13' },
+
+          { id: '70g-12', label: '70 g × 12' },
+        ],
+      },
+      {
+        when: { category: 'unit', values: ['kg'] },
+        options: [
+          { id: '1kg', label: '1 kg' },
+          { id: '1.5kg', label: '1.5 kg' },
+          { id: '2kg', label: '2 kg' },
+          { id: '5kg', label: '5 kg' },
         ],
       },
       {

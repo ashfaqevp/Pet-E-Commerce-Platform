@@ -122,7 +122,7 @@ const onSaveConfig = handleSaveConfig(async (values) => {
 
 <template>
   <div class="space-y-6">
-    <Card>
+    <!-- <Card>
       <CardHeader>
         <CardTitle>Account Settings</CardTitle>
       </CardHeader>
@@ -153,7 +153,7 @@ const onSaveConfig = handleSaveConfig(async (values) => {
           </form>
         </div>
       </CardContent>
-    </Card>
+    </Card> -->
 
     <Card>
       <CardHeader>

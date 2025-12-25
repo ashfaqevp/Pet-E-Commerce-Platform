@@ -53,7 +53,7 @@ onBeforeUnmount(() => {
 const navItems = [
   { path: "/", label: "Home", icon: "lucide:home" },
   { path: "/cart", label: "Cart", icon: "lucide:shopping-cart" },
-  { path: "/wishlist", label: "Wishlist", icon: "lucide:heart" },
+  // { path: "/wishlist", label: "Wishlist", icon: "lucide:heart" },
   { path: "/profile", label: "Profile", icon: "lucide:user-round" },
 ];
 
@@ -170,6 +170,8 @@ watch(user, () => {
 
           <!-- Desktop: actions -->
           <div class="hidden md:flex items-center gap-2">
+            <!-- Wishlist button commented out -->
+            <!--
             <Button
               variant="ghost"
               size="icon"
@@ -177,6 +179,7 @@ watch(user, () => {
             >
               <Icon name="lucide:heart" class="h-5 w-5" />
             </Button>
+            -->
             <NuxtLink to="/cart">
               <div class="relative">
                 <Button
@@ -216,7 +219,7 @@ watch(user, () => {
     <nav
       class="md:hidden fixed bottom-0 inset-x-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70"
     >
-      <div class="grid grid-cols-4 gap-1 py-2">
+      <div class="grid grid-cols-3 gap-1 py-2">
         <NuxtLink
           v-for="item in navItems"
           :key="item.path"

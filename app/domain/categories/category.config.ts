@@ -16,7 +16,6 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   type: {
     label: 'Product Type',
     dependsOn: 'pet',
-    required: true,
     rules: [
       {
         when: { category: 'pet', values: ['cat', 'dog', 'bird', 'fish', 'other'] },
@@ -36,9 +35,6 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   age: {
     label: 'Age Group',
     dependsOn: 'pet',
-    requiredWhen: [
-      { category: 'pet', values: ['cat', 'dog'] },
-    ],
     rules: [
       {
         when: { category: 'pet', values: ['cat'] },
@@ -81,9 +77,6 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   size: {
     label: 'Size',
     dependsOn: 'unit',
-    requiredWhen: [
-      { category: 'unit', values: ['gram', 'ml', 'liter', 'piece'] },
-    ],
     rules: [
       {
         when: { category: 'unit', values: ['gram'] },
@@ -120,9 +113,6 @@ export const CATEGORY_CONFIG: CategoryConfig = {
 flavour: {
   label: 'Flavour',
   dependsOn: 'type',
-  requiredWhen: [
-    { category: 'type', values: ['food', 'treats'] },
-  ],
   rules: [
     {
       when: { category: 'type', values: ['food', 'treats'] },

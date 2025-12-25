@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { toast } from 'vue-sonner'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm, useField } from 'vee-validate'
 import { z } from 'zod'
@@ -220,12 +219,6 @@ watch(productKind, (v) => {
 
 const onSubmit = async () => {
   await handleSubmit(async (values) => {
-    const hasThumb = !!(thumbnailFile.value || existingThumbnailUrl.value)
-    if (!hasThumb) {
-      thumbnailError.value = 'Thumbnail is required'
-      toast.error('Thumbnail is required')
-      return
-    }
     emit('submit', {
       name: values.name,
       description: values.description,
@@ -252,9 +245,6 @@ const thumbnailFile = ref<File | null>(null)
 const thumbnailPreview = ref<string | null>(null)
 const existingThumbnailUrl = ref<string | null>(null)
 const hasThumbnailRef = ref(false)
-const thumbnailError = ref<string | null>(null)
-const allowedThumbTypes = ['image/jpeg', 'image/png', 'image/webp'] as const
-const maxThumbSizeBytes = 2 * 1024 * 1024
 
 
 const galleryFiles = ref<File[]>([])
@@ -264,22 +254,7 @@ const existingGalleryUrls = ref<string[]>([])
 const onThumbChange = (e: Event) => {
   const target = e.target as HTMLInputElement
   const file = target.files?.[0] || null
-  thumbnailError.value = null
   if (file) {
-    const typeOk = allowedThumbTypes.includes(file.type as (typeof allowedThumbTypes)[number])
-    const sizeOk = file.size <= maxThumbSizeBytes
-    if (!typeOk) {
-      thumbnailError.value = 'Only PNG, JPEG, or WEBP allowed'
-      thumbnailFile.value = null
-      thumbnailPreview.value = null
-      return
-    }
-    if (!sizeOk) {
-      thumbnailError.value = 'Image too large (max 2 MB)'
-      thumbnailFile.value = null
-      thumbnailPreview.value = null
-      return
-    }
     thumbnailFile.value = file
     thumbnailPreview.value = URL.createObjectURL(file)
     existingThumbnailUrl.value = null
@@ -293,7 +268,6 @@ const onThumbChange = (e: Event) => {
 const clearThumbnail = () => {
   thumbnailFile.value = null
   thumbnailPreview.value = null
-  thumbnailError.value = null
   hasThumbnailRef.value = !!(existingThumbnailUrl.value)
 }
 
@@ -366,11 +340,10 @@ const baseProductsErrored = computed(() => !!baseProductsState.error.value)
                     <AvatarFallback>IMG</AvatarFallback>
                   </Avatar>
                   <div class="flex items-center gap-2">
-                    <Input id="thumbnail" type="file" accept="image/png,image/jpeg,image/webp" class="w-56" @change="onThumbChange" />
+                    <Input id="thumbnail" type="file" accept="image/*" class="w-56" @change="onThumbChange" />
                     <Button variant="outline" @click.prevent="clearThumbnail">Remove</Button>
                   </div>
                 </div>
-                <p v-if="thumbnailError || (!hasThumbnailRef && submitCount > 0)" class="text-destructive text-xs">{{ thumbnailError || 'Thumbnail is required' }}</p>
                 
               </div>
               <div class="flex flex-col gap-1.5 md:col-span-2">

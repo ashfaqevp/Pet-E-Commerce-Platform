@@ -16,9 +16,9 @@ interface Banner {
 }
 // Carousel banners from public folder
 const banners: Banner[] = [
+  { mobile: '/images/banners/3-desktop.png', desktop: '/images/banners/3-desktop.png' },
   { mobile: '/images/banners/1-mobile.png', desktop: '/images/banners/1-desktop.png' },
   { mobile: '/images/banners/2-desktop.png', desktop: '/images/banners/2-desktop.png' },
-  { mobile: '/images/banners/3-desktop.png', desktop: '/images/banners/3-desktop.png' },
 ]
 const categories = [
   { id: 'cat', name: 'Cat', icon: 'emojione-v1:cat-face' },

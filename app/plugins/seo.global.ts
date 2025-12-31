@@ -24,8 +24,8 @@ export default defineNuxtPlugin(() => {
           children: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebSite',
-            name: appConfig.site?.name || 'Blackhorse',
-            url: siteUrl || 'http://localhost:3000',
+            name: appConfig.site?.name || 'Buypets.om',
+            url: siteUrl || 'https://buypets.om',
           }),
         },
       ],
@@ -34,7 +34,7 @@ export default defineNuxtPlugin(() => {
     useSeoMeta({
       description: appConfig.site?.description || 'Quality pet products online',
       ogType: 'website',
-      ogSiteName: appConfig.site?.name || 'Blackhorse',
+      ogSiteName: appConfig.site?.name || 'Buypets.om',
       ogImage: appConfig.site?.defaultOgImage || '/favicon-96x96.png',
       twitterCard: 'summary_large_image',
     })

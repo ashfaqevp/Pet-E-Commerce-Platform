@@ -224,7 +224,7 @@ const runtimeConfig = useRuntimeConfig()
 const siteUrl = String(runtimeConfig.public.siteUrl || '').replace(/\/+$/, '')
 const ogUrl = computed(() => `${siteUrl}${route.fullPath.split('?')[0]}`)
 const firstImage = computed(() => (product.value?.images?.[0] || product.value?.thumbnail || '/favicon-96x96.png'))
-const seoTitle = computed(() => (product.value?.name ? `${product.value.name} | Blackhorse` : 'Product | Blackhorse'))
+const seoTitle = computed(() => (product.value?.name ? `${product.value.name} | Buypets.om` : 'Product | Buypets.om'))
 const seoDescription = computed(() => {
   const name = product.value?.name || 'Product'
   const brand = product.value?.brand ? ` by ${product.value.brand}` : ''

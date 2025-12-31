@@ -22,7 +22,7 @@ pageTitle.value = 'Checkout'
 const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Checkout' }]
 
 useSeoMeta({
-  title: 'Checkout | Blackhorse',
+  title: 'Checkout | Buypets.om',
   description: 'Secure checkout for your pet products order.',
   robots: 'noindex, nofollow',
 })

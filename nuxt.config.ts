@@ -67,14 +67,14 @@ export default defineNuxtConfig({
   app: {
     head: {
       htmlAttrs: { lang: 'en' },
-      title: 'Blackhorse - Pet E-Commerce',
+      title: 'Buypets.om - Pet E-Commerce',
       meta: [
         { name: 'description', content: 'Quality pet products online' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'robots', content: 'index,follow' },
         { name: 'theme-color', content: '#000000' },
         { property: 'og:type', content: 'website' },
-        { property: 'og:site_name', content: 'Blackhorse' },
+        { property: 'og:site_name', content: 'Buypets.om' },
         { name: 'twitter:card', content: 'summary_large_image' },
       ],
       link: [

@@ -18,7 +18,7 @@ pageTitle.value = 'Cart'
 const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Cart' }]
 
 useSeoMeta({
-  title: 'Cart | Blackhorse',
+  title: 'Cart | Buypets.om',
   description: 'View items in your cart and proceed to checkout.',
   robots: 'noindex, nofollow',
 })

@@ -116,7 +116,7 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Blackhorse - Pet E-Commerce',
+      title: 'Buypets.om - Pet E-Commerce',
       meta: [
         { name: 'description', content: 'Quality pet products online' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
@@ -210,7 +210,7 @@ RAZORPAY_KEY_ID=your-actual-key
   <div class="min-h-screen bg-gray-50">
     <div class="bg-white border-b">
       <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-primary">🏇 Blackhorse</h1>
+        <h1 class="text-2xl font-bold text-primary">🏇 Buypets.om</h1>
         <div class="flex gap-4">
           <NuxtLink to="/browse" class="text-teal-600">Browse</NuxtLink>
           <NuxtLink to="/cart" class="text-teal-600">Cart</NuxtLink>
@@ -341,7 +341,7 @@ const selectedPet = ref(null)
 <template>
   <div class="min-h-screen bg-gradient-to-br from-teal-50 to-blue-50 flex items-center justify-center px-4">
     <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
-      <h1 class="text-3xl font-bold text-center mb-2">Blackhorse</h1>
+      <h1 class="text-3xl font-bold text-center mb-2">Buypets.om</h1>
       <p class="text-center text-gray-600 mb-6">Create Account</p>
 
       <form @submit.prevent="register" class="space-y-4">

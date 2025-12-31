@@ -99,8 +99,8 @@ const { width } = useWindowSize()
 const isMobile = computed(() => width.value < 768)
 
 useSeoMeta({
-  title: 'Blackhorse — Quality Pet Products',
-  ogTitle: 'Blackhorse — Quality Pet Products',
+  title: 'Buypets.om — Quality Pet Products',
+  ogTitle: 'Buypets.om — Quality Pet Products',
   description: 'Shop premium pet supplies for cats, dogs, birds and fish. Fast delivery and great prices.',
   ogDescription: 'Shop premium pet supplies for cats, dogs, birds and fish. Fast delivery and great prices.',
   ogImage: '/favicon-96x96.png',

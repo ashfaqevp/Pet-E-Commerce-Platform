@@ -1,6 +1,6 @@
 export default defineAppConfig({
   site: {
-    name: 'Blackhorse',
+    name: 'Buypets.om',
     description: 'Quality pet products for cats, dogs, birds, fish and more.',
     defaultOgImage: '/favicon-96x96.png',
     color: {

@@ -21,8 +21,8 @@ pageTitle.value = 'Products'
 const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'Products' }]
 
 useSeoMeta({
-  title: 'Products | Blackhorse',
-  ogTitle: 'Products | Blackhorse',
+  title: 'Products | Buypets.om',
+  ogTitle: 'Products | Buypets.om',
   description: 'Browse pet products by category, flavour, size and more.',
   ogDescription: 'Browse pet products by category, flavour, size and more.',
   ogImage: '/favicon-96x96.png',

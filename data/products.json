@@ -1,6554 +1,7373 @@
 [
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Kitten Chicken 85g",
     "price": 0.3,
     "rowIndex": 1,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet adult beef 85g",
     "price": 0.3,
     "rowIndex": 2,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet adult Chicken 85g",
     "price": 0.3,
     "rowIndex": 3,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet adult Salmon 85g",
     "price": 0.3,
     "rowIndex": 4,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Tuna 85g",
     "price": 0.3,
     "rowIndex": 5,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Lamb 85g",
     "price": 0.3,
     "rowIndex": 6,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Kitten Chicken 85g",
     "price": 0.25,
     "rowIndex": 7,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Chicken 85g",
     "price": 0.25,
     "rowIndex": 8,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Beef 85g",
     "price": 0.25,
     "rowIndex": 9,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Lamb 85g",
     "price": 0.25,
     "rowIndex": 10,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet adult Salmon 85g",
     "price": 0.25,
     "rowIndex": 11,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet adult beef 400g",
     "price": 0.5,
     "rowIndex": 12,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet adult Chicken 400g",
     "price": 0.5,
     "rowIndex": 13,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet kitten chicken 400g",
     "price": 0.5,
     "rowIndex": 14,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Lamb 400g",
     "price": 0.5,
     "rowIndex": 15,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Salmon 400g",
     "price": 0.5,
     "rowIndex": 16,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Tuna & Anchovy 400g",
     "price": 0.5,
     "rowIndex": 17,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Kitten Chicken 1kg",
     "price": 1.5,
     "rowIndex": 18,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Chicken 1kg",
     "price": 1.5,
     "rowIndex": 19,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Mix 1Kg",
     "price": 1.5,
     "rowIndex": 20,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Salmon 1Kg",
     "price": 1.5,
     "rowIndex": 21,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Chicken 15kg",
     "price": 14,
     "rowIndex": 22,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Adult Mix 15Kg",
     "price": 14,
     "rowIndex": 23,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy feed adult  Gourmet 1.5kg",
     "price": 2.5,
     "rowIndex": 24,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy feed adult Chicken 1.5 kg",
     "price": 2.5,
     "rowIndex": 25,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy feed kitten Chicken 1.5 kg",
     "price": 2.5,
     "rowIndex": 26,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy feed Sterelised Salmon 1.5 kg",
     "price": 2.5,
     "rowIndex": 27,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy feed adult Chicken 15kg",
     "price": 12.5,
     "rowIndex": 28,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy feed adult Gourmet 15kg",
     "price": 12.5,
     "rowIndex": 29,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy feed adult Salmon.15kg",
     "price": 12.5,
     "rowIndex": 30,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "OPTILIFE adult  chicken 1.kg",
     "price": 4,
     "rowIndex": 31,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "OPTILIFE kitten chicken 1.kg",
     "price": 4,
     "rowIndex": 32,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "OPTILIFE adult chicken 2.5kg",
     "price": 7,
     "rowIndex": 33,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "OPTILIFE kitten chicken 2.5kg",
     "price": 7,
     "rowIndex": 34,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Junior Chicken 350gm",
     "price": 1,
     "rowIndex": 35,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Chicken 350gm",
     "price": 1,
     "rowIndex": 36,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Junior Chicken 2kg",
     "price": 3.5,
     "rowIndex": 37,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Chicken 2kg",
     "price": 3.5,
     "rowIndex": 38,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Indoor Chicken 2kg",
     "price": 3.5,
     "rowIndex": 39,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Salmon 2kg",
     "price": 3.5,
     "rowIndex": 40,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Beef  2kg",
     "price": 3.5,
     "rowIndex": 41,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult LAMB  2kg",
     "price": 3.5,
     "rowIndex": 42,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Senior 2kg",
     "price": 3.5,
     "rowIndex": 43,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Beef 10.kg",
     "price": 12.5,
     "rowIndex": 44,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult LAMB 10.kg",
     "price": 12.5,
     "rowIndex": 45,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Chicken 10kg",
     "price": 12.5,
     "rowIndex": 46,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Lara Adult Salmon 10kg",
     "price": 12.5,
     "rowIndex": 47,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Classic Variety 4kg",
     "price": 5,
     "rowIndex": 48,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Classic Variety 10kg",
     "price": 9.5,
     "rowIndex": 49,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Enjoy Adult Chicken 1kg",
     "price": 1.5,
     "rowIndex": 50,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Enjoy Adult Chicken 10kg",
     "price": 8.5,
     "rowIndex": 51,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Enjoy Adult Multicolour Chicken 10kg",
     "price": 8.5,
     "rowIndex": 52,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Enjoy Adult Multicolour Chicken 20kg",
     "price": 16,
     "rowIndex": 53,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Plus Kitten Chicken 1.5 Kg",
     "price": 3.3,
     "rowIndex": 54,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Plus Adult Chicken 1.5 Kg",
     "price": 3.3,
     "rowIndex": 55,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Plus Urinary Chicken 1.5 Kg",
     "price": 3.3,
     "rowIndex": 56,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Plus Mother & Baby Lamb & Rice1.5 Kg",
     "price": 3.3,
     "rowIndex": 57,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Plus Lamb & Rice1.5 Kg",
     "price": 3.3,
     "rowIndex": 58,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Plus Salmon 1.5 Kg",
     "price": 3.3,
     "rowIndex": 59,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Plus Skin Care Salmon 1.5 Kg",
     "price": 3.3,
     "rowIndex": 60,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Plus Kitten Chicken 8Kg",
     "price": 3.3,
     "rowIndex": 61,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Kitten Chicken & Rice 2kg",
     "price": 3.3,
     "rowIndex": 62,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Adult Chicken & Rice 2kg",
     "price": 3.3,
     "rowIndex": 63,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Adult Gourmet  Chicken & Rice 2kg",
     "price": 3.3,
     "rowIndex": 64,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Adult Salmon & Anchovy 2kg",
     "price": 3.3,
     "rowIndex": 65,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Sterelised Salmon & Rice 2kg",
     "price": 3.3,
     "rowIndex": 66,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Adult Chicken & Rice 15kg",
     "price": 15,
     "rowIndex": 67,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Adult Gourmet  Chicken & Rice 15kg",
     "price": 15,
     "rowIndex": 68,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Adult Salmon & Anchovy 15kg",
     "price": 15,
     "rowIndex": 69,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Purepet Adult Chicken 3kg",
     "price": 4,
     "rowIndex": 70,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Purepet Adult Ocean Fish 3kg",
     "price": 4,
     "rowIndex": 71,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Purepet Adult Chicken 7kg",
     "price": 6,
     "rowIndex": 72,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Purepet Adult Persian Ocean Fish 3kg",
     "price": 4,
     "rowIndex": 73,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Purepet Adult Tuna & Salmon  7kg",
     "price": 6,
     "rowIndex": 74,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Sensitive Stomach & Intestine 85g",
     "price": 0.5,
     "rowIndex": 75,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Sensitive Skin & Coat 85g",
     "price": 0.5,
     "rowIndex": 76,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Kitten & Junior Farm Duck 85g",
     "price": 0.5,
     "rowIndex": 77,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Kitten & Junior Farm Poultry 85g",
     "price": 0.5,
     "rowIndex": 78,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Farm Poultry 85g",
     "price": 0.5,
     "rowIndex": 79,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Farm Duck 85g",
     "price": 0.5,
     "rowIndex": 80,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Bavarian Beef 85g",
     "price": 0.5,
     "rowIndex": 81,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Farm Lamb 85g",
     "price": 0.5,
     "rowIndex": 82,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Atlantic Salmon 85g",
     "price": 0.5,
     "rowIndex": 83,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Spring Water Trout 85g",
     "price": 0.5,
     "rowIndex": 84,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Duo Poultry & Beef 100g",
     "price": 0.7,
     "rowIndex": 85,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Duo Poultry & Lamb 100g",
     "price": 0.7,
     "rowIndex": 86,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Duo Poultry & Salmon 100g",
     "price": 0.7,
     "rowIndex": 87,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Chicken Drink 135ml",
     "price": 1,
     "rowIndex": 88,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Tuna Drink 135ml",
     "price": 1,
     "rowIndex": 89,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Salmon Drink 135ml",
     "price": 1,
     "rowIndex": 90,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Kitten 1.3kg",
     "price": 5,
     "rowIndex": 91,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Junior 1.3kg",
     "price": 5,
     "rowIndex": 92,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Sensitive Stomach & Intestine 1.3kg",
     "price": 5,
     "rowIndex": 93,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Sensitive Skin & Coat 1.3g",
     "price": 5,
     "rowIndex": 94,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Kitten 1.5kg",
     "price": 4.5,
     "rowIndex": 95,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Junior 1.5kg",
     "price": 4.5,
     "rowIndex": 96,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Perfect Mix 1.5Kg",
     "price": 4.5,
     "rowIndex": 97,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Sterelised 1.5Kg",
     "price": 4.5,
     "rowIndex": 98,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Hairball Control 1.5kg",
     "price": 4.5,
     "rowIndex": 99,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Urinary 1.5kg",
     "price": 4.5,
     "rowIndex": 100,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Kitten 10kg",
     "price": 17.5,
     "rowIndex": 101,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Junior 10kg",
     "price": 17.5,
     "rowIndex": 102,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Perfect Mix 10kg",
     "price": 17.5,
     "rowIndex": 103,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Sterelised 10kg",
     "price": 17.5,
     "rowIndex": 104,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Hairball Control 10kg",
     "price": 17.5,
     "rowIndex": 105,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Cat Urinary 10kg",
     "price": 17.5,
     "rowIndex": 106,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult British Shorthair 85g*12",
     "price": 0.8,
     "rowIndex": 107,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Digest Sensitive 85g*12",
     "price": 0.8,
     "rowIndex": 108,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hair & Skin Gravy 85g*12",
     "price": 0.8,
     "rowIndex": 109,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hair & Skin Jelly 85g*12",
     "price": 0.8,
     "rowIndex": 110,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hairball 85g*12",
     "price": 0.8,
     "rowIndex": 111,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Indoor 85g*12",
     "price": 0.8,
     "rowIndex": 112,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Instinctive Gravy 85g*12",
     "price": 0.8,
     "rowIndex": 113,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Instinctive Jelly 85g*12",
     "price": 0.8,
     "rowIndex": 114,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Kitten 85g*12",
     "price": 0.8,
     "rowIndex": 115,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Light Weight 85g*12",
     "price": 0.8,
     "rowIndex": 116,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult  Maine Coon 85g*12",
     "price": 0.8,
     "rowIndex": 117,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult Persian 85g*12",
     "price": 0.8,
     "rowIndex": 118,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Sterelised 85g*12",
     "price": 0.8,
     "rowIndex": 119,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Urinary 85g*12",
     "price": 0.8,
     "rowIndex": 120,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Mother & Baby 195g",
     "price": 3,
     "rowIndex": 121,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Kitten 400g",
     "price": 3,
     "rowIndex": 122,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Mother & Baby 400g",
     "price": 3,
     "rowIndex": 123,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Light Weight 1.5kg",
     "price": 11.5,
     "rowIndex": 124,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Indoor 7+ 1.5kg",
     "price": 11.5,
     "rowIndex": 125,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Digestive 2kg",
     "price": 13.5,
     "rowIndex": 126,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hair & Skin 2kg",
     "price": 13.5,
     "rowIndex": 127,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hairball 2kg",
     "price": 13.5,
     "rowIndex": 128,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Indoor 2kg",
     "price": 13.5,
     "rowIndex": 129,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin IndoorLong Hair 2kg",
     "price": 13.5,
     "rowIndex": 130,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Kiitten 2kg",
     "price": 13.5,
     "rowIndex": 131,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Mother & Baby 2kg",
     "price": 13.5,
     "rowIndex": 132,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult Persian 2kg",
     "price": 13.5,
     "rowIndex": 133,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Kitten Persian 2kg",
     "price": 13.5,
     "rowIndex": 134,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Regular Fit 2kg",
     "price": 13.5,
     "rowIndex": 135,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Regular Sensible 2kg",
     "price": 13.5,
     "rowIndex": 136,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Regular Sterelised 2kg",
     "price": 13.5,
     "rowIndex": 137,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Urinary 2kg",
     "price": 13.5,
     "rowIndex": 138,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Ragdoll 2kg",
     "price": 13.5,
     "rowIndex": 139,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Kitten British Shorthair 2kg",
     "price": 13.5,
     "rowIndex": 140,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult British Shorthair 2kg",
     "price": 13.5,
     "rowIndex": 141,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult British Shorthair 4kg",
     "price": 24,
     "rowIndex": 142,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult Persian 4kg",
     "price": 24,
     "rowIndex": 143,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hair & Skin 4kg",
     "price": 24,
     "rowIndex": 144,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hairball 4kg",
     "price": 24,
     "rowIndex": 145,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Indoor 4kg",
     "price": 24,
     "rowIndex": 146,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Kiitten 4kg",
     "price": 24,
     "rowIndex": 147,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Mother & Baby 4kg",
     "price": 24,
     "rowIndex": 148,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult British Shorthair 10kg",
     "price": 42,
     "rowIndex": 149,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult Persian 10kg",
     "price": 42,
     "rowIndex": 150,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hair & Skin 10kg",
     "price": 42,
     "rowIndex": 151,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Hairball 10kg",
     "price": 42,
     "rowIndex": 152,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Indoor 10kg",
     "price": 42,
     "rowIndex": 153,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Kitten 10kg",
     "price": 42,
     "rowIndex": 154,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Regular Fit 10kg",
     "price": 42,
     "rowIndex": 155,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Faenbei Cat Treat Chicken 15g",
     "price": 0.2,
     "rowIndex": 156,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Faenbei Cat Treat Tuna 15g",
     "price": 0.2,
     "rowIndex": 157,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Faenbei Cat Treat Salmon 15g",
     "price": 0.2,
     "rowIndex": 158,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Faenbei Cat Stick Chicken Egg Yolk 15g",
     "price": 0.2,
     "rowIndex": 159,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Faenbei Cat Stick Salmon Antarctic Krill15g",
     "price": 0.2,
     "rowIndex": 160,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Faenbei Cat Stick Tuna Mussels15g",
     "price": 0.2,
     "rowIndex": 161,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Besgerpet Tuna Chicken 16g",
     "price": 0.2,
     "rowIndex": 162,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Besgerpet Tuna Shrimp 16g",
     "price": 0.2,
     "rowIndex": 163,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Besgerpet Salmon Shrimp 16g",
     "price": 0.2,
     "rowIndex": 164,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Meat Selection In Jelly 85g",
     "price": 3.5,
     "rowIndex": 165,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Fish Selection In Jelly 85g",
     "price": 3.5,
     "rowIndex": 166,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Meat Menus In Jelly 85g",
     "price": 3.5,
     "rowIndex": 167,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Ocean Menus In Jelly 85g",
     "price": 3.5,
     "rowIndex": 168,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Favourite Selection In Jelly 85g",
     "price": 3.5,
     "rowIndex": 169,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Kitten Chicken 85g*12",
     "price": 3.5,
     "rowIndex": 170,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Kitten Tuna 85g*12",
     "price": 3.5,
     "rowIndex": 171,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Adult Chicken 85g*12",
     "price": 3.5,
     "rowIndex": 172,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Adult Tuna 85g*13",
     "price": 3.5,
     "rowIndex": 173,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Salmon 85g*12",
     "price": 3.5,
     "rowIndex": 174,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Sardine 85g*12",
     "price": 3.5,
     "rowIndex": 175,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Mackerel 85g*12",
     "price": 3.5,
     "rowIndex": 176,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Chicken & Spinach 85g*12",
     "price": 3.5,
     "rowIndex": 177,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Tuna & Spinach 85g*12",
     "price": 3.5,
     "rowIndex": 178,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Felix Salmon & Tomato 85g*12",
     "price": 3.5,
     "rowIndex": 179,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Canifors Kitten Pate 100g",
     "price": 0.4,
     "rowIndex": 180,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Canifors Pate With Chicken 100g",
     "price": 0.4,
     "rowIndex": 181,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Canifors Pate With Beef 100g",
     "price": 0.4,
     "rowIndex": 182,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Canifors Pate With Salmon 100g",
     "price": 0.4,
     "rowIndex": 183,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Canifors Pate With Game 100g",
     "price": 0.4,
     "rowIndex": 184,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Canifors Kitten 1.5kg",
     "price": 3.5,
     "rowIndex": 185,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Canifors Adult 2kg",
     "price": 4,
     "rowIndex": 186,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Carnivore Chicken with Kanikama in Jelly 70g*12",
     "price": 3.5,
     "rowIndex": 187,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Carnivore Chicken with Shrimp in Jelly 70g*12",
     "price": 3.5,
     "rowIndex": 188,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Carnivore Tuna in Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 189,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Carnivore Chicken with Salmon in Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 190,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Carnivore Chicken in Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 191,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Carnivore Tuna with Chicken in Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 192,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Immunity Chicken Topping Pumpkin & Carrot In Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 193,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Muscle Chicken Topping Tuna In Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 194,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Indoor Tuna topping Kanikama In Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 195,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Bone & Joint Tuna Topping Chicken In Shirasu In Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 196,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Beauty Tuna Topping Chicken In Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 197,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Balance Tuna in Gravy 70g*12",
     "price": 3.5,
     "rowIndex": 198,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Calming Chicken Topping Salmon In Jelly 70g*12",
     "price": 3.5,
     "rowIndex": 199,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Omega Plus Chicken Topping Cheese In Jelly 70g*12",
     "price": 3.5,
     "rowIndex": 200,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Skin & Coat Tuna Topping Shrimp and Scallop In Jelly 70g*12",
     "price": 3.5,
     "rowIndex": 201,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Hairball Tuna Topping Chicken In Jelly 70g*12",
     "price": 3.5,
     "rowIndex": 202,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Maintenance Tuna In Jelly 70g*12",
     "price": 3.5,
     "rowIndex": 203,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Pramy Sterilized Tuna Topping Salmon In Jelly 70g*12",
     "price": 3.5,
     "rowIndex": 204,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bioline Salmon Oil 250ml",
     "price": 4.5,
     "rowIndex": 205,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Beapher Salmon Oil 430ml",
     "price": 7,
     "rowIndex": 206,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 5L Lavender",
     "price": 1.5,
     "rowIndex": 207,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 5L Lemon",
     "price": 1.5,
     "rowIndex": 208,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 5L Apple",
     "price": 1.5,
     "rowIndex": 209,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 5L Coffee",
     "price": 1.5,
     "rowIndex": 210,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 5L Baby Powder",
     "price": 1.5,
     "rowIndex": 211,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 10L Lavender",
     "price": 2.5,
     "rowIndex": 212,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 10L Lemon",
     "price": 2.5,
     "rowIndex": 213,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 10L Apple",
     "price": 2.5,
     "rowIndex": 214,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 10L Coffee",
     "price": 2.5,
     "rowIndex": 215,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 10L Baby Powder",
     "price": 2.5,
     "rowIndex": 216,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 25L Lavender",
     "price": 4.5,
     "rowIndex": 217,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 25L Lemon",
     "price": 4.5,
     "rowIndex": 218,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 25L Apple",
     "price": 4.5,
     "rowIndex": 219,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 25L Coffee",
     "price": 4.5,
     "rowIndex": 220,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Clean + 25L Baby Powder",
     "price": 4.5,
     "rowIndex": 221,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Cat & Kitten 5L Lavender",
     "price": 1.5,
     "rowIndex": 222,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Cat & Kitten 5L Apple",
     "price": 1.5,
     "rowIndex": 223,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Tofu Original 2.5kg",
     "price": 2,
     "rowIndex": 224,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Tofu Green Tea 2.5kg",
     "price": 2,
     "rowIndex": 225,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "Crystal 5L",
     "price": 3,
     "rowIndex": 226,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Litter",
     "photo": null,
     "item": "IdealCat Crystal 12L",
     "price": 11,
     "rowIndex": 227,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Litter",
+    "product_type": "grooming"
   },
   {
-    "category2": "Catnip",
     "photo": null,
     "item": "Bioline Catnip Spray 50ml",
     "price": 1.5,
     "rowIndex": 228,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Catnip",
+    "product_type": "treats"
   },
   {
-    "category2": "Catnip",
     "photo": null,
     "item": "Bioline Catnip 20g",
     "price": 2.8,
     "rowIndex": 229,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Catnip",
+    "product_type": "treats"
   },
   {
-    "category2": "Pet Milk",
     "photo": null,
     "item": "Bioline Pet Mik 220ml",
     "price": 2,
     "rowIndex": 230,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Pet Milk",
+    "product_type": "food"
   },
   {
-    "category2": "Pet Milk",
     "photo": null,
     "item": "Bioline Goat Milk 200g",
     "price": 6.5,
     "rowIndex": 231,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Pet Milk",
+    "product_type": "food"
   },
   {
-    "category2": "Pet Milk",
     "photo": null,
     "item": "Verse Laga Pet Milk 400g",
     "price": 9.5,
     "rowIndex": 232,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Pet Milk",
+    "product_type": "food"
   },
   {
-    "category2": "Deodoriser",
     "photo": null,
     "item": "Beapher Cat Deodoriser Ocean Breeze 400g",
     "price": 3.5,
     "rowIndex": 233,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Deodoriser",
+    "product_type": "grooming"
   },
   {
-    "category2": "Deodoriser",
     "photo": null,
     "item": "Beapher Cat Deodoriser Vanilla & Melon 400g",
     "price": 3.5,
     "rowIndex": 234,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Deodoriser",
+    "product_type": "grooming"
   },
   {
-    "category2": "Deodoriser",
     "photo": null,
     "item": "Beapher Cat Deodoriser Bloemen Floral 400g",
     "price": 3.5,
     "rowIndex": 235,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Deodoriser",
+    "product_type": "grooming"
   },
   {
-    "category2": "Deodoriser",
     "photo": null,
     "item": "Bioline Deodoriser 425g",
     "price": 3.5,
     "rowIndex": 236,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Deodoriser",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Bioline Pet Perfume 10ml - 15Pcs/Box",
     "price": 22.5,
     "rowIndex": 237,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Diva 100ml",
     "price": 4.5,
     "rowIndex": 238,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Duke 100ml",
     "price": 4.5,
     "rowIndex": 239,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Fruit Punch 100ml",
     "price": 4.5,
     "rowIndex": 240,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Lavender 100ml",
     "price": 4.5,
     "rowIndex": 241,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Original 100ml",
     "price": 4.5,
     "rowIndex": 242,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Prince 100ml",
     "price": 4.5,
     "rowIndex": 243,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Princess 100ml",
     "price": 4.5,
     "rowIndex": 244,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Deshedding Shampoo 200ml",
     "price": 2.8,
     "rowIndex": 245,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Insect Repellant Shampoo 200ml",
     "price": 2.8,
     "rowIndex": 246,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Kitten Shampoo 200ml",
     "price": 2.8,
     "rowIndex": 247,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline MultiColoured Hair  Shampoo 200ml",
     "price": 2.8,
     "rowIndex": 248,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline White Coat Shampoo 200ml",
     "price": 2.8,
     "rowIndex": 249,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Cat Shampoo 250ml",
     "price": 3.5,
     "rowIndex": 250,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Glossy Coat Shampoo 250ml",
     "price": 3.5,
     "rowIndex": 251,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Long Hair Shampoo 250ml",
     "price": 3.5,
     "rowIndex": 252,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Padovan Charmy 7 Shampoo 250ml",
     "price": 3,
     "rowIndex": 253,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Mikki Cat & Kitten Shampoo 250ml",
     "price": 3,
     "rowIndex": 254,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Beapher Shampoo 250ml",
     "price": 3.5,
     "rowIndex": 255,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Dry Clean Shampoo 100g",
     "price": 3,
     "rowIndex": 256,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Beapher Multi-Vit 20ml",
     "price": 4,
     "rowIndex": 257,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Beapher Top 10 Tablets",
     "price": 4.5,
     "rowIndex": 258,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Beapher Junior Paste 100g",
     "price": 3.5,
     "rowIndex": 259,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Beapher Malt Paste 100g",
     "price": 3.5,
     "rowIndex": 260,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Beapher Multi Vitamin Paste 100g",
     "price": 3.5,
     "rowIndex": 261,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Energy Kitten Paste 100g",
     "price": 2.5,
     "rowIndex": 262,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Energy Malt Paste 100g",
     "price": 2.5,
     "rowIndex": 263,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Energy Multi Paste 100g",
     "price": 2.5,
     "rowIndex": 264,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Bioline Probiotics 3g*10",
     "price": 3,
     "rowIndex": 265,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Calming Spray 120ml",
     "price": 4.5,
     "rowIndex": 266,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Eye Care 50ml",
     "price": 2.8,
     "rowIndex": 267,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Ear Care 50ml",
     "price": 2.8,
     "rowIndex": 268,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline TearStain Remover 50ml",
     "price": 2.8,
     "rowIndex": 269,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Ear Mite 30ml",
     "price": 3,
     "rowIndex": 270,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Flea & Tick Spray 175ml",
     "price": 3,
     "rowIndex": 271,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Alpharabhi Iverbird 100ml",
     "price": 2.5,
     "rowIndex": 272,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Keep Off Spray 175ml",
     "price": 3.5,
     "rowIndex": 273,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Paw Care Spray 50ml",
     "price": 2.5,
     "rowIndex": 274,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Pet Roller",
     "price": 2.5,
     "rowIndex": 275,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "14455-3",
     "price": 4.5,
     "rowIndex": 276,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "14455-4",
     "price": 4.5,
     "rowIndex": 277,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "13481-19",
     "price": 4.5,
     "rowIndex": 278,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "MY-4",
     "price": 5,
     "rowIndex": 279,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "1001",
     "price": 5,
     "rowIndex": 280,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "BH - 3",
     "price": 7,
     "rowIndex": 281,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "BH - 3 Open",
     "price": 8,
     "rowIndex": 282,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "BH - 4",
     "price": 10,
     "rowIndex": 283,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "BH - 4 Open",
     "price": 11,
     "rowIndex": 284,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "Linus 80494",
     "price": 10,
     "rowIndex": 285,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "HKX - 003",
     "price": 20,
     "rowIndex": 286,
-    "pet": "cat"
+    "pet": "cat",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Creamy Stick Chicken Salmon 14g",
     "price": 0.2,
     "rowIndex": 287,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Creamy Stick Chicken 14g",
     "price": 0.2,
     "rowIndex": 288,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Creamy Stick Duck 14g",
     "price": 0.2,
     "rowIndex": 289,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Chicken 400g",
     "price": 0.5,
     "rowIndex": 290,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Salmon 400g",
     "price": 0.5,
     "rowIndex": 291,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bestpet Beef 400g",
     "price": 0.5,
     "rowIndex": 292,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Classic Puppy 10Kg",
     "price": 9,
     "rowIndex": 293,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Classic Duo Krok 10Kg",
     "price": 8.5,
     "rowIndex": 294,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Classic Adult Lamb & Rice 20kg",
     "price": 16,
     "rowIndex": 295,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Life 20kg",
     "price": 17,
     "rowIndex": 296,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Reflex Lamb & Rice & Vegetable 15kg",
     "price": 14,
     "rowIndex": 297,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Dog Maxi Adult 4kg",
     "price": 12,
     "rowIndex": 298,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Dog Mini Adult Salmon & Rice 4kg",
     "price": 12,
     "rowIndex": 299,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Dog Mini Puppy 10kg",
     "price": 26,
     "rowIndex": 300,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Dog Puppy 15kg",
     "price": 26,
     "rowIndex": 301,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Dog Adult Lamb & Rice 15kg",
     "price": 25,
     "rowIndex": 302,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Happy Dog Adult Beef & Rice 15kg",
     "price": 25,
     "rowIndex": 303,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult Shih Tzu 85g",
     "price": 0.8,
     "rowIndex": 304,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Maxi Puppy 140g",
     "price": 1,
     "rowIndex": 305,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Maxi Adult 140g",
     "price": 1,
     "rowIndex": 306,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Medium Adult 140g",
     "price": 1,
     "rowIndex": 307,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Adult Shih Tzu 1.5kg",
     "price": 12.5,
     "rowIndex": 308,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Maxi Adult 10kg",
     "price": 27,
     "rowIndex": 309,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Maxi Adult 15kg",
     "price": 35,
     "rowIndex": 310,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Royal Canin Maxi Starter 15kg",
     "price": 38,
     "rowIndex": 311,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Bioline Salmon Oil 250ml",
     "price": 4.5,
     "rowIndex": 312,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Food",
     "photo": null,
     "item": "Beapher Salmon Oil 430ml",
     "price": 7,
     "rowIndex": 313,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Food",
+    "product_type": "food"
   },
   {
-    "category2": "Pet Milk",
     "photo": null,
     "item": "Bioline Pet Milk 220ml",
     "price": 2,
     "rowIndex": 314,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Pet Milk",
+    "product_type": "food"
   },
   {
-    "category2": "Pet Milk",
     "photo": null,
     "item": "Bioline Goat Milk 200g",
     "price": 6.5,
     "rowIndex": 315,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Pet Milk",
+    "product_type": "food"
   },
   {
-    "category2": "Pet Milk",
     "photo": null,
     "item": "Versele Laga Pet Milk 400g",
     "price": 9.5,
     "rowIndex": 316,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Pet Milk",
+    "product_type": "food"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Bioline Pet Perfume 10ml - 15Pcs/Box",
     "price": 22.5,
     "rowIndex": 317,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Diva 100ml",
     "price": 4.5,
     "rowIndex": 318,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Duke 100ml",
     "price": 4.5,
     "rowIndex": 319,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Fruit Punch 100ml",
     "price": 4.5,
     "rowIndex": 320,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Lavender 100ml",
     "price": 4.5,
     "rowIndex": 321,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Original 100ml",
     "price": 4.5,
     "rowIndex": 322,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Prince 100ml",
     "price": 4.5,
     "rowIndex": 323,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Groom Professional Princess 100ml",
     "price": 4.5,
     "rowIndex": 324,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Perfumes",
     "photo": null,
     "item": "Furrish Buzz 150ml",
     "price": 5,
     "rowIndex": 325,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Perfumes",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Puppy Shampoo 250ml",
     "price": 3.5,
     "rowIndex": 326,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Glossy Coat Shampoo 250ml",
     "price": 3.5,
     "rowIndex": 327,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Shampoo",
     "photo": null,
     "item": "Bioline Dry Clean Shampoo 100g",
     "price": 3.5,
     "rowIndex": 328,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Shampoo",
+    "product_type": "grooming"
   },
   {
-    "category2": "Pad",
     "photo": null,
     "item": "Beapher Puppy Pads",
     "price": 5,
     "rowIndex": 329,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Pad",
+    "product_type": "grooming"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Beapher Top 10 Tablets",
     "price": 4.5,
     "rowIndex": 330,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Vitamin",
     "photo": null,
     "item": "Bioline Probiotics 3g*10",
     "price": 3,
     "rowIndex": 331,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Vitamin",
+    "product_type": "health"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Calming Spray 120ml",
     "price": 4.5,
     "rowIndex": 332,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Eye Care 50ml",
     "price": 2.8,
     "rowIndex": 333,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Ear Care 50ml",
     "price": 2.8,
     "rowIndex": 334,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline TearStain Remover 50ml",
     "price": 2.8,
     "rowIndex": 335,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Ear Mite 30ml",
     "price": 3,
     "rowIndex": 336,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Flea & Tick Spray 175ml",
     "price": 3,
     "rowIndex": 337,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Alpharabhi Iverbird 100ml",
     "price": 2.5,
     "rowIndex": 338,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Puppy Training 50ml",
     "price": 2.5,
     "rowIndex": 339,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Grooming",
     "photo": null,
     "item": "Bioline Pet Roller",
     "price": 2.5,
     "rowIndex": 340,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Grooming",
+    "product_type": "grooming"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "14455-3",
     "price": 4.5,
     "rowIndex": 341,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "14455-4",
     "price": 4.5,
     "rowIndex": 342,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "13481-19",
     "price": 4.5,
     "rowIndex": 343,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "MY-4",
     "price": 5,
     "rowIndex": 344,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "1001",
     "price": 5,
     "rowIndex": 345,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "BH - 3",
     "price": 7,
     "rowIndex": 346,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "BH - 3 Open",
     "price": 8,
     "rowIndex": 347,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "BH - 4",
     "price": 10,
     "rowIndex": 348,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "BH - 4 Open",
     "price": 11,
     "rowIndex": 349,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "Linus 80494",
     "price": 10,
     "rowIndex": 350,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "Carry Cage",
     "photo": null,
     "item": "HKX - 003",
     "price": 20,
     "rowIndex": 351,
-    "pet": "dog"
+    "pet": "dog",
+    "label": "Carry Cage",
+    "product_type": "accessories"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "QL-ch-003",
     "price": 13,
     "rowIndex": 352,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA TANK A35",
     "price": 1.5,
     "rowIndex": 353,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA TANK T3",
     "price": 3,
     "rowIndex": 354,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA TANK A31",
     "price": 1.3,
     "rowIndex": 355,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA TANK WH886",
     "price": 2,
     "rowIndex": 356,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "plastic tank   vv20",
     "price": 13,
     "rowIndex": 357,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "acrylic mini tank vv21",
     "price": 15,
     "rowIndex": 358,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "nano tank ql-tk-02",
     "price": 13,
     "rowIndex": 359,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA TANK T1. S",
     "price": 1,
     "rowIndex": 360,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA TANK 41",
     "price": 15,
     "rowIndex": 361,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "GLASS BOWL 3 INCH",
     "price": 0.8,
     "rowIndex": 362,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA TANK PK2 (2)",
     "price": 8,
     "rowIndex": 363,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA TANK PK (2)",
     "price": 12,
     "rowIndex": 364,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "DOPHIN BETTA TANK BT105",
     "price": 1.3,
     "rowIndex": 365,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BRIDNG BOX H1010",
     "price": 1.8,
     "rowIndex": 366,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BRIDNG BOX H2010",
     "price": 2.5,
     "rowIndex": 367,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "ACRYLIC BETTA TANK B1010",
     "price": 2,
     "rowIndex": 368,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "ACRYLIC BETTA TANK B1810",
     "price": 3,
     "rowIndex": 369,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "ACRYLIC BETTA TANK B2709",
     "price": 3.8,
     "rowIndex": 370,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "ACRYLIC BETTA TANK B4509",
     "price": 4.8,
     "rowIndex": 371,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "ACRYLIC BETTA TANK B5409",
     "price": 7,
     "rowIndex": 372,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic BETTA tank BJ01(A)",
     "price": 1.5,
     "rowIndex": 373,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "BETTA CUP PLASTIC A5",
     "price": 0.15,
     "rowIndex": 374,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "NANO NB-100 (S)",
     "price": 14,
     "rowIndex": 375,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "NANO NB-300 (L)",
     "price": 16,
     "rowIndex": 376,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic BETTA tank 2#",
     "price": 2.7,
     "rowIndex": 377,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic BETTA tank 5#",
     "price": 4.5,
     "rowIndex": 378,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic TANK A908",
     "price": 2.5,
     "rowIndex": 379,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic TANK A907",
     "price": 2,
     "rowIndex": 380,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic TANK A905",
     "price": 1.5,
     "rowIndex": 381,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic TANK 330A",
     "price": 3.5,
     "rowIndex": 382,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic TANK 270",
     "price": 2.5,
     "rowIndex": 383,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic TANK 210",
     "price": 1.5,
     "rowIndex": 384,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "Plastic TANK 180",
     "price": 1,
     "rowIndex": 385,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "PET FAMILY PLASTIC TANK 180CM",
     "price": 1.5,
     "rowIndex": 386,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "PET FAMILY PLASTIC TANK 230CM",
     "price": 2,
     "rowIndex": 387,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "PET FAMILY PLASTIC TANK 300CM",
     "price": 3,
     "rowIndex": 388,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "PET FAMILY PLASTIC TANK 380CM",
     "price": 6.5,
     "rowIndex": 389,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "glass tank 10,10,15",
     "price": 3,
     "rowIndex": 390,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "glass tank 13,13,18cm",
     "price": 4,
     "rowIndex": 391,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "glass tank 15,15 ,20cm",
     "price": 5,
     "rowIndex": 392,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "BETTA TANK",
     "photo": null,
     "item": "betta tank C1015",
     "price": 2.5,
     "rowIndex": 393,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "BETTA TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "CRYSTAL CLEAR TANK 60CM",
     "price": 16,
     "rowIndex": 394,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "CRYSTAL CLEAR TANK 45CM",
     "price": 12,
     "rowIndex": 395,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "CRYSTAL CLEAR TANK 36CM",
     "price": 10,
     "rowIndex": 396,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "TURTLE BOX 80Q5",
     "price": 5,
     "rowIndex": 397,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "PLASTIC TURTLE TANK 80Q3(L)",
     "price": 3,
     "rowIndex": 398,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "PLASTIC TURTLE TANK 80Q2(M)",
     "price": 2.5,
     "rowIndex": 399,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "PLASTIC TURTLE TANK 80Q1(S)",
     "price": 2,
     "rowIndex": 400,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "PLASTIC TURTLE TANK Q151(L)",
     "price": 5.5,
     "rowIndex": 401,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "PLASTIC TURTLE TANK Q14(M)",
     "price": 3.5,
     "rowIndex": 402,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "PLASTIC TURTLE TANK Q12(S)",
     "price": 2.5,
     "rowIndex": 403,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "TURTLETANK 60,30,26CM",
     "price": 13.5,
     "rowIndex": 404,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "TURTLETANK 50,26,22CM",
     "price": 11.5,
     "rowIndex": 405,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "TURTLETANK 60,30,26CM W L",
     "price": 13.5,
     "rowIndex": 406,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "TURTLE  TANK",
     "photo": null,
     "item": "TURTLE TANK 50,26,22CM W L",
     "price": 11.5,
     "rowIndex": 407,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "TURTLE  TANK",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM H- 150L CM B",
     "price": 450,
     "rowIndex": 408,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM H- 150L CM W",
     "price": 450,
     "rowIndex": 409,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "Aquarium LS 100cm.",
     "price": 350,
     "rowIndex": 410,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM LS 100 CM W",
     "price": 350,
     "rowIndex": 411,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "Aquarium LS 80cm B",
     "price": 280,
     "rowIndex": 412,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM LS 80 CM W",
     "price": 280,
     "rowIndex": 413,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM LS 60 60 cm",
     "price": 230,
     "rowIndex": 414,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "Aquarium LS 60 60cm",
     "price": 230,
     "rowIndex": 415,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "LYP 120 CM 3",
     "price": 280,
     "rowIndex": 416,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "LYP 100CM",
     "price": 250,
     "rowIndex": 417,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "LYP80CM B.jpg",
     "price": 220,
     "rowIndex": 418,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "PERFECT 150cm",
     "price": 250,
     "rowIndex": 419,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "PERFECTM 120CM",
     "price": 180,
     "rowIndex": 420,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "PERFECT 100 CM W",
     "price": 165,
     "rowIndex": 421,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "PERFECT 100 CM",
     "price": 165,
     "rowIndex": 422,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM 80CM B",
     "price": 115,
     "rowIndex": 423,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "py 120 cm",
     "price": 280,
     "rowIndex": 424,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM AF 535",
     "price": 35,
     "rowIndex": 425,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM KFL380",
     "price": 22,
     "rowIndex": 426,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "KFL 280",
     "price": 16,
     "rowIndex": 427,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUPF-285",
     "price": 16,
     "rowIndex": 428,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "PUFEIT PF 235",
     "price": 13,
     "rowIndex": 429,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "Pufeit  Fish Aquarium PF200",
     "price": 10,
     "rowIndex": 430,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "Aquarium-LX-A863",
     "price": 23,
     "rowIndex": 431,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM P100",
     "price": 35,
     "rowIndex": 432,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM BL-08",
     "price": 28,
     "rowIndex": 433,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM BL-80",
     "price": 25,
     "rowIndex": 434,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "5 IN 1 AQUARIUM",
     "price": 26,
     "rowIndex": 435,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM MIMI 260",
     "price": 18,
     "rowIndex": 436,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM MINI 200",
     "price": 15,
     "rowIndex": 437,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM LX-260",
     "price": 25,
     "rowIndex": 438,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "AQUARIUM LX-220",
     "price": 19,
     "rowIndex": 439,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "GLASS TANK 30,30,30CM",
     "price": 10,
     "rowIndex": 440,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "GLASS TANK 25,25,25CM",
     "price": 8,
     "rowIndex": 441,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM",
     "photo": null,
     "item": "GLASS TANK 20,20,20CM",
     "price": 6,
     "rowIndex": 442,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM",
+    "product_type": "habitat"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "BOYU HEATER HT-825-25W",
     "price": 3,
     "rowIndex": 443,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "BOYU-HEATER HT-850-50W",
     "price": 3.8,
     "rowIndex": 444,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "BOYU-HEATER HT-8-100-100W.",
     "price": 4.5,
     "rowIndex": 445,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "BOYU HT-8150 HEATER 150W",
     "price": 5,
     "rowIndex": 446,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "BOYU- HT8200-HEATER.200W",
     "price": 6.5,
     "rowIndex": 447,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "BOYU- HT8300-300w HEATER",
     "price": 7,
     "rowIndex": 448,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "dophin aqm heater 50w",
     "price": 4,
     "rowIndex": 449,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "DOPHIN AQ HEATER 100W",
     "price": 4.5,
     "rowIndex": 450,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "DOPHIN AQ HEATER 150W",
     "price": 5,
     "rowIndex": 451,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "DOPHIN AQ HEATER 200W",
     "price": 5.5,
     "rowIndex": 452,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "DOPHIN AQ HEATER 300W",
     "price": 6,
     "rowIndex": 453,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "RS-25W-HEATER",
     "price": 2,
     "rowIndex": 454,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "RS-50W-HEATER.",
     "price": 2.5,
     "rowIndex": 455,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "RS-100W-HEATER",
     "price": 3,
     "rowIndex": 456,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "RS-200W-HEATER",
     "price": 4,
     "rowIndex": 457,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "HEATER LS-25W",
     "price": 2,
     "rowIndex": 458,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "HEATER LS-50W",
     "price": 2.5,
     "rowIndex": 459,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "HEATER LS-100W",
     "price": 3,
     "rowIndex": 460,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "HEATER LS-200W",
     "price": 4,
     "rowIndex": 461,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "CLAMP LAMP LEDQL-X3-WHITE",
     "price": 3,
     "rowIndex": 462,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "CRYSTAL LED CLAMP QL LIGHT 150 4W",
     "price": 4,
     "rowIndex": 463,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED MODEL D-9",
     "price": 3,
     "rowIndex": 464,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-X7-10W CLAMP LIGHT",
     "price": 4.5,
     "rowIndex": 465,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED X2-400 WHITE-BLUE",
     "price": 5,
     "rowIndex": 466,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-X3 -6W B",
     "price": 3,
     "rowIndex": 467,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-X5 -10W-W",
     "price": 4,
     "rowIndex": 468,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "SPOTKIGHT LIGHT LED-X6-5W",
     "price": 4.5,
     "rowIndex": 469,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "UVA + UVB Lamp QL-X8",
     "price": 4.5,
     "rowIndex": 470,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "TURTOISE LIGHT GX-F01",
     "price": 4.5,
     "rowIndex": 471,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-M3-5W WHITE LIGHT",
     "price": 3,
     "rowIndex": 472,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED GX-200 COLORFUL",
     "price": 3.5,
     "rowIndex": 473,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-MODEL-20S",
     "price": 2.8,
     "rowIndex": 474,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED MODEL 40S",
     "price": 4,
     "rowIndex": 475,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-MODEL-60S",
     "price": 5.5,
     "rowIndex": 476,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-MODEL 80S",
     "price": 6,
     "rowIndex": 477,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "ASTRO MINI LIGHT AS-PL5W",
     "price": 5,
     "rowIndex": 478,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "UVA-UVB",
     "price": 1.5,
     "rowIndex": 479,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-MODEL-X5 -6W",
     "price": 4,
     "rowIndex": 480,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LAMP 15W",
     "price": 1.8,
     "rowIndex": 481,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LAMP-20W",
     "price": 2.3,
     "rowIndex": 482,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LAMP-25W",
     "price": 2.8,
     "rowIndex": 483,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LAMP-40W",
     "price": 3.3,
     "rowIndex": 484,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED T4-100LED",
     "price": 5,
     "rowIndex": 485,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED T4-60LED",
     "price": 3.5,
     "rowIndex": 486,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED T4-40LED",
     "price": 3,
     "rowIndex": 487,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "T4-30LED",
     "price": 2.5,
     "rowIndex": 488,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "T4-20LED",
     "price": 2,
     "rowIndex": 489,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-QL-120CM-15W",
     "price": 6.5,
     "rowIndex": 490,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-QL-100-12W",
     "price": 5.5,
     "rowIndex": 491,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "COLOR CHANGING WATER GRASS QL-20",
     "price": 13.5,
     "rowIndex": 492,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED QL-80CM 10W",
     "price": 5,
     "rowIndex": 493,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LED-QL-60 LED-8W",
     "price": 4,
     "rowIndex": 494,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LIGHT &BYY-250 AIR STONE 25CM",
     "price": 3,
     "rowIndex": 495,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LIGHT & BYY-350 AIR STONE 35CM",
     "price": 4.5,
     "rowIndex": 496,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM HEATER",
     "photo": null,
     "item": "LIGHT &BYY-450 AIR STONE 45CM",
     "price": 5.5,
     "rowIndex": 497,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM HEATER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "AIR PUMP CP-60",
     "price": 75,
     "rowIndex": 498,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "BOYU AIR PUMP LK-80",
     "price": 70,
     "rowIndex": 499,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "HAILEA AIR COMPRESSOR ACO-308",
     "price": 18,
     "rowIndex": 500,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "BIGOBOYAIR PUMP B-10200",
     "price": 16.5,
     "rowIndex": 501,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "AIR PUMP QY-582",
     "price": 17.5,
     "rowIndex": 502,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "HIWEION AIR PUMP AP-812",
     "price": 17.5,
     "rowIndex": 503,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "PERFECT AIR PUMP QL-408A",
     "price": 3.5,
     "rowIndex": 504,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "PERFECT AIR PUMP QL-408A",
     "price": 2,
     "rowIndex": 505,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "Air pump battery RS-960",
     "price": 2,
     "rowIndex": 506,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "Sera Air 550 R Plus Four Outlet",
     "price": 20,
     "rowIndex": 507,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "SERA Air PUMP 275 - Fresh N Marine",
     "price": 16.5,
     "rowIndex": 508,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "QUIET AIR PUMP QY-604A",
     "price": 4,
     "rowIndex": 509,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AIR PUMP",
     "photo": null,
     "item": "QUIET AIR PUMP QY-601A",
     "price": 2.5,
     "rowIndex": 510,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AIR PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER UV LIGHT EFU-45 -36W",
     "price": 75,
     "rowIndex": 511,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER UV LIGHT EFU-35- 35W",
     "price": 65,
     "rowIndex": 512,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER UV LIGHT EFU-25-32W",
     "price": 50,
     "rowIndex": 513,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN FILTER UV LIGHT CF 1400",
     "price": 65,
     "rowIndex": 514,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN FILTER UV LIGHT CF 1200",
     "price": 60,
     "rowIndex": 515,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN FILTER UV LIGHT CF 800",
     "price": 50,
     "rowIndex": 516,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN FILTER UV LIGHT CF 600",
     "price": 38,
     "rowIndex": 517,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "KARIS UV FILTER 1400-35W",
     "price": 50,
     "rowIndex": 518,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "KARIS UV FILTER 2000-55W",
     "price": 65,
     "rowIndex": 519,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN FILTER F2000",
     "price": 8.5,
     "rowIndex": 520,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN FILTER F1200",
     "price": 7.5,
     "rowIndex": 521,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN FILTER F-800",
     "price": 6,
     "rowIndex": 522,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "ATLAS FILTER 2000F",
     "price": 9,
     "rowIndex": 523,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "ATLAS FILTER 1200F",
     "price": 7.5,
     "rowIndex": 524,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "ATLAS FILTER 800F",
     "price": 6.5,
     "rowIndex": 525,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER SP-2500-34W",
     "price": 7.5,
     "rowIndex": 526,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER SP-1800-13W",
     "price": 5.5,
     "rowIndex": 527,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER SP-1000-8W",
     "price": 4.5,
     "rowIndex": 528,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER XFP-1500F-23W",
     "price": 6.5,
     "rowIndex": 529,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER XFP-1000F-15W",
     "price": 5.5,
     "rowIndex": 530,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "BOYU FILTER XFP-500F-6W",
     "price": 4.5,
     "rowIndex": 531,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN UV 007 UV FILTER 18W",
     "price": 27,
     "rowIndex": 532,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN UV 007 UV FILTER 36W",
     "price": 38,
     "rowIndex": 533,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "FILTER QL-3000F-30W",
     "price": 6.5,
     "rowIndex": 534,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "FILTER QL-2000F-20W",
     "price": 5.5,
     "rowIndex": 535,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "FILTER QL-1000F-12W",
     "price": 3.5,
     "rowIndex": 536,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "FILTER QL-938F-20W",
     "price": 5.5,
     "rowIndex": 537,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "FILTER QL-950F.8W",
     "price": 2.8,
     "rowIndex": 538,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "FILTER QL-850F-4W",
     "price": 2,
     "rowIndex": 539,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "HANG ON FILTER JX-609-3.5W",
     "price": 2.8,
     "rowIndex": 540,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "HANG ON FILTER RS-3000-7W",
     "price": 5.5,
     "rowIndex": 541,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "HANG ON FILTER RS-1000-2.5W",
     "price": 3.5,
     "rowIndex": 542,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "HANG ON FILTER QL-629-3.5W",
     "price": 4.5,
     "rowIndex": 543,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "HANG ON FILTER QL-639-4.2W",
     "price": 5.5,
     "rowIndex": 544,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "HANG ON FILTER QL-659-4.8W",
     "price": 6.5,
     "rowIndex": 545,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "ASTRO UV FILTER AS-8W",
     "price": 12.5,
     "rowIndex": 546,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "ASTRO UV FILTER AS-10W",
     "price": 18,
     "rowIndex": 547,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "AQUARIUM WAVE MAKERQY-368-15W",
     "price": 5,
     "rowIndex": 548,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "DOPHIN AF007 AUTO FEEDER",
     "price": 7,
     "rowIndex": 549,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "SMART FEEDER AF-2019A",
     "price": 6,
     "rowIndex": 550,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "PUMP WP-136-126- 45W",
     "price": 4.5,
     "rowIndex": 551,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "PUMP WP-116-13W",
     "price": 3,
     "rowIndex": 552,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "PUMP-005-006-10W",
     "price": 2.5,
     "rowIndex": 553,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM FILTER",
     "photo": null,
     "item": "PUMP MY-300-2.5W",
     "price": 2.5,
     "rowIndex": 554,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM FILTER",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "ASTRO 6000-91W",
     "price": 26,
     "rowIndex": 555,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "ASTRO 4000-82W",
     "price": 22,
     "rowIndex": 556,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "ASTRO 7.7W",
     "price": 7,
     "rowIndex": 557,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "NUBIOS PUMP-MY-O5D-5W",
     "price": 2,
     "rowIndex": 558,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "NUBIOS PUMP-MY-07D-7W",
     "price": 2.8,
     "rowIndex": 559,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "NUBIOS PUMP-MY-10D-10W",
     "price": 3.5,
     "rowIndex": 560,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "BOYU PUMP XFP-500-6W",
     "price": 4,
     "rowIndex": 561,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "BOYU PUMP XFP-1000-15W",
     "price": 5,
     "rowIndex": 562,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "BOYU PUMP XFP-1500-23W",
     "price": 7,
     "rowIndex": 563,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "BOYU PUMP XFP-2500-40W",
     "price": 8.5,
     "rowIndex": 564,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "NUBIOS PUMP-MY-068-15W",
     "price": 5,
     "rowIndex": 565,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "NUBIOS PUMP-MY-088-25W",
     "price": 6.5,
     "rowIndex": 566,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "NUBIOS PUMP-MY-098-35W",
     "price": 9,
     "rowIndex": 567,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "NUBIOS PUMP-MY-2500-45W",
     "price": 12,
     "rowIndex": 568,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "NUBIOS PUMP-MY-3500-60W",
     "price": 18,
     "rowIndex": 569,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "AQUARIUM.PUMP",
     "photo": null,
     "item": "DOPHIN P130-3W",
     "price": 4,
     "rowIndex": 570,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "AQUARIUM.PUMP",
+    "product_type": "equipment"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AIR STONE 6''LONG BS-L6",
     "price": 1,
     "rowIndex": 571,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AIR STONE 75CM 03 0044",
     "price": 2,
     "rowIndex": 572,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "ARI SPONGE FILTER 2813",
     "price": 2.5,
     "rowIndex": 573,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "ARI SPONGE FILTER 2811",
     "price": 1.8,
     "rowIndex": 574,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "ARI SPONGE FILTER 2836",
     "price": 1,
     "rowIndex": 575,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "ARI SPONGE FILTER TY-380",
     "price": 2.5,
     "rowIndex": 576,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "ARI SPONGE FILTER TY-280",
     "price": 1.8,
     "rowIndex": 577,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "ARI SPONGE FILTER TY-180",
     "price": 1,
     "rowIndex": 578,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "ACTIVE CARBON 500G",
     "price": 2,
     "rowIndex": 579,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "CERAMIC RING-500G",
     "price": 2,
     "rowIndex": 580,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AIR well  check valve vcv-4s sea viaw",
     "price": 2,
     "rowIndex": 581,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  WATER CHANGER GRAVEL HS-28",
     "price": 3,
     "rowIndex": 582,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  WATER CHANGER PUMP",
     "price": 2.5,
     "rowIndex": 583,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  WATER CHANGER PUMP.NB-002",
     "price": 1.5,
     "rowIndex": 584,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  FCILTER COTTON",
     "price": 3,
     "rowIndex": 585,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SPONGE 5PCS",
     "price": 1.8,
     "rowIndex": 586,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SPONGE JC 3CM",
     "price": 1.5,
     "rowIndex": 587,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SPONGE BJ-3212",
     "price": 1,
     "rowIndex": 588,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SPONGE JC-3200",
     "price": 1.3,
     "rowIndex": 589,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SPONGE BJ-3812 B",
     "price": 2.5,
     "rowIndex": 590,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SPONGE BJ-3812",
     "price": 2.5,
     "rowIndex": 591,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SPONGE 120-30CM-8D",
     "price": 3.5,
     "rowIndex": 592,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM BRUSH XY-2380",
     "price": 1.7,
     "rowIndex": 593,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM clamps divider 4 psheet 7mm glass.",
     "price": 1.8,
     "rowIndex": 594,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM clamps divider sheet 7mm glass",
     "price": 1,
     "rowIndex": 595,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM MAGNET QL-001W m",
     "price": 3.5,
     "rowIndex": 596,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM MAGNET QL-001W L",
     "price": 4.5,
     "rowIndex": 597,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "DIGITAL THERMOMETER",
     "price": 1,
     "rowIndex": 598,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SUCTION CUP AIR TUBE",
     "price": 0.15,
     "rowIndex": 599,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "DOPHIN ACTIVATED CARBON FM901 400G",
     "price": 2.5,
     "rowIndex": 600,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "DOPHIN CERAMIC RING FM905 400G",
     "price": 2.5,
     "rowIndex": 601,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "DOPHIN MAGNET CLEANER FM 002(M)",
     "price": 3,
     "rowIndex": 602,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM FISH NET 4''",
     "price": 0.9,
     "rowIndex": 603,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  FISH NET 6''",
     "price": 1.3,
     "rowIndex": 604,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  FISH NET 8''",
     "price": 1.8,
     "rowIndex": 605,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  FISH NET 10''",
     "price": 2.5,
     "rowIndex": 606,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  FISH NET 6'' D",
     "price": 1.2,
     "rowIndex": 607,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  FISH NET 8'' D",
     "price": 1.7,
     "rowIndex": 608,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  FISH NET 10''D",
     "price": 2.2,
     "rowIndex": 609,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM FISH NET 32-8CM",
     "price": 0.8,
     "rowIndex": 610,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "SMALL  NET 35CM-10CM",
     "price": 0.5,
     "rowIndex": 611,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "STRECHING FISH NET 85-18-16CM",
     "price": 2,
     "rowIndex": 612,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "FISH NET  36-13.4-14.5CM",
     "price": 1.5,
     "rowIndex": 613,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "FISH NET  32.5-8.5-9.5CM",
     "price": 1.2,
     "rowIndex": 614,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "FISH NET  31.-10-12 CM",
     "price": 0.8,
     "rowIndex": 615,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "THERMOMETER KT-902",
     "price": 2.5,
     "rowIndex": 616,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "SMALL Net Ly1545 (7-5cm) 15-45cm",
     "price": 1.8,
     "rowIndex": 617,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "DOPHIN TURTLE LANDDER TL30",
     "price": 4.8,
     "rowIndex": 618,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "DOPHIN TL20 TURTLE LANDDER",
     "price": 3,
     "rowIndex": 619,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "TURTLE TERRACE QL-200F",
     "price": 2.5,
     "rowIndex": 620,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM BLACK  divider sheet 1 PCS glass",
     "price": 0.4,
     "rowIndex": 621,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM GLASS COVER CLIP 1pcs",
     "price": 0.3,
     "rowIndex": 622,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  1.pcs air control valves",
     "price": 0.2,
     "rowIndex": 623,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM air check valves.",
     "price": 0.25,
     "rowIndex": 624,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  SUCTION CUP TUBE CLAMP",
     "price": 0.25,
     "rowIndex": 625,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM SUCKER CLIPS AIR LINE",
     "price": 0.2,
     "rowIndex": 626,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM  DIVIDER SUCTION CUP W",
     "price": 0.35,
     "rowIndex": 627,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM COVER GRIPS CLIP CORNER 2 PCS",
     "price": 0.7,
     "rowIndex": 628,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AIR  STONES QUIET 66MM FOR FISH TANK",
     "price": 4,
     "rowIndex": 629,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 5cm",
     "price": 1.3,
     "rowIndex": 630,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 6cm.",
     "price": 1.7,
     "rowIndex": 631,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 10cm",
     "price": 3,
     "rowIndex": 632,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone A-100 nano air basin",
     "price": 3.5,
     "rowIndex": 633,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone N-50 nano air basin",
     "price": 2.5,
     "rowIndex": 634,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM net clip 15mm glass acrylic 6pcs",
     "price": 3,
     "rowIndex": 635,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air pump tee 4mm connector T",
     "price": 0.15,
     "rowIndex": 636,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air pump  connector 4mm tubing 2 way -",
     "price": 0.15,
     "rowIndex": 637,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 20cm",
     "price": 0.2,
     "rowIndex": 638,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 30cm.",
     "price": 0.3,
     "rowIndex": 639,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 2.2cm.",
     "price": 0.2,
     "rowIndex": 640,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 5 cm.",
     "price": 1.5,
     "rowIndex": 641,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 50mm.",
     "price": 1,
     "rowIndex": 642,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 40mm",
     "price": 0.5,
     "rowIndex": 643,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone 30mm",
     "price": 0.5,
     "rowIndex": 644,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone strip bubble 6\"",
     "price": 0.8,
     "rowIndex": 645,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone strip bubble 8\"",
     "price": 1.2,
     "rowIndex": 646,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone strip bubble 10\"",
     "price": 1.5,
     "rowIndex": 647,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone strip bubble 12\"",
     "price": 2,
     "rowIndex": 648,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone strip bubble 16\"",
     "price": 2.5,
     "rowIndex": 649,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone strip bubble 20\"",
     "price": 3,
     "rowIndex": 650,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "Air stone strip bubble 24\"",
     "price": 3.5,
     "rowIndex": 651,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Aquarium Accessories",
     "photo": null,
     "item": "AQUARIUM Air line hose Tube 4mm 200 meters",
     "price": 20,
     "rowIndex": 652,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Aquarium Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Aquafin-turtle-stick 1000ml",
     "price": 3,
     "rowIndex": 653,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Aquafin 8 turtle food 500ml",
     "price": 2,
     "rowIndex": 654,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Aquafin 8 turtle food 250ml",
     "price": 1.5,
     "rowIndex": 655,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Aquafin 8 turtle food 100ml",
     "price": 1,
     "rowIndex": 656,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Padovan Shrimps Freshwater Turtles Food 160gm",
     "price": 6.5,
     "rowIndex": 657,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Padovan Turtle Sticks Turtle Food 70G",
     "price": 6.5,
     "rowIndex": 658,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Sera Raffy I, Natural Dried  Food For Smaller -1000 ml",
     "price": 7,
     "rowIndex": 659,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Sera turtle food 220g",
     "price": 6.5,
     "rowIndex": 660,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Turtle food Mix 40 g",
     "price": 6.5,
     "rowIndex": 661,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Turtle stick 350g",
     "price": 2.5,
     "rowIndex": 662,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Turtle stick 200g",
     "price": 1.8,
     "rowIndex": 663,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Turtle food",
     "photo": null,
     "item": "Turtle stick 100g",
     "price": 1,
     "rowIndex": 664,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Turtle food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "koi Sticks for fish 5.kg",
     "price": 15,
     "rowIndex": 665,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo  Fish Food, 20Kg ( Multiple Size 2.5mm)",
     "price": 15,
     "rowIndex": 666,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo  Fish Food, 20Kg ( Multiple Size 1.2mm)",
     "price": 15,
     "rowIndex": 667,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Sera Pond Granules 3.5kg-21L-",
     "price": 28,
     "rowIndex": 668,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Sera Nature Pond Granulat 1.8kg Sticks",
     "price": 17,
     "rowIndex": 669,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Sera Pond Granules 600g-1.3lb",
     "price": 7,
     "rowIndex": 670,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "SERA-POND-MIX-ROYAL-600g-1.3lb",
     "price": 8,
     "rowIndex": 671,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Sera Pond Mix Royal 185g - 1L",
     "price": 3.5,
     "rowIndex": 672,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Sera Pond sticks 170g -1000ml",
     "price": 3,
     "rowIndex": 673,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "sera-koi-royal-medium-1000ml-270g",
     "price": 3.5,
     "rowIndex": 674,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "sera-koi-royal-mini-1l-320g",
     "price": 3.5,
     "rowIndex": 675,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "SERA-Pond-Flakes-1000ml-150g",
     "price": 3.5,
     "rowIndex": 676,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Sera Arowana Fish Food, 360g-1000 Ml",
     "price": 8,
     "rowIndex": 677,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Sera Shrimps Natural 100ml[Volume-100ml",
     "price": 4,
     "rowIndex": 678,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Sera vipachips staple food 37g-100ml",
     "price": 3,
     "rowIndex": 679,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "SERA-RED-PARROT-granulat-dla-pielegnic-250ml",
     "price": 4,
     "rowIndex": 680,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO Gold Flake100g",
     "price": 2,
     "rowIndex": 681,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo Gold Flake Fish Food, 50g",
     "price": 1,
     "rowIndex": 682,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO Gold Flake25g",
     "price": 0.6,
     "rowIndex": 683,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO TROPICAL FLAKE FISH FOOD 100G",
     "price": 2,
     "rowIndex": 684,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO TROPICAL FLAKE FISH FOOD 50G",
     "price": 1,
     "rowIndex": 685,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO TROPICAL FLAKE FISH FOOD 25G",
     "price": 0.6,
     "rowIndex": 686,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Tropical flake 100g 01-8085",
     "price": 2.5,
     "rowIndex": 687,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Tropical flake 50g 01-3079",
     "price": 1.3,
     "rowIndex": 688,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Tropical flake 25g 01-3078",
     "price": 0.8,
     "rowIndex": 689,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Aquadine Micro Pellet 60GM",
     "price": 1,
     "rowIndex": 690,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "AQUAFIN 3 NATURAL FISH FOOD BASIC FLAKES 1000 ML",
     "price": 3,
     "rowIndex": 691,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "AQUAFIN 3 NATURAL FISH FOOD BASIC FLAKES 500 ML",
     "price": 2,
     "rowIndex": 692,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "AQUAFIN 3 NATURAL FISH FOOD BASIC FLAKES 250 ML",
     "price": 1.2,
     "rowIndex": 693,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "AQUAFIN 3  FISH FOOD BASIC FLAKES 100 ML",
     "price": 0.7,
     "rowIndex": 694,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Aquafin Gold Fish Flake Food 1000 ml",
     "price": 3,
     "rowIndex": 695,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Aquafin Gold Fish Flake Food 500 ml",
     "price": 2,
     "rowIndex": 696,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Aquafin Gold Fish Flake Food 250 ml",
     "price": 1.2,
     "rowIndex": 697,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Aquafin Gold Fish Flake Food 100 ml",
     "price": 0.7,
     "rowIndex": 698,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Aquafin Algae Wafers 100ML",
     "price": 1.5,
     "rowIndex": 699,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "AQUAFIN CHILLI HUMPY HEAD 100ML",
     "price": 2,
     "rowIndex": 700,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "KW CHILI SUPER RED 100ml PREMIUM-COLOUR FOOD",
     "price": 2,
     "rowIndex": 701,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Humpy-Head fish food 100g 01-7121",
     "price": 2,
     "rowIndex": 702,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Humpy-Head fish food 100g 01-7121",
     "price": 1.5,
     "rowIndex": 703,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo-Betta-Pellet-Fish-Food-45g-Bottle",
     "price": 1.5,
     "rowIndex": 704,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO Ultima Betta Fish Food, 20g",
     "price": 0.5,
     "rowIndex": 705,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "AQUADENE BETTA FISH FOOD 60GM",
     "price": 1,
     "rowIndex": 706,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo-betta-pellets-fish-food-45-g",
     "price": 1.3,
     "rowIndex": 707,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo-Micro-Pellet-Fish-Food-45g-Bottle",
     "price": 1.3,
     "rowIndex": 708,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo Guppy Bit 45g 01-4259",
     "price": 1.5,
     "rowIndex": 709,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Horizone Eagle Oscar Baby Food - 50g",
     "price": 2,
     "rowIndex": 710,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Eagle-High-Protein-Freeze-Dried-Blood-Worm 100ml",
     "price": 2,
     "rowIndex": 711,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Eagle-Shrimp-Algea-Food 100ml",
     "price": 1.5,
     "rowIndex": 712,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Eagle-Cray-Stick-Fish-Food 100ml",
     "price": 2,
     "rowIndex": 713,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Eagle-Cray-Stick-Fish-Food 100ml",
     "price": 2,
     "rowIndex": 714,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Micro-Food-yellow-20g-Front 01-4104",
     "price": 0.5,
     "rowIndex": 715,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Micro-Food-Green-20g-Front 01-4098",
     "price": 0.5,
     "rowIndex": 716,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Pado Crispy Grub Blood Worms Fish Food 45g",
     "price": 4.5,
     "rowIndex": 717,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Pado Shrimp E 75g",
     "price": 2.8,
     "rowIndex": 718,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Pado Shrimp E 110g",
     "price": 4.5,
     "rowIndex": 719,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Pro Rich - Red Parrot Fish Food 80g 01-10197",
     "price": 2.5,
     "rowIndex": 720,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo Aini fish food 60g",
     "price": 1,
     "rowIndex": 721,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO Freeze Dried Bloodworms 20g 01-8019",
     "price": 2.8,
     "rowIndex": 722,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo Bits Complete fish food – 70gm",
     "price": 1.7,
     "rowIndex": 723,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo Bits Complete fish food – 120gm",
     "price": 3,
     "rowIndex": 724,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO Pleco Algae Fish Food 90g 01-3886",
     "price": 2,
     "rowIndex": 725,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo Malawi Cichlid Staple Diet 150g",
     "price": 3,
     "rowIndex": 726,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo Malawi Cichlid Staple Diet 90g",
     "price": 1.7,
     "rowIndex": 727,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo pond koi sticks 1000ml 01-1089",
     "price": 2,
     "rowIndex": 728,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "TAIYO-VACATION-Holiday Food 1 Packet 01-8017",
     "price": 1,
     "rowIndex": 729,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Taiyo Aini fish food 100g 01-3050",
     "price": 1.5,
     "rowIndex": 730,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "Fish food",
     "photo": null,
     "item": "Food Taiyo Pro-Rich Arowana 60g01-10203",
     "price": 1.7,
     "rowIndex": 731,
-    "pet": "fish"
+    "pet": "fish",
+    "label": "Fish food",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige parrots Parrots 15kg",
     "price": 14,
     "rowIndex": 732,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "Classic birds Parrots 12.5kg",
     "price": 13,
     "rowIndex": 733,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige Big Parakeets Love Birds 20kg",
     "price": 13.5,
     "rowIndex": 734,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "CLASSIC Big Parakeets -20kg",
     "price": 12.5,
     "rowIndex": 735,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige budgies 20kg",
     "price": 13,
     "rowIndex": 736,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "CLASSIC Budgies-20kg",
     "price": 12,
     "rowIndex": 737,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige Canaries food 20kg.",
     "price": 13.5,
     "rowIndex": 738,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "classic birds Canaries without Rapeseed 20kg",
     "price": 12.5,
     "rowIndex": 739,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige tropical finches 20kg",
     "price": 13,
     "rowIndex": 740,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "king bird finish food 20 kg",
     "price": 13.5,
     "rowIndex": 741,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "king parrpt fruit mix food 15.kg",
     "price": 14.5,
     "rowIndex": 742,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "KING Cockatiel & Fisher Mix food 20kg",
     "price": 13.5,
     "rowIndex": 743,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "KING Budgie Mix food 20kg",
     "price": 13,
     "rowIndex": 744,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "Snack mixture wild seeds small 12.5kg.",
     "price": 12,
     "rowIndex": 745,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "KING Canary Mix food 20kg",
     "price": 13.5,
     "rowIndex": 746,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M  NATURE PARROT FRUIT FOOD 10KG",
     "price": 13.5,
     "rowIndex": 747,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M parrot fruit food 3LB-(1362G) 100%pure nature",
     "price": 4.5,
     "rowIndex": 748,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M parrot nutrition mix food 3LB-1362g",
     "price": 4.5,
     "rowIndex": 749,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M-2012 Parrot Fruit Nutrition Food Zupreem Parrot Fruit Blend Bird Food1000G",
     "price": 4.5,
     "rowIndex": 750,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M-2011 parrot fruit nutrition food 500g",
     "price": 3,
     "rowIndex": 751,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M-2021 parrot food mixed fruits 500 g",
     "price": 3,
     "rowIndex": 752,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M-2032 Budgerigar & Finch Bird Food 908g",
     "price": 2,
     "rowIndex": 753,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "NutriBird  Treats Forti Patee .250g",
     "price": 2.5,
     "rowIndex": 754,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "NutriBird Treats Frutti Patee 250g",
     "price": 2.5,
     "rowIndex": 755,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "nutribird food for budgies and other small parakeets 800g",
     "price": 4.5,
     "rowIndex": 756,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "NutriBird G14 food for big parakeets - monocolour 1.kg",
     "price": 5,
     "rowIndex": 757,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "NutriBird G14 tropical food for big parakeet 1.kg",
     "price": 5,
     "rowIndex": 758,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "nutribird P15 Original pellets all-in-one 1.kg",
     "price": 5.5,
     "rowIndex": 759,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "nutribird P15 P15 Tropical pellets all-in-one 1.kg",
     "price": 5,
     "rowIndex": 760,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "nutriBird T16 pellets all-in-one 1.kg",
     "price": 4.5,
     "rowIndex": 761,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "NutriBird Tropical Fruit Patee soft food all-in-one 1.kg",
     "price": 5.5,
     "rowIndex": 762,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige loro paroue african parrot mix 2.5kg",
     "price": 6,
     "rowIndex": 763,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige loro paroue amazone parrot mix food 1.kg",
     "price": 3,
     "rowIndex": 764,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige Loro Parque Ara Parrot Mix food 2.kg",
     "price": 5,
     "rowIndex": 765,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige Loro Parque Australian Parrot Mix 1kg.",
     "price": 3,
     "rowIndex": 766,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige premium Budgies food .800g.",
     "price": 2.5,
     "rowIndex": 767,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige premium Canaries food .800g",
     "price": 2.5,
     "rowIndex": 768,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige premium Finches Triumph food 800kg.",
     "price": 2.5,
     "rowIndex": 769,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige premium Loro Parque african parrot Mix1.kg",
     "price": 3,
     "rowIndex": 770,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige premium Loro Parque Australian Parakeet Mix1.kg.",
     "price": 3,
     "rowIndex": 771,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige premium Loro Parque Australian Parakeet Mix2.5.kg.",
     "price": 4.5,
     "rowIndex": 772,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige premium Parrots Nut-free mix 2kg food 2.kg",
     "price": 5,
     "rowIndex": 773,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "zupreem USA fruitblend flavor 2LB-907g",
     "price": 7,
     "rowIndex": 774,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "zureem 2.LB-(907g)African Grey, Eclectus, Small Cockatoo, Core Nutrition for Medium Large Birds",
     "price": 7,
     "rowIndex": 775,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "zupreem USA fruitblend flavor 2LB-907g.",
     "price": 7,
     "rowIndex": 776,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "zupreem USA fruitblend flavor 2LB-907g.",
     "price": 7,
     "rowIndex": 777,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M DRIED MEALWORMS 5.KG",
     "price": 22,
     "rowIndex": 778,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M DRIED MEALWORMS 1.KG",
     "price": 6,
     "rowIndex": 779,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M DRIED MEALWORMS .500G",
     "price": 4,
     "rowIndex": 780,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M Dried mealworms 100g",
     "price": 1.5,
     "rowIndex": 781,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "R&M dried mealworms 100g",
     "price": 2,
     "rowIndex": 782,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "prestige grit with Coral 2.5kg",
     "price": 2.5,
     "rowIndex": 783,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "Padovan Loryfood Complete Feed, Multi-Colour, 900 G",
     "price": 11,
     "rowIndex": 784,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "VERSELE-LAGA  A19.Hand rearing food 3.kg",
     "price": 16,
     "rowIndex": 785,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "VERSELE-LAGA  A19.800G Hand rearing food",
     "price": 6.5,
     "rowIndex": 786,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "VERSELE-LAGA  A19.250G Hand rearing food",
     "price": 3,
     "rowIndex": 787,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "VERSELE-LAGA  A21.Hand rearing food 3.kg",
     "price": 16.5,
     "rowIndex": 788,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "VERSELE-LAGA  A21.800G Hand rearing food",
     "price": 6.5,
     "rowIndex": 789,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "VERSELE-LAGA  A21.250G Hand rearing food",
     "price": 3,
     "rowIndex": 790,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "VERSELE-LAGA  Allround .800G Hand rearing food",
     "price": 6,
     "rowIndex": 791,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "VERSELE-LAGA  Allround .250G Hand rearing food",
     "price": 3,
     "rowIndex": 792,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "versele-laga Hand-rearing food 3.kg for lories",
     "price": 16.5,
     "rowIndex": 793,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "versele-laga Hand-rearing food .800g for lories",
     "price": 6.5,
     "rowIndex": 794,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "versele-laga Hand-rearing food .800g for lories",
     "price": 6.5,
     "rowIndex": 795,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "King High Protein Breeding Food-500g",
     "price": 5,
     "rowIndex": 796,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "Hobby First King Hand Rearing food High Energy 500g",
     "price": 5,
     "rowIndex": 797,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "PETSLIFE Lori Natural Bird Food, 250g",
     "price": 2.8,
     "rowIndex": 798,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "Birds-Mini-Hand Feeding-Formula 180g",
     "price": 2,
     "rowIndex": 799,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "Petslife Mini Hand Feeding Formula 50g",
     "price": 4.5,
     "rowIndex": 800,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "BIRD FOOD",
     "photo": null,
     "item": "Taiyo-Hand-Feeding-Formula-250-g-",
     "price": 2.8,
     "rowIndex": 801,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "BIRD FOOD",
+    "product_type": "food"
   },
   {
-    "category2": "Rabbits food",
     "photo": null,
     "item": "Classic Small mammals Rabbit food 20.kg",
     "price": 12,
     "rowIndex": 802,
-    "pet": "other"
+    "pet": "other",
+    "label": "Rabbits food",
+    "product_type": "food"
   },
   {
-    "category2": "Rabbits food",
     "photo": null,
     "item": "Crispy muesli Rabbits 1.kg",
     "price": 2,
     "rowIndex": 803,
-    "pet": "other"
+    "pet": "other",
+    "label": "Rabbits food",
+    "product_type": "food"
   },
   {
-    "category2": "Rabbits food",
     "photo": null,
     "item": "Petslife Rabbit -Teeny Spinach 150g",
     "price": 1.5,
     "rowIndex": 804,
-    "pet": "other"
+    "pet": "other",
+    "label": "Rabbits food",
+    "product_type": "food"
   },
   {
-    "category2": "Rabbits food",
     "photo": null,
     "item": "Padovan Junior Rabbit Food Grand Mix Coniglietti For Bunnies – 850g",
     "price": 2.8,
     "rowIndex": 805,
-    "pet": "other"
+    "pet": "other",
+    "label": "Rabbits food",
+    "product_type": "food"
   },
   {
-    "category2": "Rabbits food",
     "photo": null,
     "item": "GrandMix coniglietti rabbit food 850g",
     "price": 2.8,
     "rowIndex": 806,
-    "pet": "other"
+    "pet": "other",
+    "label": "Rabbits food",
+    "product_type": "food"
   },
   {
-    "category2": "Rabbits food",
     "photo": null,
     "item": "Petslife- Rabbit Teeny With Carrot Food -150g",
     "price": 1.5,
     "rowIndex": 807,
-    "pet": "other"
+    "pet": "other",
+    "label": "Rabbits food",
+    "product_type": "food"
   },
   {
-    "category2": "Rabbits food",
     "photo": null,
     "item": "petslife Rabbit food 400g",
     "price": 2,
     "rowIndex": 808,
-    "pet": "other"
+    "pet": "other",
+    "label": "Rabbits food",
+    "product_type": "food"
   },
   {
-    "category2": "Rabbits food",
     "photo": null,
     "item": "King hamster&rabbit food15 kg",
     "price": 12.5,
     "rowIndex": 809,
-    "pet": "other"
+    "pet": "other",
+    "label": "Rabbits food",
+    "product_type": "food"
   },
   {
-    "category2": "Hamste food",
     "photo": null,
     "item": "Crispy-muesli-hamster-1.kg",
     "price": 2,
     "rowIndex": 810,
-    "pet": "other"
+    "pet": "other",
+    "label": "Hamste food",
+    "product_type": "food"
   },
   {
-    "category2": "Hamste food",
     "photo": null,
     "item": "petslife hamster food 500g",
     "price": 1.5,
     "rowIndex": 811,
-    "pet": "other"
+    "pet": "other",
+    "label": "Hamste food",
+    "product_type": "food"
   },
   {
-    "category2": "Hamste food",
     "photo": null,
     "item": "GrandMix criceti e gerbilli 400g",
     "price": 2.8,
     "rowIndex": 812,
-    "pet": "other"
+    "pet": "other",
+    "label": "Hamste food",
+    "product_type": "food"
   },
   {
-    "category2": "Bird Accessories",
     "photo": null,
     "item": "Bedding Wood natural  6.N 5.kg-20L",
     "price": 5,
     "rowIndex": 813,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "Bird Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Bird Accessories",
     "photo": null,
     "item": "Bedding Wood natural  6.N 15.kg-80L",
     "price": 13.5,
     "rowIndex": 814,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "Bird Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Bird Accessories",
     "photo": null,
     "item": "Bedding Wood natural  8.N 5.kg-20L",
     "price": 5,
     "rowIndex": 815,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "Bird Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Bird Accessories",
     "photo": null,
     "item": "Bedding Wood natural  8.N 15.kg-80L",
     "price": 13.5,
     "rowIndex": 816,
-    "pet": "bird"
+    "pet": "bird",
+    "label": "Bird Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Accessories",
     "photo": null,
     "item": "versele-laga-natural-wood-wood-chips 4.KG",
     "price": 4,
     "rowIndex": 817,
-    "pet": "other"
+    "pet": "other",
+    "label": "Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Accessories",
     "photo": null,
     "item": "versele-laga-natural-wood-wood-chips 1KG",
     "price": 1.5,
     "rowIndex": 818,
-    "pet": "other"
+    "pet": "other",
+    "label": "Accessories",
+    "product_type": "accessories"
   },
   {
-    "category2": "Accessories",
     "photo": null,
     "item": "R&M HAMSTER PAPER COTTON 4.1LIN (570G)",
     "price": 1.5,
     "rowIndex": 819,
-    "pet": "other"
+    "pet": "other",
+    "label": "Accessories",
+    "product_type": "accessories"
   }
 ]

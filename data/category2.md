@@ -27,3 +27,39 @@
 - Turtle food
 - Vitamin
 
+## Mapping to product_type
+
+```
+'Accessories': 'accessories',
+'Aquarium Accessories': 'accessories',
+'Bird Accessories': 'accessories',
+'Carry Cage': 'accessories',
+
+'AIR PUMP': 'equipment',
+'AQUARIUM.PUMP': 'equipment',
+'AQUARIUM FILTER': 'equipment',
+'AQUARIUM HEATER': 'equipment',
+
+'AQUARIUM': 'habitat',
+'BETTA TANK': 'habitat',
+'TURTLE TANK': 'habitat',
+
+'Food': 'food',
+'Fish food': 'food',
+'BIRD FOOD': 'food',
+'Hamste food': 'food',
+'Rabbits food': 'food',
+'Turtle food': 'food',
+'Pet Milk': 'food',
+
+'Catnip': 'treats',
+
+'Vitamin': 'health',
+
+'Grooming': 'grooming',
+'Shampoo': 'grooming',
+'Perfumes': 'grooming',
+'Deodoriser': 'grooming',
+'Litter': 'grooming',
+'Pad': 'grooming',
+```

@@ -63,3 +63,14 @@
 'Litter': 'grooming',
 'Pad': 'grooming',
 ```
+## final product_type
+
+export const PRODUCT_TYPES = [
+  { id: 'food', label: 'Food & Nutrition' },
+  { id: 'treats', label: 'Treats & Supplements' },
+  { id: 'health', label: 'Health & Wellness' },
+  { id: 'grooming', label: 'Grooming & Hygiene' },
+  { id: 'accessories', label: 'Accessories & Essentials' },
+  { id: 'equipment', label: 'Equipment & Hardware' },
+  { id: 'habitat', label: 'Tanks, Cages & Habitat' },
+]

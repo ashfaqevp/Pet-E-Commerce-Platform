@@ -128,23 +128,52 @@ flavour: {
     {
       when: { category: 'type', values: ['food', 'treats'] },
       options: [
-        // Meat flavours
+        // =====================
+        // Poultry & Meat
+        // =====================
         { id: 'chicken', label: 'Chicken' },
+        { id: 'beef', label: 'Beef' },
         { id: 'lamb', label: 'Lamb' },
+        { id: 'duck', label: 'Duck' },
+        { id: 'turkey', label: 'Turkey' },
+        { id: 'game', label: 'Game Meat' },
         { id: 'meat_mix', label: 'Meat Mix' },
 
-        // Fish flavours
+        // =====================
+        // Fish & Seafood
+        // =====================
         { id: 'tuna', label: 'Tuna' },
         { id: 'salmon', label: 'Salmon' },
         { id: 'sardine', label: 'Sardine' },
         { id: 'mackerel', label: 'Mackerel' },
+        { id: 'anchovy', label: 'Anchovy' },
+        { id: 'shrimp', label: 'Shrimp' },
+        { id: 'krill', label: 'Krill' },
+        { id: 'mussels', label: 'Mussels' },
+        { id: 'trout', label: 'Trout' },
+        { id: 'ocean_fish', label: 'Ocean Fish' },
         { id: 'fish_mix', label: 'Fish Mix' },
-        { id: 'ocean_mix', label: 'Ocean Mix' },
 
-        // With vegetables / special recipes
-        { id: 'chicken_spinach', label: 'Chicken & Spinach' },
-        { id: 'tuna_spinach', label: 'Tuna & Spinach' },
-        { id: 'salmon_tomato', label: 'Salmon & Tomato' },
+        // =====================
+        // Plant / Add-ons
+        // =====================
+        { id: 'rice', label: 'Rice' },
+        { id: 'vegetable', label: 'Vegetables' },
+        { id: 'spinach', label: 'Spinach' },
+        { id: 'pumpkin', label: 'Pumpkin' },
+        { id: 'carrot', label: 'Carrot' },
+        { id: 'tomato', label: 'Tomato' },
+        { id: 'cheese', label: 'Cheese' },
+        { id: 'algae', label: 'Algae / Spirulina' },
+
+        // =====================
+        // Special / Other
+        // =====================
+        { id: 'fruit', label: 'Fruit' },
+        { id: 'milk', label: 'Milk' },
+        { id: 'egg', label: 'Egg' },
+        { id: 'insect', label: 'Insect / Worms' },
+        { id: 'gourmet', label: 'Gourmet' },
       ],
     },
   ],

@@ -10,3 +10,7 @@
 
 
 
+1. search option for base product in product sheet default filled first word of product name.
+
+
+

@@ -23,6 +23,8 @@ const makeZip = ('zip' in opts) ? !['false','0','no'].includes(String(opts.zip).
 const sheetOpt = Number(opts.sheet || 1)
 const strictColumn = ('strictColumn' in opts) ? !['false','0','no'].includes(String(opts.strictColumn).toLowerCase()) : false
 const clean = ('clean' in opts) ? !['false','0','no'].includes(String(opts.clean).toLowerCase()) : false
+const numericOnly = ('numericOnly' in opts) ? !['false','0','no'].includes(String(opts.numericOnly).toLowerCase()) : false
+const noPlaceholder = ('noPlaceholder' in opts) ? !['false','0','no'].includes(String(opts.noPlaceholder).toLowerCase()) : false
 
 const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: '', removeNSPrefix: true })
 
@@ -209,29 +211,54 @@ const resolvePath = (p) => {
       try { await rm(sheetDir, { recursive: true, force: true }) } catch {}
     }
     await mkdir(sheetDir, { recursive: true })
-    let idx = 0
-    for (const e of entries) {
-      idx++
-      const namePart = slug(e.text || sheetTitle)
-      const rowAnchors = (anchorsByRow.get(e.row) || []).sort((a, b) => a.col - b.col)
-      const chosen = rowAnchors[0]
-      if (chosen) {
-        const ext = path.extname(chosen.target).toLowerCase() || '.bin'
-        const fileName = `${String(idx).padStart(3, '0')}-${namePart}${ext}`
-        const mediaFile = zip.file(chosen.target)
-        if (mediaFile) {
-          const content = await mediaFile.async('nodebuffer')
-          const outPath = path.join(sheetDir, fileName)
-          await writeFile(outPath, content)
-          results.push(outPath)
-          continue
+    if (numericOnly) {
+      const rowsSorted = Array.from(anchorsByRow.keys()).sort((a, b) => a - b)
+      let idx = 0
+      for (const rr of rowsSorted) {
+        const rowAnchors = (anchorsByRow.get(rr) || []).sort((a, b) => a.col - b.col)
+        for (const a of rowAnchors) {
+          idx++
+          const ext = path.extname(a.target).toLowerCase() || '.bin'
+          const fileName = `${String(idx).padStart(3, '0')}${ext}`
+          const mediaFile = zip.file(a.target)
+          if (mediaFile) {
+            const content = await mediaFile.async('nodebuffer')
+            const outPath = path.join(sheetDir, fileName)
+            await writeFile(outPath, content)
+            results.push(outPath)
+          } else if (!noPlaceholder) {
+            const outPath = path.join(sheetDir, `${String(idx).padStart(3, '0')}.png`)
+            const content = createWhitePng(1, 1)
+            await writeFile(outPath, content)
+            results.push(outPath)
+          }
         }
       }
-      const fileName = `${String(idx).padStart(3, '0')}-${namePart}.png`
-      const outPath = path.join(sheetDir, fileName)
-      const content = createWhitePng(1, 1)
-      await writeFile(outPath, content)
-      results.push(outPath)
+    } else {
+      let idx = 0
+      for (const e of entries) {
+        idx++
+        const namePart = slug(e.text || sheetTitle)
+        const rowAnchors = (anchorsByRow.get(e.row) || []).sort((a, b) => a.col - b.col)
+        const chosen = rowAnchors[0]
+        if (chosen) {
+          const ext = path.extname(chosen.target).toLowerCase() || '.bin'
+          const fileName = `${String(idx).padStart(3, '0')}-${namePart}${ext}`
+          const mediaFile = zip.file(chosen.target)
+          if (mediaFile) {
+            const content = await mediaFile.async('nodebuffer')
+            const outPath = path.join(sheetDir, fileName)
+            await writeFile(outPath, content)
+            results.push(outPath)
+            continue
+          }
+        }
+        const fileName = `${String(idx).padStart(3, '0')}-${namePart}.png`
+        const outPath = path.join(sheetDir, fileName)
+        const content = createWhitePng(1, 1)
+        await writeFile(outPath, content)
+        results.push(outPath)
+      }
     }
   }
 }

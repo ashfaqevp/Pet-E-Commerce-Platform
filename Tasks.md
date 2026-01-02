@@ -14,6 +14,7 @@
 2. show similar products and other products ind product detail page
 3. add and price form 00.000 like 
 4. add label for search
+5. fetch products with row_index in website
 
 
 

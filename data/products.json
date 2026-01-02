@@ -951,7 +951,7 @@
     "pet_type": "cat",
     "name": "Lara Adult LAMB  2kg",
     "retail_price": "3.500",
-    "thumbnail_url": "https://www.buypets.om/images/products/042.png",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/c72b79d5-b111-4b51-a948-cceb512c0aa4/thumbnail-1766665943399.png",
     "size": 2,
     "unit": "kg",
     "age": "adult",
@@ -3803,7 +3803,7 @@
     "pet_type": "cat",
     "name": "Felix Fish Selection In Jelly 85g",
     "retail_price": "3.500",
-    "thumbnail_url": "https://www.buypets.om/images/products/166.jpeg",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/563e5884-63da-4f4f-ad4a-11cd9269c0a9/thumbnail-1766665175433.webp",
     "size": 85,
     "unit": "g",
     "age": null,
@@ -3814,7 +3814,7 @@
     "created_at": "2026-01-02 20:49:19.968373+00",
     "updated_at": "2026-01-02 20:49:19.968373+00",
     "default_rating": 3.6,
-    "is_featured": false,
+    "is_featured": true,
     "description": "A balanced meal designed for cats with fish mix (85g) supports daily nutrition."
   },
   {
@@ -4148,7 +4148,7 @@
     "pet_type": "cat",
     "name": "Canifors Pate With Chicken 100g",
     "retail_price": "0.400",
-    "thumbnail_url": "https://www.buypets.om/images/products/181.png",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/508b183a-90e3-47b7-872a-e38110fb9e6e/thumbnail-1766665580631.jpg",
     "size": 100,
     "unit": "g",
     "age": null,
@@ -4159,7 +4159,7 @@
     "created_at": "2026-01-02 20:49:19.968373+00",
     "updated_at": "2026-01-02 20:49:19.968373+00",
     "default_rating": 3.8,
-    "is_featured": false,
+    "is_featured": true,
     "description": "A high-quality food formulated for cats with chicken (100g) ideal for everyday feeding."
   },
   {
@@ -4240,7 +4240,7 @@
     "pet_type": "cat",
     "name": "Canifors Kitten 1.5kg",
     "retail_price": "3.500",
-    "thumbnail_url": "https://www.buypets.om/images/products/185.png",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/fb85c84a-2269-44cc-8b3a-2bc9a5ca4d56/thumbnail-1766667960828.jpg",
     "size": 1.5,
     "unit": "kg",
     "age": "kitten",
@@ -4251,7 +4251,7 @@
     "created_at": "2026-01-02 20:49:19.968373+00",
     "updated_at": "2026-01-02 20:49:19.968373+00",
     "default_rating": 4.1,
-    "is_featured": false,
+    "is_featured": true,
     "description": "A balanced food formulated for kittens (1.5kg) helps maintain overall health."
   },
   {
@@ -4263,7 +4263,7 @@
     "pet_type": "cat",
     "name": "Canifors Adult 2kg",
     "retail_price": "4.000",
-    "thumbnail_url": "https://www.buypets.om/images/products/186.jpeg",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/a2de7580-5ece-4ed2-abe4-122b591384fa/thumbnail-1766668107762.jpg",
     "size": 2,
     "unit": "kg",
     "age": "adult",
@@ -4274,7 +4274,7 @@
     "created_at": "2026-01-02 20:49:19.968373+00",
     "updated_at": "2026-01-02 20:49:19.968373+00",
     "default_rating": 4.8,
-    "is_featured": false,
+    "is_featured": true,
     "description": "A balanced nutrition made for adult pets (2kg) supports daily nutrition."
   },
   {
@@ -4286,7 +4286,7 @@
     "pet_type": "cat",
     "name": "Pramy Carnivore Chicken with Kanikama in Jelly 70g*12",
     "retail_price": "3.500",
-    "thumbnail_url": "https://www.buypets.om/images/products/187.jpeg",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/166fd150-2fa2-49ec-8987-a48913ddaf75/thumbnail-1766668464955.png",
     "size": 70,
     "unit": "g",
     "age": null,
@@ -4297,7 +4297,7 @@
     "created_at": "2026-01-02 20:49:19.968373+00",
     "updated_at": "2026-01-02 20:49:19.968373+00",
     "default_rating": 4.4,
-    "is_featured": false,
+    "is_featured": true,
     "description": "A nutritious food formulated for cats with chicken (70g) helps maintain overall health."
   },
   {
@@ -15671,7 +15671,7 @@
     "pet_type": "fish",
     "name": "Taiyo Gold Flake Fish Food, 50g",
     "retail_price": "1.000",
-    "thumbnail_url": "https://www.buypets.om/images/products/682.jpeg",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/06ab6af6-b8a1-4339-bb1b-00e7bc6e8d29/thumbnail-1766666731722.jpg",
     "size": 50,
     "unit": "g",
     "age": null,
@@ -15682,7 +15682,7 @@
     "created_at": "2026-01-02 20:49:19.968373+00",
     "updated_at": "2026-01-02 20:49:19.968373+00",
     "default_rating": 3.8,
-    "is_featured": false,
+    "is_featured": true,
     "description": "A wholesome food formulated for fish (50g) supports daily nutrition."
   },
   {
@@ -15901,7 +15901,7 @@
     "pet_type": "fish",
     "name": "AQUAFIN 3 NATURAL FISH FOOD BASIC FLAKES 500 ML",
     "retail_price": "2.000",
-    "thumbnail_url": "https://www.buypets.om/images/products/692.jpeg",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/9d4b73f4-6aff-4afd-8695-54e8d5453777/thumbnail-1766666908471.jpg",
     "size": 500,
     "unit": "ml",
     "age": null,
@@ -15912,7 +15912,7 @@
     "created_at": "2026-01-02 20:49:19.968373+00",
     "updated_at": "2026-01-02 20:49:19.968373+00",
     "default_rating": 4.2,
-    "is_featured": false,
+    "is_featured": true,
     "description": "A high-quality meal designed for fish (500ml) ideal for everyday feeding."
   },
   {
@@ -16821,7 +16821,7 @@
     "pet_type": "bird",
     "name": "prestige parrots Parrots 15kg",
     "retail_price": "14.000",
-    "thumbnail_url": "https://www.buypets.om/images/products/732.png",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/908c2770-71b4-4231-9935-b43ef02b8b2e/thumbnail-1766666288657.png",
     "size": 15,
     "unit": "kg",
     "age": null,
@@ -16832,7 +16832,7 @@
     "created_at": "2026-01-02 20:49:19.968373+00",
     "updated_at": "2026-01-02 20:49:19.968373+00",
     "default_rating": 4.9,
-    "is_featured": false,
+    "is_featured": true,
     "description": "A wholesome food formulated for birds (15kg) ideal for everyday feeding."
   },
   {
@@ -17281,7 +17281,7 @@
     "pet_type": "bird",
     "name": "R&M-2021 parrot food mixed fruits 500 g",
     "retail_price": "3.000",
-    "thumbnail_url": "https://www.buypets.om/images/products/752.jpeg",
+    "thumbnail_url": "https://nlgoitdbyhdoaemkixpr.supabase.co/storage/v1/object/public/product-images/products/ace57d4d-f126-4731-926a-84c4ddee1fa7/thumbnail-1766666505669.jpg",
     "size": 500,
     "unit": "g",
     "age": null,

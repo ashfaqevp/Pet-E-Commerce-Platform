@@ -337,8 +337,8 @@
     "name": "OPTILIFE adult  chicken 1.kg",
     "retail_price": "4.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 32,
@@ -348,8 +348,8 @@
     "name": "OPTILIFE kitten chicken 1.kg",
     "retail_price": "4.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 33,
@@ -382,7 +382,7 @@
     "retail_price": "1.000",
     "thumbnail_url": null,
     "size": 350,
-    "unit": "gram"
+    "unit": "g"
   },
   {
     "rowIndex": 36,
@@ -393,7 +393,7 @@
     "retail_price": "1.000",
     "thumbnail_url": null,
     "size": 350,
-    "unit": "gram"
+    "unit": "g"
   },
   {
     "rowIndex": 37,
@@ -480,8 +480,8 @@
     "name": "Lara Adult Beef 10.kg",
     "retail_price": "12.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 10,
+    "unit": "kg"
   },
   {
     "rowIndex": 45,
@@ -491,8 +491,8 @@
     "name": "Lara Adult LAMB 10.kg",
     "retail_price": "12.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 10,
+    "unit": "kg"
   },
   {
     "rowIndex": 46,
@@ -2835,7 +2835,7 @@
     "retail_price": "4.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 259,
@@ -3022,7 +3022,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 276,
@@ -3616,7 +3616,7 @@
     "retail_price": "5.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 330,
@@ -3627,7 +3627,7 @@
     "retail_price": "4.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 331,
@@ -3737,7 +3737,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 341,
@@ -3935,7 +3935,7 @@
     "retail_price": "15.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 359,
@@ -3946,7 +3946,7 @@
     "retail_price": "13.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 360,
@@ -4023,7 +4023,7 @@
     "retail_price": "1.800",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 367,
@@ -4034,7 +4034,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 368,
@@ -4045,7 +4045,7 @@
     "retail_price": "2.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 369,
@@ -4056,7 +4056,7 @@
     "retail_price": "3.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 370,
@@ -4067,7 +4067,7 @@
     "retail_price": "3.800",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 371,
@@ -4078,7 +4078,7 @@
     "retail_price": "4.800",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 372,
@@ -4089,7 +4089,7 @@
     "retail_price": "7.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 373,
@@ -4100,7 +4100,7 @@
     "retail_price": "1.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 374,
@@ -4111,7 +4111,7 @@
     "retail_price": "0.150",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 375,
@@ -4122,7 +4122,7 @@
     "retail_price": "14.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 376,
@@ -4144,7 +4144,7 @@
     "retail_price": "2.700",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 378,
@@ -4155,7 +4155,7 @@
     "retail_price": "4.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 379,
@@ -4166,7 +4166,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 380,
@@ -4177,7 +4177,7 @@
     "retail_price": "2.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 381,
@@ -4188,7 +4188,7 @@
     "retail_price": "1.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 382,
@@ -4199,7 +4199,7 @@
     "retail_price": "3.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 383,
@@ -4210,7 +4210,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 384,
@@ -4221,7 +4221,7 @@
     "retail_price": "1.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 385,
@@ -4232,7 +4232,7 @@
     "retail_price": "1.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 386,
@@ -4287,7 +4287,7 @@
     "retail_price": "3.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 391,
@@ -4364,7 +4364,7 @@
     "retail_price": "5.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 398,
@@ -4386,7 +4386,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 400,
@@ -4397,7 +4397,7 @@
     "retail_price": "2.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 401,
@@ -4419,7 +4419,7 @@
     "retail_price": "3.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 403,
@@ -4430,7 +4430,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 404,
@@ -4683,7 +4683,7 @@
     "retail_price": "22.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 427,
@@ -4694,7 +4694,7 @@
     "retail_price": "16.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 428,
@@ -4705,7 +4705,7 @@
     "retail_price": "16.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 429,
@@ -4716,7 +4716,7 @@
     "retail_price": "13.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 430,
@@ -4738,7 +4738,7 @@
     "retail_price": "23.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 432,
@@ -4760,7 +4760,7 @@
     "retail_price": "28.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 434,
@@ -4771,7 +4771,7 @@
     "retail_price": "25.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 435,
@@ -4815,7 +4815,7 @@
     "retail_price": "25.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 439,
@@ -4826,7 +4826,7 @@
     "retail_price": "19.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 440,
@@ -5079,7 +5079,7 @@
     "retail_price": "3.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 463,
@@ -5101,7 +5101,7 @@
     "retail_price": "3.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 465,
@@ -5123,7 +5123,7 @@
     "retail_price": "5.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 467,
@@ -5167,7 +5167,7 @@
     "retail_price": "4.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 471,
@@ -5178,7 +5178,7 @@
     "retail_price": "4.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 472,
@@ -5200,7 +5200,7 @@
     "retail_price": "3.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 474,
@@ -5211,7 +5211,7 @@
     "retail_price": "2.800",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 475,
@@ -5222,7 +5222,7 @@
     "retail_price": "4.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 476,
@@ -5233,7 +5233,7 @@
     "retail_price": "5.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 477,
@@ -5244,7 +5244,7 @@
     "retail_price": "6.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 478,
@@ -5266,7 +5266,7 @@
     "retail_price": "1.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 480,
@@ -5332,7 +5332,7 @@
     "retail_price": "5.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 486,
@@ -5343,7 +5343,7 @@
     "retail_price": "3.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 487,
@@ -5354,7 +5354,7 @@
     "retail_price": "3.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 488,
@@ -5365,7 +5365,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 489,
@@ -5376,7 +5376,7 @@
     "retail_price": "2.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 490,
@@ -5409,7 +5409,7 @@
     "retail_price": "13.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 493,
@@ -5486,7 +5486,7 @@
     "retail_price": "70.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 500,
@@ -5497,7 +5497,7 @@
     "retail_price": "18.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 501,
@@ -5508,7 +5508,7 @@
     "retail_price": "16.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 502,
@@ -5541,7 +5541,7 @@
     "retail_price": "3.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 505,
@@ -5552,7 +5552,7 @@
     "retail_price": "2.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 506,
@@ -5574,7 +5574,7 @@
     "retail_price": "20.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 508,
@@ -5651,7 +5651,7 @@
     "retail_price": "65.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 515,
@@ -5662,7 +5662,7 @@
     "retail_price": "60.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 516,
@@ -5673,7 +5673,7 @@
     "retail_price": "50.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 517,
@@ -5684,7 +5684,7 @@
     "retail_price": "38.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 518,
@@ -5717,7 +5717,7 @@
     "retail_price": "8.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 521,
@@ -5728,7 +5728,7 @@
     "retail_price": "7.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 522,
@@ -5739,7 +5739,7 @@
     "retail_price": "6.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 523,
@@ -5750,7 +5750,7 @@
     "retail_price": "9.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 524,
@@ -5761,7 +5761,7 @@
     "retail_price": "7.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 525,
@@ -5772,7 +5772,7 @@
     "retail_price": "6.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 526,
@@ -6300,7 +6300,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 574,
@@ -6311,7 +6311,7 @@
     "retail_price": "1.800",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 575,
@@ -6322,7 +6322,7 @@
     "retail_price": "1.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 576,
@@ -6333,7 +6333,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 577,
@@ -6344,7 +6344,7 @@
     "retail_price": "1.800",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 578,
@@ -6355,7 +6355,7 @@
     "retail_price": "1.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 579,
@@ -6388,7 +6388,7 @@
     "retail_price": "2.000",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "piece"
   },
   {
     "rowIndex": 582,
@@ -6773,7 +6773,7 @@
     "retail_price": "2.500",
     "thumbnail_url": null,
     "size": null,
-    "unit": null
+    "unit": "model"
   },
   {
     "rowIndex": 617,
@@ -6959,8 +6959,8 @@
     "name": "Air stone A-100 nano air basin",
     "retail_price": "3.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 100,
+    "unit": "mm"
   },
   {
     "rowIndex": 634,
@@ -6970,8 +6970,8 @@
     "name": "Air stone N-50 nano air basin",
     "retail_price": "2.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 50,
+    "unit": "mm"
   },
   {
     "rowIndex": 635,
@@ -7003,8 +7003,8 @@
     "name": "Air pump  connector 4mm tubing 2 way -",
     "retail_price": "0.150",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 4,
+    "unit": "mm"
   },
   {
     "rowIndex": 638,
@@ -7058,8 +7058,8 @@
     "name": "Air stone 50mm.",
     "retail_price": "1.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 50,
+    "unit": "mm"
   },
   {
     "rowIndex": 643,
@@ -7069,8 +7069,8 @@
     "name": "Air stone 40mm",
     "retail_price": "0.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 40,
+    "unit": "mm"
   },
   {
     "rowIndex": 644,
@@ -7080,8 +7080,8 @@
     "name": "Air stone 30mm",
     "retail_price": "0.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 30,
+    "unit": "mm"
   },
   {
     "rowIndex": 645,
@@ -7091,8 +7091,8 @@
     "name": "Air stone strip bubble 6\"",
     "retail_price": "0.800",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 6,
+    "unit": "inch"
   },
   {
     "rowIndex": 646,
@@ -7102,8 +7102,8 @@
     "name": "Air stone strip bubble 8\"",
     "retail_price": "1.200",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 8,
+    "unit": "inch"
   },
   {
     "rowIndex": 647,
@@ -7113,8 +7113,8 @@
     "name": "Air stone strip bubble 10\"",
     "retail_price": "1.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 10,
+    "unit": "inch"
   },
   {
     "rowIndex": 648,
@@ -7124,8 +7124,8 @@
     "name": "Air stone strip bubble 12\"",
     "retail_price": "2.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 12,
+    "unit": "inch"
   },
   {
     "rowIndex": 649,
@@ -7135,8 +7135,8 @@
     "name": "Air stone strip bubble 16\"",
     "retail_price": "2.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 16,
+    "unit": "inch"
   },
   {
     "rowIndex": 650,
@@ -7146,8 +7146,8 @@
     "name": "Air stone strip bubble 20\"",
     "retail_price": "3.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 20,
+    "unit": "inch"
   },
   {
     "rowIndex": 651,
@@ -7157,8 +7157,8 @@
     "name": "Air stone strip bubble 24\"",
     "retail_price": "3.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 24,
+    "unit": "inch"
   },
   {
     "rowIndex": 652,
@@ -7168,8 +7168,8 @@
     "name": "AQUARIUM Air line hose Tube 4mm 200 meters",
     "retail_price": "20.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 200,
+    "unit": "meter"
   },
   {
     "rowIndex": 653,
@@ -7224,7 +7224,7 @@
     "retail_price": "6.500",
     "thumbnail_url": null,
     "size": 160,
-    "unit": "gram"
+    "unit": "g"
   },
   {
     "rowIndex": 658,
@@ -7311,8 +7311,8 @@
     "name": "koi Sticks for fish 5.kg",
     "retail_price": "15.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 5,
+    "unit": "kg"
   },
   {
     "rowIndex": 666,
@@ -7587,7 +7587,7 @@
     "retail_price": "1.000",
     "thumbnail_url": null,
     "size": 60,
-    "unit": "gram"
+    "unit": "g"
   },
   {
     "rowIndex": 691,
@@ -7763,7 +7763,7 @@
     "retail_price": "1.000",
     "thumbnail_url": null,
     "size": 60,
-    "unit": "gram"
+    "unit": "g"
   },
   {
     "rowIndex": 707,
@@ -7773,8 +7773,8 @@
     "name": "Taiyo-betta-pellets-fish-food-45-g",
     "retail_price": "1.300",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 45,
+    "unit": "g"
   },
   {
     "rowIndex": 708,
@@ -7950,7 +7950,7 @@
     "retail_price": "1.700",
     "thumbnail_url": null,
     "size": 70,
-    "unit": "gram"
+    "unit": "g"
   },
   {
     "rowIndex": 724,
@@ -7961,7 +7961,7 @@
     "retail_price": "3.000",
     "thumbnail_url": null,
     "size": 120,
-    "unit": "gram"
+    "unit": "g"
   },
   {
     "rowIndex": 725,
@@ -8037,8 +8037,8 @@
     "name": "Food Taiyo Pro-Rich Arowana 60g01-10203",
     "retail_price": "1.700",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 60,
+    "unit": "g"
   },
   {
     "rowIndex": 732,
@@ -8158,8 +8158,8 @@
     "name": "king parrpt fruit mix food 15.kg",
     "retail_price": "14.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 15,
+    "unit": "kg"
   },
   {
     "rowIndex": 743,
@@ -8323,8 +8323,8 @@
     "name": "NutriBird G14 food for big parakeets - monocolour 1.kg",
     "retail_price": "5.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 758,
@@ -8334,8 +8334,8 @@
     "name": "NutriBird G14 tropical food for big parakeet 1.kg",
     "retail_price": "5.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 759,
@@ -8345,8 +8345,8 @@
     "name": "nutribird P15 Original pellets all-in-one 1.kg",
     "retail_price": "5.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 760,
@@ -8356,8 +8356,8 @@
     "name": "nutribird P15 P15 Tropical pellets all-in-one 1.kg",
     "retail_price": "5.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 761,
@@ -8367,8 +8367,8 @@
     "name": "nutriBird T16 pellets all-in-one 1.kg",
     "retail_price": "4.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 762,
@@ -8378,8 +8378,8 @@
     "name": "NutriBird Tropical Fruit Patee soft food all-in-one 1.kg",
     "retail_price": "5.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 763,
@@ -8400,8 +8400,8 @@
     "name": "prestige loro paroue amazone parrot mix food 1.kg",
     "retail_price": "3.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 765,
@@ -8411,8 +8411,8 @@
     "name": "prestige Loro Parque Ara Parrot Mix food 2.kg",
     "retail_price": "5.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 2,
+    "unit": "kg"
   },
   {
     "rowIndex": 766,
@@ -8466,8 +8466,8 @@
     "name": "prestige premium Loro Parque african parrot Mix1.kg",
     "retail_price": "3.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 771,
@@ -8477,8 +8477,8 @@
     "name": "prestige premium Loro Parque Australian Parakeet Mix1.kg.",
     "retail_price": "3.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 772,
@@ -8488,8 +8488,8 @@
     "name": "prestige premium Loro Parque Australian Parakeet Mix2.5.kg.",
     "retail_price": "4.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 2.5,
+    "unit": "kg"
   },
   {
     "rowIndex": 773,
@@ -8554,8 +8554,8 @@
     "name": "R&M DRIED MEALWORMS 5.KG",
     "retail_price": "22.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 5,
+    "unit": "kg"
   },
   {
     "rowIndex": 779,
@@ -8565,8 +8565,8 @@
     "name": "R&M DRIED MEALWORMS 1.KG",
     "retail_price": "6.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 780,
@@ -8631,8 +8631,8 @@
     "name": "VERSELE-LAGA  A19.Hand rearing food 3.kg",
     "retail_price": "16.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 3,
+    "unit": "kg"
   },
   {
     "rowIndex": 786,
@@ -8664,8 +8664,8 @@
     "name": "VERSELE-LAGA  A21.Hand rearing food 3.kg",
     "retail_price": "16.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 3,
+    "unit": "kg"
   },
   {
     "rowIndex": 789,
@@ -8719,8 +8719,8 @@
     "name": "versele-laga Hand-rearing food 3.kg for lories",
     "retail_price": "16.500",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 3,
+    "unit": "kg"
   },
   {
     "rowIndex": 794,
@@ -8807,8 +8807,8 @@
     "name": "Taiyo-Hand-Feeding-Formula-250-g-",
     "retail_price": "2.800",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 250,
+    "unit": "g"
   },
   {
     "rowIndex": 802,
@@ -8818,8 +8818,8 @@
     "name": "Classic Small mammals Rabbit food 20.kg",
     "retail_price": "12.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 20,
+    "unit": "kg"
   },
   {
     "rowIndex": 803,
@@ -8829,8 +8829,8 @@
     "name": "Crispy muesli Rabbits 1.kg",
     "retail_price": "2.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 804,
@@ -8906,8 +8906,8 @@
     "name": "Crispy-muesli-hamster-1.kg",
     "retail_price": "2.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 1,
+    "unit": "kg"
   },
   {
     "rowIndex": 811,
@@ -8983,8 +8983,8 @@
     "name": "versele-laga-natural-wood-wood-chips 4.KG",
     "retail_price": "4.000",
     "thumbnail_url": null,
-    "size": null,
-    "unit": null
+    "size": 4,
+    "unit": "kg"
   },
   {
     "rowIndex": 818,

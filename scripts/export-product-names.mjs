@@ -16,7 +16,22 @@ const cwd = process.cwd()
 const input = path.resolve(cwd, opts.input || 'data/products.json')
 const output = path.resolve(cwd, opts.output || 'data/product-names.txt')
 const clean = (opts.clean || '').toString() === 'true'
-const missing = (opts.missing || '').toString()
+
+const EXCLUDE_NAMES = [
+  'plastic tank vv20',
+  'acrylic mini tank vv21',
+  'nano tank ql-tk-02',
+  'ACRYLIC BETTA TANK B1010',
+  'BETTA CUP PLASTIC A5',
+  'AQUARIUM BL-08',
+  'AQUARIUM LX-260',
+  'LED MODEL 40S',
+  'BOYU AIR PUMP LK-80',
+  'DOPHIN FILTER F2000',
+  'ATLAS FILTER 1200F',
+  'THERMOMETER KT-902',
+]
+const excluded = new Set(EXCLUDE_NAMES.map(s => s.toLowerCase()))
 
 const buf = await readFile(input, 'utf8')
 const arr = JSON.parse(buf)
@@ -31,17 +46,13 @@ const stripUnits = (s) => {
   return t
 }
 const matchMissing = (o) => {
-  if (!missing) return true
-  const s = o && o.size
   const u = o && o.unit
-  if (missing === 'size') return s == null
-  if (missing === 'unit') return u == null
-  if (missing === 'both') return s == null && u == null
-  return true
+  return u == null
 }
 
 const names = arr
   .filter(r => matchMissing(r))
+  .filter(r => !excluded.has(String(r?.name ?? '').trim().toLowerCase()))
   .map(r => {
     const n = String(r?.name ?? '').trim()
     return clean ? stripUnits(n) : n

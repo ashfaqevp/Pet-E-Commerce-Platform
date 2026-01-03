@@ -22,8 +22,12 @@ const searchQuery = ref(qSearch.value || "");
 const searchSuggestions = ref<Array<{ id: string; name: string }>>([]);
 const suggestionsLoading = ref(false);
 const suggestionsError = ref<string | null>(null);
-const isSearchFocused = ref(false);
+const showSearch = ref(false);
+const suggestionsOpen = ref(false);
 const pageTitle = useState<string>('pageTitle', () => '')
+const mobileSearchContainer = ref<HTMLElement | null>(null)
+const desktopSearchContainer = ref<HTMLElement | null>(null)
+let onDocPointerDown: ((e: PointerEvent) => void) | undefined
 
 // SSR-safe mobile breakpoint tracking
 const isMobile = ref(false);
@@ -50,11 +54,35 @@ onMounted(() => {
   window.addEventListener("scroll", onScroll, { passive: true });
   // Refresh cart badge count on mount
   refreshCart()
+  if (process.client) {
+    onDocPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node | null
+      const mobileEl = mobileSearchContainer.value
+      const desktopEl = desktopSearchContainer.value
+      const insideMobile = mobileEl ? (target ? mobileEl.contains(target) : false) : false
+      const insideDesktop = desktopEl ? (target ? desktopEl.contains(target) : false) : false
+      if (!insideMobile && !insideDesktop) {
+        suggestionsOpen.value = false
+      }
+    }
+    document.addEventListener('pointerdown', onDocPointerDown, { passive: true })
+  }
+
+  const initialQ = (qSearch.value || '').trim()
+  if (initialQ.length) {
+    searchQuery.value = initialQ
+    if (isProductsPage.value) {
+      suggestionsOpen.value = initialQ.length >= 3
+      if (isMobile.value) showSearch.value = true
+    }
+  }
 });
 onBeforeUnmount(() => {
   if (updateMobile) window.removeEventListener("resize", updateMobile);
   if (onScroll) window.removeEventListener("scroll", onScroll);
-  if (process.client) document.body.style.overflow = '';
+  if (process.client) {
+    if (onDocPointerDown) document.removeEventListener('pointerdown', onDocPointerDown)
+  }
 });
 
 const navItems = [
@@ -78,26 +106,37 @@ const supabase = useSupabaseClient();
 async function performSearchNavigate(term: string) {
   const q = term.trim();
   if (!q) return;
-  qSearch.value = q;
-  await router.push({ path: "/products", query: { ...route.query, q } });
-  isSearchFocused.value = false;
+  await navigateTo({ path: "/products", query: { ...route.query, q } });
 }
 
 function handleSearch() {
   void performSearchNavigate(searchQuery.value);
+  suggestionsOpen.value = false
 }
 
 function navigateProduct(id: string) {
-  isSearchFocused.value = false;
   router.push({ path: `/product/${id}` });
 }
 
 function clearSearch() {
-  isSearchFocused.value = false
   searchQuery.value = ''
   searchSuggestions.value = []
   suggestionsError.value = null
   suggestionsLoading.value = false
+}
+
+function toggleMobileSearch() {
+  if (!isMobile.value) return
+  const next = !showSearch.value
+  showSearch.value = next
+  if (!next) {
+    clearSearch()
+    suggestionsOpen.value = false
+    if (isProductsPage.value) {
+      qSearch.value = ''
+    }
+  } else {
+  }
 }
 
 const fetchSuggestions = async (term: string) => {
@@ -132,26 +171,38 @@ const debouncedFetchSuggestions = useDebounceFn((value: string) => {
   void fetchSuggestions(value);
 }, 400, { maxWait: 1200 });
 
-const isSuggestionsOpen = computed(() => isSearchFocused.value && searchQuery.value.trim().length >= 3);
-
-watch(isSuggestionsOpen, (open) => {
-  if (!process.client) return;
-  document.body.style.overflow = open ? 'hidden' : '';
-});
+// removed focus-dependent overlay toggle
 
 watch(
   searchQuery,
   (val) => {
-    if (!isSearchFocused.value) return;
     if (val.trim().length < 3) {
       searchSuggestions.value = [];
       suggestionsError.value = null;
       suggestionsLoading.value = false;
       return;
-    }
-    debouncedFetchSuggestions(val);
+  }
+  debouncedFetchSuggestions(val);
   }
 );
+
+watch(showSearch, (v) => {
+  if (isMobile.value && !v) {
+    clearSearch()
+    suggestionsOpen.value = false
+  }
+})
+
+watch(qSearch, (q) => {
+  const val = (q ?? '').toString()
+  searchQuery.value = val
+  if (isProductsPage.value && isMobile.value) {
+    if (val.trim().length) {
+      showSearch.value = true
+      // suggestionsOpen.value = true
+    }
+  }
+})
 
 watch(() => route.path, (p) => {
   if (!p.startsWith('/products')) {
@@ -159,6 +210,8 @@ watch(() => route.path, (p) => {
     searchSuggestions.value = []
     suggestionsError.value = null
     suggestionsLoading.value = false
+    suggestionsOpen.value = false
+    showSearch.value = false
   }
 })
 
@@ -195,7 +248,7 @@ watch(user, () => {
         </div>
 
         <!-- Mobile: page header with back and title -->
-        <div v-if="isMobile && pageTitle && !isHome && !isSearchFocused" class="md:hidden flex items-center justify-between w-full">
+        <div v-if="isMobile && pageTitle && !isHome && !showSearch" class="md:hidden flex items-center justify-between w-full">
           <div class="flex items-center gap-2">
             <Button variant="ghost" size="icon" class="rounded-full border bg-background shadow-sm" @click="goBack">
               <Icon name="lucide:arrow-left" class="h-5 w-5 text-foreground" />
@@ -205,16 +258,16 @@ watch(user, () => {
         </div>
 
         <!-- Mobile searchbar: rounded pill with suggestions and actions -->
-        <div v-show="isMobile && (isProductsPage || isHome) && isSearchFocused" class="md:hidden flex flex-col gap-2 w-full">
+        <div v-show="isMobile && (isProductsPage || isHome) && showSearch" class="md:hidden flex flex-col gap-2 w-full">
           <div class="flex items-center gap-2 w-full">
-            <div class="relative flex-1">
+            <div ref="mobileSearchContainer" class="relative flex-1">
               <Input
                 v-model="searchQuery"
                 class="w-full rounded-full bg-muted border-none pl-4 pr-10"
                 placeholder="Search"
-                @focus="isSearchFocused = true"
-                @blur="isSearchFocused = false"
                 @keyup.enter="handleSearch"
+                @focus="suggestionsOpen = true"
+                @keydown.escape.prevent="suggestionsOpen = false"
               />
 
             <Button
@@ -228,7 +281,7 @@ watch(user, () => {
             </Button>
 
               <div
-                v-if="searchQuery.trim().length >= 3"
+                v-if="suggestionsOpen && searchQuery.trim().length >= 3"
                 class="absolute z-50 left-0 right-0 top-full mt-1 w-full rounded-xl border bg-background shadow-xl"
               >
                 <div v-if="suggestionsLoading" class="px-3 py-2 text-xs text-muted-foreground">Searching...</div>
@@ -258,17 +311,17 @@ watch(user, () => {
 
         <!-- Desktop: Search with suggestions and action button -->
         <div v-if="!isMobile" class="hidden md:flex flex-1 items-center justify-center mx-auto w-full">
-          <div class="w-full max-w-xl relative">
+          <div ref="desktopSearchContainer" class="w-full max-w-xl relative">
             <Input
               v-model="searchQuery"
               class="w-full rounded-full border-none pl-4 pr-24 border bg-background/80 shadow-sm"
               placeholder="Search for food, accessories, etc."
-              @focus="isSearchFocused = true"
-              @blur="isSearchFocused = false"
               @keyup.enter="handleSearch"
+              @focus="suggestionsOpen = true"
+              @keydown.escape.prevent="suggestionsOpen = false"
             />
             <Button
-              v-if="isSearchFocused"
+              v-if="searchQuery.trim().length"
               variant="default"
               size="sm"
               class="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-3 rounded-full text-xs"
@@ -284,7 +337,7 @@ watch(user, () => {
               class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/80"
             />
             <div
-              v-if="isSearchFocused && searchQuery.trim().length >= 3"
+              v-if="suggestionsOpen && searchQuery.trim().length >= 3"
               class="absolute z-50 mt-1 w-full rounded-xl border bg-background shadow-xl"
             >
               <div v-if="suggestionsLoading" class="px-3 py-2 text-xs text-muted-foreground">
@@ -317,9 +370,12 @@ watch(user, () => {
           variant="ghost"
           size="icon"
           class="md:hidden rounded-full border bg-background/80 shadow-sm hover:bg-secondary/10 text-foreground"
-          @click="isSearchFocused ? clearSearch() : (isSearchFocused = true)"
+          @pointerdown.stop
+          @mousedown.stop
+          @touchstart.stop
+          @click.stop="toggleMobileSearch()"
         >
-          <Icon :name="isSearchFocused ? 'lucide:x' : 'lucide:search'" class="h-5 w-5" />
+          <Icon :name="showSearch ? 'lucide:x' : 'lucide:search'" class="h-5 w-5" />
         </Button>
 
         <!-- Actions -->

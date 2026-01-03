@@ -253,6 +253,15 @@ watch(filterSignature, async (newSig) => {
   }
 })
 
+// Reset pagination when search query changes
+watch(qSearch, async () => {
+  await resetAndRefresh()
+})
+
+function clearSearchQuery() {
+  qSearch.value = ''
+}
+
 // Clear dependent filters when parent changes
 watch(qPet, () => {
   qType.value = []
@@ -352,7 +361,7 @@ onMounted(() => { resetAndRefresh() })
       </div>
 
     <!-- Main Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- Desktop Filters Sidebar -->
       <Card class="hidden lg:block h-max lg:top-24">
         <CardHeader>
@@ -375,8 +384,24 @@ onMounted(() => { resetAndRefresh() })
 
       <!-- Products List -->
       <div class="lg:col-span-3">
+        <!-- Search Summary -->
+        <div v-if="(qSearch || '').trim().length > 0" class="mb-4 relative">
+          <Alert variant="default">
+            <AlertTitle class="text-[#0f766e]">Search results</AlertTitle>
+            <AlertDescription class="flex items-center gap-3">
+              <span>Showing results for "{{ (qSearch || '').trim() }}"</span>
+              <Button variant="ghost" size="sm" class="h-7 px-2 absolute right-2 top-1/2 -translate-y-1/2" @click="clearSearchQuery">
+                <Icon name="lucide:x" class="h-4 w-4 mr-1" />
+                Clear
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
         <!-- Active Filter Badges -->
-        <div v-if="Object.values(filters).some(f => f.length > 0)" class="flex flex-wrap gap-2 mb-4">
+        <div v-if="Object.values(filters).some(f => f.length > 0) || (qSearch || '').trim().length > 0" class="flex flex-wrap gap-2 mb-4">
+          <Badge v-if="(qSearch || '').trim().length > 0" variant="outline">
+            Search: {{ (qSearch || '').trim() }}
+          </Badge>
           <Badge v-for="v in filters.pet" :key="`pet-${v}`" variant="outline">
             Pet: {{ v }}
           </Badge>

@@ -4,16 +4,21 @@ import { definePageMeta, useLazyAsyncData, useSupabaseUser, useSupabaseClient, n
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell, TableEmpty } from '@/components/ui/table'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { toast } from 'vue-sonner'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
 import { useAddresses, type AddressRow } from '@/composables/useAddresses'
 import { useCheckoutOrder } from '@/composables/useCheckoutOrder'
 import PageHeader from '@/components/common/PageHeader.vue'
+import AddressFormContent from '@/components/profile/AddressFormContent.vue'
 
 definePageMeta({ layout: 'default' })
 useHead({ title: 'Checkout' })
@@ -64,16 +69,35 @@ const items = computed(() => (itemsData.value as CartItemWithProduct[]) || [])
 const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
 const defaultAddress = computed(() => addresses.value.find(a => a.is_default) || addresses.value[0] || null)
 const selectedAddressId = ref<string | null>(null)
-const paymentMethod = ref<'online' | 'cod'>('online')
+const paymentMethod = ref<'online' | 'cod'>('cod')
+const addressDialogOpen = ref(false)
+const addressForm = ref({
+  full_name: '',
+  phone: '',
+  address_line_1: '',
+  address_line_2: '',
+  city: '',
+  state: '',
+  postal_code: '',
+  country: 'Oman',
+  is_default: true,
+})
 watchEffect(() => {
   if (!selectedAddressId.value) selectedAddressId.value = defaultAddress.value?.id || null
 })
 const hasDefaultAddress = computed(() => addresses.value.some(a => a.is_default))
+const selectedAddress = computed(() => addresses.value.find(a => a.id === selectedAddressId.value) || null)
 const goToProfile = () => navigateTo('/profile')
 const setSelectedAsDefault = async () => {
   if (!selectedAddressId.value) return
   await setDefault(selectedAddressId.value)
   await refreshAddresses()
+}
+
+const onAddressSaved = async () => {
+  addressDialogOpen.value = false
+  await refreshAddresses()
+  selectedAddressId.value = addresses.value[0]?.id || null
 }
 
 const round3 = (v: number) => Math.round(v * 1000) / 1000
@@ -151,7 +175,8 @@ const placeOrder = async () => {
       toast.success('Order created')
       await pay(orderId)
     } else {
-      toast.success('Order created – Awaiting payment on delivery')
+      toast.success('Order created')
+      navigateTo('/profile')
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Order failed'
@@ -180,10 +205,20 @@ const placeOrder = async () => {
             </Alert>
             <div v-else-if="addresses.length === 0" class="space-y-3">
               <TableEmpty>No addresses found.</TableEmpty>
-              <Button variant="default" class="w-full" @click="goToProfile">Add address in Profile</Button>
+              <Dialog v-model:open="addressDialogOpen">
+                <DialogTrigger as-child>
+                  <Button variant="default" class="w-full">Add Delivery Address</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle class="text-secondary">Add Delivery Address</DialogTitle>
+                  </DialogHeader>
+                  <AddressFormContent v-model="addressForm" @save="onAddressSaved" />
+                </DialogContent>
+              </Dialog>
             </div>
             <div v-else class="space-y-3">
-              <Label class="text-sm">Select address</Label>
+              <!-- <Label class="text-sm">Select address</Label> -->
               <Select v-model="selectedAddressId">
                 <SelectTrigger class="bg-white">
                   <SelectValue placeholder="Choose address" />
@@ -198,13 +233,30 @@ const placeOrder = async () => {
                   Select an address and set it as default for faster checkout.
                 </AlertDescription>
               </Alert>
-              <div v-if="selectedAddressId" class="text-sm text-muted-foreground">
-                <p>{{ addresses.find(a => a.id === selectedAddressId)?.full_name }}</p>
-                <p>{{ addresses.find(a => a.id === selectedAddressId)?.phone }}</p>
-                <p>{{ addresses.find(a => a.id === selectedAddressId)?.address_line_1 }}</p>
-                <p v-if="addresses.find(a => a.id === selectedAddressId)?.address_line_2">{{ addresses.find(a => a.id === selectedAddressId)?.address_line_2 }}</p>
-                <p>{{ addresses.find(a => a.id === selectedAddressId)?.city }}, {{ addresses.find(a => a.id === selectedAddressId)?.state }} {{ addresses.find(a => a.id === selectedAddressId)?.postal_code }}</p>
-                <p>{{ addresses.find(a => a.id === selectedAddressId)?.country }}</p>
+              <div v-if="selectedAddressId" class="text-sm text-muted-foreground rounded-lg border bg-muted/20 p-3 space-y-2">
+                <div class="flex items-center gap-2">
+                  <Icon name="lucide:user" class="w-4 h-4" />
+                  <span class="font-medium text-foreground">{{ selectedAddress?.full_name }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <Icon name="lucide:phone" class="w-4 h-4" />
+                  <span>{{ selectedAddress?.phone }}</span>
+                </div>
+                <div class="flex items-start gap-2">
+                  <Icon name="lucide:home" class="w-4 h-4 mt-0.5" />
+                  <div class="space-y-0.5">
+                    <p>{{ selectedAddress?.address_line_1 }}</p>
+                    <p v-if="selectedAddress?.address_line_2">{{ selectedAddress?.address_line_2 }}</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <Icon name="lucide:map-pin" class="w-4 h-4" />
+                  <span>{{ selectedAddress?.city }}, {{ selectedAddress?.state }} {{ selectedAddress?.postal_code }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <Icon name="lucide:globe" class="w-4 h-4" />
+                  <span>{{ selectedAddress?.country }}</span>
+                </div>
               </div>
               <div v-if="selectedAddressId" class="flex items-center gap-2">
                 <Button variant="default" size="sm" @click="setSelectedAsDefault">Use selected address</Button>
@@ -219,22 +271,36 @@ const placeOrder = async () => {
             <CardTitle class="text-secondary">Payment Method</CardTitle>
           </CardHeader>
           <CardContent class="space-y-3">
-            <Label class="text-sm">Select payment method</Label>
-            <Select v-model="paymentMethod">
-              <SelectTrigger class="bg-white">
-                <SelectValue placeholder="Choose payment method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="online">Online Payment</SelectItem>
-                <SelectItem value="cod">Cash on Delivery (COD)</SelectItem>
-              </SelectContent>
-            </Select>
-            <Alert v-if="paymentMethod === 'cod'" variant="default">
-              <AlertTitle>Pay on Delivery</AlertTitle>
-              <AlertDescription>
-                Pay with cash upon delivery. No online payment required.
-              </AlertDescription>
-            </Alert>
+            <!-- <Label class="text-sm">Select payment method</Label> -->
+            <RadioGroup v-model="paymentMethod" class="grid gap-3">
+              <Label for="pm-cod" class="block">
+                <div class="flex items-start gap-3 rounded-lg border px-4 py-3 hover:bg-muted transition">
+                  <RadioGroupItem id="pm-cod" value="cod" />
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                      <span class="font-medium">Cash on Delivery (COD)</span>
+                      <!-- <Badge variant="secondary">Recommended</Badge> -->
+                    </div>
+                    <p class="text-sm text-muted-foreground">Pay with cash upon delivery. No online payment required.</p>
+                  </div>
+                </div>
+              </Label>
+              <Label for="pm-online" class="block">
+                <div class="flex items-start gap-3 rounded-lg border px-4 py-3 opacity-60 cursor-not-allowed">
+                  <RadioGroupItem id="pm-online" value="online" disabled />
+                  <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                      <span class="font-medium">Online Payment</span>
+                      <Badge variant="warning">
+                        <Icon name="lucide:alert-triangle" class="w-4 h-4" />
+                        Currently Unavailable
+                      </Badge>
+                    </div>
+                    <p class="text-sm text-muted-foreground">Online payment is currently not available.</p>
+                  </div>
+                </div>
+              </Label>
+            </RadioGroup>
           </CardContent>
         </Card>
 
@@ -270,7 +336,15 @@ const placeOrder = async () => {
                   </TableCell>
                 </TableRow>
                 <TableRow v-else v-for="i in items" :key="i.id">
-                  <TableCell class="max-w-[220px] truncate">{{ i.product.name }}</TableCell>
+                  <TableCell>
+                    <div class="flex items-center gap-3">
+                      <Avatar class="size-10 rounded-md">
+                        <AvatarImage v-if="i.product.thumbnail_url" :src="String(i.product.thumbnail_url)" alt="product" />
+                        <AvatarFallback>IMG</AvatarFallback>
+                      </Avatar>
+                      <span class="max-w-[220px] truncate">{{ i.product.name }}</span>
+                    </div>
+                  </TableCell>
                   <TableCell class="text-right">{{ i.quantity }}</TableCell>
                   <TableCell class="text-right">{{ formatOMR(Number(i.product.retail_price || 0)) }}</TableCell>
                   <TableCell class="text-right">{{ formatOMR(Number(i.product.retail_price || 0) * Number(i.quantity || 1)) }}</TableCell>
@@ -282,7 +356,7 @@ const placeOrder = async () => {
       </div>
 
       <div class="space-y-4 sm:space-y-6">
-        <Card class="bg-white rounded-xl border h-fit">
+        <Card class="bg-white rounded-xl border h-fit lg:sticky lg:top-4">
           <CardHeader>
             <CardTitle class="text-secondary">Price Breakdown</CardTitle>
           </CardHeader>

@@ -166,10 +166,316 @@ const onChangePassword = submitPasswordChange(async (values) => {
     toast.error(msg)
   }
 })
+
+interface BannerRow {
+  id: string
+  name: string
+  mobile: string
+  desktop: string
+  created_at?: string
+}
+
+const { data: bannersData, pending: bannersPending, error: bannersError, refresh: refreshBanners } = await useLazyAsyncData(
+  'admin-banners',
+  async () => {
+    const supabase = useSupabaseClient()
+    const { data, error } = await supabase
+      .from('banners')
+      .select('id,name,mobile,desktop,created_at')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return (data ?? []) as unknown as BannerRow[]
+  },
+  { server: true }
+)
+
+const addOpen = ref(false)
+const editOpen = ref(false)
+const editing = ref<BannerRow | null>(null)
+
+const { handleSubmit: bannerSubmit, isSubmitting: bannerSubmitting, resetForm: resetBannerForm, setFieldValue: setBannerField } = useForm({
+  validationSchema: toTypedSchema(z.object({ name: z.string().min(1) })),
+  initialValues: { name: '' },
+})
+const { value: bannerName, errorMessage: bannerNameError } = useField<string>('name')
+
+const mobileFile = ref<File | null>(null)
+const desktopFile = ref<File | null>(null)
+const mobileEditFile = ref<File | null>(null)
+const desktopEditFile = ref<File | null>(null)
+
+const mobilePreview = computed(() => (mobileFile.value ? URL.createObjectURL(mobileFile.value) : ''))
+const desktopPreview = computed(() => (desktopFile.value ? URL.createObjectURL(desktopFile.value) : ''))
+const mobileEditPreview = computed(() => (mobileEditFile.value ? URL.createObjectURL(mobileEditFile.value) : ''))
+const desktopEditPreview = computed(() => (desktopEditFile.value ? URL.createObjectURL(desktopEditFile.value) : ''))
+
+const openAddBanner = () => {
+  addOpen.value = true
+  editOpen.value = false
+  editing.value = null
+  setBannerField('name', '')
+  mobileFile.value = null
+  desktopFile.value = null
+}
+
+const openEditBanner = (row: BannerRow) => {
+  editOpen.value = true
+  addOpen.value = false
+  editing.value = row
+  setBannerField('name', row.name)
+  mobileEditFile.value = null
+  desktopEditFile.value = null
+}
+
+const uploadImage = async (path: string, file: File): Promise<string> => {
+  const supabase = useSupabaseClient()
+  const storage = supabase.storage.from('product-images')
+  const { error } = await storage.upload(path, file, { upsert: true, contentType: file.type })
+  if (error) throw error
+  const { data } = storage.getPublicUrl(path)
+  return data.publicUrl
+}
+
+const onCreateBanner = bannerSubmit(async (values) => {
+  const supabase = useSupabaseClient()
+  try {
+    if (!mobileFile.value || !desktopFile.value) {
+      toast.error('Upload both mobile and desktop images')
+      return
+    }
+    const extM = mobileFile.value.name.includes('.') ? mobileFile.value.name.substring(mobileFile.value.name.lastIndexOf('.')) : ''
+    const extD = desktopFile.value.name.includes('.') ? desktopFile.value.name.substring(desktopFile.value.name.lastIndexOf('.')) : ''
+    const mobileUrl = await uploadImage(`banners/${Date.now()}-mobile${extM}`, mobileFile.value)
+    const desktopUrl = await uploadImage(`banners/${Date.now()}-desktop${extD}`, desktopFile.value)
+    const { error: e } = await supabase
+      .from('banners')
+      .insert([{ name: values.name, mobile: mobileUrl, desktop: desktopUrl }] as unknown as never)
+    if (e) throw e
+    toast.success('Banner added')
+    addOpen.value = false
+    resetBannerForm()
+    mobileFile.value = null
+    desktopFile.value = null
+    await refreshBanners()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to add banner'
+    toast.error(msg)
+  }
+})
+
+const onUpdateBanner = bannerSubmit(async (values) => {
+  const supabase = useSupabaseClient()
+  try {
+    if (!editing.value) return
+    let mobileUrl = editing.value.mobile
+    let desktopUrl = editing.value.desktop
+    if (mobileEditFile.value) {
+      const ext = mobileEditFile.value.name.includes('.') ? mobileEditFile.value.name.substring(mobileEditFile.value.name.lastIndexOf('.')) : ''
+      mobileUrl = await uploadImage(`banners/${editing.value.id}-${Date.now()}-mobile${ext}`, mobileEditFile.value)
+    }
+    if (desktopEditFile.value) {
+      const ext = desktopEditFile.value.name.includes('.') ? desktopEditFile.value.name.substring(desktopEditFile.value.name.lastIndexOf('.')) : ''
+      desktopUrl = await uploadImage(`banners/${editing.value.id}-${Date.now()}-desktop${ext}`, desktopEditFile.value)
+    }
+    const { error: e } = await supabase
+      .from('banners')
+      .update({ name: values.name, mobile: mobileUrl, desktop: desktopUrl } as unknown as never)
+      .eq('id', editing.value.id)
+    if (e) throw e
+    toast.success('Banner updated')
+    editOpen.value = false
+    resetBannerForm()
+    mobileEditFile.value = null
+    desktopEditFile.value = null
+    editing.value = null
+    await refreshBanners()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to update banner'
+    toast.error(msg)
+  }
+})
+
+const onDeleteBanner = async (row: BannerRow) => {
+  const supabase = useSupabaseClient()
+  try {
+    const { error: e } = await supabase
+      .from('banners')
+      .delete()
+      .eq('id', row.id)
+    if (e) throw e
+    toast.success('Banner deleted')
+    await refreshBanners()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to delete banner'
+    toast.error(msg)
+  }
+}
+
+onMounted(() => {
+  const supabase = useSupabaseClient()
+  const channel = supabase
+    .channel('public:admin-banners')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, () => {
+      refreshBanners()
+    })
+    .subscribe()
+  onUnmounted(() => {
+    supabase.removeChannel(channel)
+  })
+})
 </script>
 
 <template>
   <div class="space-y-6">
+    <Card>
+      <CardHeader>
+        <CardTitle>Homepage Banners</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div class="flex items-center justify-between mb-4">
+          <Dialog v-model:open="addOpen">
+            <DialogTrigger as-child>
+              <Button variant="default" @click="openAddBanner">Add Banner</Button>
+            </DialogTrigger>
+            <DialogContent class="sm:max-w-xl">
+              <DialogHeader>
+                <DialogTitle>Add Banner</DialogTitle>
+              </DialogHeader>
+              <form class="space-y-4" @submit.prevent="onCreateBanner">
+                <div class="space-y-2">
+                  <Label for="banner-name">Name</Label>
+                  <Input id="banner-name" v-model="bannerName" placeholder="Banner name" />
+                  <p v-if="bannerNameError" class="text-destructive text-xs mt-1">{{ bannerNameError }}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="space-y-2">
+                    <Label for="mobile-upload">Mobile Image</Label>
+                    <Input id="mobile-upload" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; mobileFile = f }" />
+                    <p class="text-xs text-muted-foreground">Recommended: 750×420</p>
+                    <div class="border rounded-md w-full h-40 overflow-hidden bg-muted/20">
+                      <img v-if="mobilePreview" :src="mobilePreview" alt="Mobile preview" class="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <Label for="desktop-upload">Desktop Image</Label>
+                    <Input id="desktop-upload" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; desktopFile = f }" />
+                    <p class="text-xs text-muted-foreground">Recommended: 1920×720</p>
+                    <div class="border rounded-md w-full h-40 overflow-hidden bg-muted/20">
+                      <img v-if="desktopPreview" :src="desktopPreview" alt="Desktop preview" class="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                  <Button type="submit" :disabled="bannerSubmitting">Save</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div v-if="bannersPending"><Skeleton class="h-10 w-full" /></div>
+        <div v-else-if="bannersError">
+          <Alert variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{{ bannersError.message }}</AlertDescription>
+          </Alert>
+        </div>
+        <div v-else>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Mobile</TableHead>
+                <TableHead>Desktop</TableHead>
+                <TableHead class="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="b in (bannersData as BannerRow[] || [])" :key="b.id">
+                <TableCell>{{ b.name }}</TableCell>
+                <TableCell>
+                  <div class="border rounded-md w-32 h-20 md:w-48 md:h-28 overflow-hidden bg-muted/20">
+                    <img :src="b.mobile" alt="Mobile" class="w-full h-full object-cover" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div class="border rounded-md w-32 h-20 md:w-48 md:h-28 overflow-hidden bg-muted/20">
+                    <img :src="b.desktop" alt="Desktop" class="w-full h-full object-cover" />
+                  </div>
+                </TableCell>
+                <TableCell class="text-right">
+                  <div class="flex justify-end gap-2">
+                    <Button variant="outline" size="sm" @click="openEditBanner(b)">Edit</Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger as-child>
+                        <Button variant="destructive" size="sm">Delete</Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete banner?</AlertDialogTitle>
+                          <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction @click="onDeleteBanner(b)">Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+            <TableFooter v-if="(bannersData as BannerRow[] || []).length === 0">
+              <TableRow>
+                <TableCell colspan="4">
+                  <div class="flex items-center justify-between">
+                    <p class="text-sm text-muted-foreground">No banners yet</p>
+                    <Button size="sm" @click="openAddBanner">Create first banner</Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
+          <Dialog v-model:open="editOpen">
+            <DialogContent class="sm:max-w-xl">
+              <DialogHeader>
+                <DialogTitle>Edit Banner</DialogTitle>
+              </DialogHeader>
+              <form class="space-y-4" @submit.prevent="onUpdateBanner">
+                <div class="space-y-2">
+                  <Label for="banner-name-edit">Name</Label>
+                  <Input id="banner-name-edit" v-model="bannerName" placeholder="Banner name" />
+                  <p v-if="bannerNameError" class="text-destructive text-xs mt-1">{{ bannerNameError }}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="space-y-2">
+                    <Label for="mobile-upload-edit">Mobile Image</Label>
+                    <Input id="mobile-upload-edit" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; mobileEditFile = f }" />
+                    <p class="text-xs text-muted-foreground">Recommended: 750×420</p>
+                    <div class="border rounded-md w-full h-40 overflow-hidden bg-muted/20">
+                      <img v-if="mobileEditPreview" :src="mobileEditPreview" alt="Mobile preview" class="w-full h-full object-cover" />
+                      <img v-else :src="editing?.mobile || ''" alt="Mobile" class="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <Label for="desktop-upload-edit">Desktop Image</Label>
+                    <Input id="desktop-upload-edit" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; desktopEditFile = f }" />
+                    <p class="text-xs text-muted-foreground">Recommended: 1920×720</p>
+                    <div class="border rounded-md w-full h-40 overflow-hidden bg-muted/20">
+                      <img v-if="desktopEditPreview" :src="desktopEditPreview" alt="Desktop preview" class="w-full h-full object-cover" />
+                      <img v-else :src="editing?.desktop || ''" alt="Desktop" class="w-full h-full object-cover" />
+                    </div>
+                  </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                  <Button type="submit" :disabled="bannerSubmitting">Save Changes</Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </CardContent>
+    </Card>
     <!-- <Card>
       <CardHeader>
         <CardTitle>Account Settings</CardTitle>

@@ -11,16 +11,32 @@ const router = useRouter()
 import { useWindowSize } from '@vueuse/core'
 import { useSeoMeta } from '#imports'
 
-interface Banner {
+interface BannerRow {
+  name: string
   mobile: string
   desktop: string
 }
 // Carousel banners from public folder
-const banners: Banner[] = [
-  { mobile: '/images/banners/2-mobile.png', desktop: '/images/banners/2-desktop.png' },
-  { mobile: '/images/banners/1-mobile.png', desktop: '/images/banners/1-desktop.png' },
+// const banners: Banner[] = [
+//   { mobile: '/images/banners/2-mobile.png', desktop: '/images/banners/2-desktop.png' },
+//   { mobile: '/images/banners/1-mobile.png', desktop: '/images/banners/1-desktop.png' },
 
-]
+// ]
+const { data: bannersData, pending: bannersPending, error: bannersError, refresh: refreshBanners } = await useLazyAsyncData(
+  'home-banners',
+  async () => {
+    const { data, error } = await supabase
+      .from('banners')
+      .select('name,mobile,desktop')
+      .order('created_at', { ascending: false })
+    if (error) throw error
+    return (data ?? []) as BannerRow[]
+  },
+  { server: true }
+)
+const banners = computed(() => (bannersData.value ?? []).map(b => ({ mobile: b.mobile, desktop: b.desktop })))
+
+  
 const categories = [
   { id: 'cat', name: 'Cat', icon: 'emojione-v1:cat-face' },
   { id: 'dog', name: 'Dog', icon: 'fluent-emoji-flat:dog-face' },
@@ -106,6 +122,17 @@ useSeoMeta({
   ogImage: '/favicon-96x96.png',
   twitterCard: 'summary_large_image',
 })
+onMounted(() => {
+  const channel = supabase
+    .channel('public:home-banners')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'banners' }, () => {
+      refreshBanners()
+    })
+    .subscribe()
+  onUnmounted(() => {
+    supabase.removeChannel(channel)
+  })
+})
 </script>
 
 
@@ -113,33 +140,41 @@ useSeoMeta({
   <div>
     <!-- Hero banner: shadcn-vue Carousel with sliding images -->
     <section class="container mx-auto px-4 py-6">
-      <Carousel
-        class="w-full"
-        :opts="{ loop: true }"
-        :plugins="[Autoplay({ delay: 5000, stopOnMouseEnter: true })]"
-        @init-api="onInitApi"
-      >
-        <CarouselContent>
-          <CarouselItem v-for="(b, idx) in banners" :key="idx">
-            <img
-              :src="isMobile ? b.mobile : b.desktop"
-              alt="Promotion banner"
-              class="w-full h-48 sm:h-48 md:h-64 lg:h-80 object-cover rounded-2xl"
+      <div v-if="bannersPending" class="w-full">
+        <Skeleton class="h-48 w-full rounded-2xl" />
+      </div>
+      <div v-else>
+        <Carousel
+          class="w-full"
+          :opts="{ loop: true }"
+          :plugins="[Autoplay({ delay: 5000, stopOnMouseEnter: true })]"
+          @init-api="onInitApi"
+        >
+          <CarouselContent>
+            <CarouselItem v-for="(b, idx) in banners" :key="idx">
+              <img
+                :src="isMobile ? b.mobile : b.desktop"
+                alt="Promotion banner"
+                class="w-full h-48 sm:h-48 md:h-64 lg:h-80 object-cover rounded-2xl"
+              />
+            </CarouselItem>
+          </CarouselContent>
+          <div class="flex justify-center gap-2 mt-3">
+            <button
+              v-for="(b, idx) in banners"
+              :key="idx"
+              type="button"
+              class="w-2 h-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ring"
+              :class="idx === activeIndex ? 'bg-secondary' : 'bg-secondary/30'"
+              @click="carouselApiRef?.scrollTo(idx)"
             />
-          </CarouselItem>
-        </CarouselContent>
-        <!-- Dots pagination -->
-        <div class="flex justify-center gap-2 mt-3">
-          <button
-            v-for="(b, idx) in banners"
-            :key="idx"
-            type="button"
-            class="w-2 h-2 rounded-full focus:outline-none focus:ring-2 focus:ring-ring"
-            :class="idx === activeIndex ? 'bg-secondary' : 'bg-secondary/30'"
-            @click="carouselApiRef?.scrollTo(idx)"
-          />
-        </div>
-      </Carousel>
+          </div>
+        </Carousel>
+        <Alert v-if="bannersError" variant="destructive" class="mt-4">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{{ bannersError.message || 'Failed to load banners' }}</AlertDescription>
+        </Alert>
+      </div>
     </section>
 
     <!-- Categories -->

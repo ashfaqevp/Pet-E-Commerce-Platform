@@ -186,7 +186,6 @@ watch(
   }
 );
 
-// Auto-clear products search when input is emptied
 watch(
   searchQuery,
   (val, oldVal) => {

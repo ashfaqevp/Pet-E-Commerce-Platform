@@ -42,6 +42,8 @@ interface ProductRow {
   default_rating?: number | null
   thumbnail_url?: string | null
   is_active?: boolean | null
+  label?: string | null
+  row_index?: number | null
 }
 
 interface CardProduct {
@@ -197,7 +199,8 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
       .from('products')
       .select('*', { count: 'exact' })
       .eq('is_active', true)
-      .order('created_at', { ascending: false })
+      .order('is_featured', { ascending: false })
+      .order('row_index', { ascending: true })
       .order('id', { ascending: false })
 
     if (params.value.pet) query = query.eq('pet_type', params.value.pet)
@@ -209,7 +212,7 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
     const term = params.value.search
     if (term) {
       const esc = term.replace(/%/g, '\\%').replace(/_/g, '\\_')
-      query = query.or(`name.ilike.%${esc}%,product_type.ilike.%${esc}%,flavour.ilike.%${esc}%`)
+      query = query.or(`name.ilike.%${esc}%,label.ilike.%${esc}%,product_type.ilike.%${esc}%,flavour.ilike.%${esc}%`)
     }
 
     const from = (params.value.page - 1) * params.value.pageSize

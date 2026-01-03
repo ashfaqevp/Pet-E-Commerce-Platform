@@ -57,6 +57,10 @@ export default defineNuxtConfig({
     dirs: ['./app/utils'],
   },
 
+  components: [
+    { path: './app/components', pathPrefix: false },
+  ],
+
   shadcn: {
     // Auto-import shadcn-vue components into this directory
     componentDir: './app/components/ui',

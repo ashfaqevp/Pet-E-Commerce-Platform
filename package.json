@@ -13,8 +13,6 @@
     "lint": "eslint . --fix 2>/dev/null || true"
   },
   "dependencies": {
-    "fast-xml-parser": "^4.4.0",
-    "jszip": "^3.10.1",
     "@iconify/vue": "^4.1.1",
     "@nuxtjs/supabase": "^1.0.0",
     "@pinia/nuxt": "^0.5.0",
@@ -26,11 +24,14 @@
     "@vueuse/nuxt": "^10.7.0",
     "@vueuse/router": "^14.1.0",
     "axios": "^1.6.0",
+    "canvas-confetti": "^1.9.4",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.0.0",
     "dayjs": "^1.11.0",
     "embla-carousel-autoplay": "^8.6.0",
     "embla-carousel-vue": "^8.6.0",
+    "fast-xml-parser": "^4.4.0",
+    "jszip": "^3.10.1",
     "lodash-es": "^4.17.0",
     "lucide-vue-next": "^0.363.0",
     "moment": "^2.30.1",

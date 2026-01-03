@@ -176,7 +176,7 @@ const placeOrder = async () => {
       await pay(orderId)
     } else {
       toast.success('Order created')
-      navigateTo('/profile')
+      navigateTo('/orders/success')
     }
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Order failed'
@@ -271,7 +271,7 @@ const placeOrder = async () => {
             <CardTitle class="text-secondary">Payment Method</CardTitle>
           </CardHeader>
           <CardContent class="space-y-3">
-            <!-- <Label class="text-sm">Select payment method</Label> -->
+              
             <RadioGroup v-model="paymentMethod" class="grid gap-3">
               <Label for="pm-cod" class="block">
                 <div class="flex items-start gap-3 rounded-lg border px-4 py-3 hover:bg-muted transition">
@@ -279,7 +279,6 @@ const placeOrder = async () => {
                   <div class="space-y-1">
                     <div class="flex items-center gap-2">
                       <span class="font-medium">Cash on Delivery (COD)</span>
-                      <!-- <Badge variant="secondary">Recommended</Badge> -->
                     </div>
                     <p class="text-sm text-muted-foreground">Pay with cash upon delivery. No online payment required.</p>
                   </div>

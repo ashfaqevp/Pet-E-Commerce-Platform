@@ -10,6 +10,7 @@ definePageMeta({
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned' | 'completed' | 'confirmed' | 'awaiting_payment'
 type PaymentStatus = 'paid' | 'unpaid' | 'failed' | 'pending'
+type PaymentMethod = 'online' | 'cod'
 
 interface Address {
   full_name?: string
@@ -27,6 +28,7 @@ interface OrderDetail {
   user_id: string | null
   status: OrderStatus
   payment_status: PaymentStatus
+  payment_method?: PaymentMethod | null
   total: number
   subtotal?: number | null
   shipping_fee?: number | null
@@ -58,7 +60,7 @@ const { data: order, pending: orderPending, error: orderError, refresh: refreshO
     const supabase = useSupabaseClient()
     const { data, error } = await supabase
       .from('orders')
-      .select('id,user_id,status,payment_status,total,subtotal,shipping_fee,tax,created_at,paid_at,tran_ref,payment_provider,shipping_address,billing_address')
+      .select('id,user_id,status,payment_status,payment_method,total,subtotal,shipping_fee,tax,created_at,paid_at,tran_ref,payment_provider,shipping_address,billing_address')
       .eq('id', orderId.value)
       .single()
     if (error) throw error
@@ -94,6 +96,7 @@ const { data: order, pending: orderPending, error: orderError, refresh: refreshO
       user_id: o.user_id || null,
       status: (o.status || 'pending') as OrderStatus,
       payment_status: (o.payment_status || 'pending') as PaymentStatus,
+      payment_method: ((o as any).payment_method || 'online') as PaymentMethod,
       total: Number(o.total || 0),
       subtotal: o.subtotal != null ? Number(o.subtotal) : null,
       shipping_fee: o.shipping_fee != null ? Number(o.shipping_fee) : null,
@@ -163,20 +166,27 @@ onMounted(() => {
 
 const editing = ref(false)
 const nextStatus = ref<OrderStatus>('pending')
-const canTo = (to: OrderStatus) => canOrderTransition(order.value?.status, to, order.value?.payment_status)
+const canTo = (to: OrderStatus) => canOrderTransition(order.value?.status, to, order.value?.payment_status, order.value?.payment_method)
 
 const confirmStatusChange = async () => {
   if (!order.value) return
-  const check = canOrderTransition(order.value.status, nextStatus.value, order.value.payment_status)
+  const check = canOrderTransition(order.value.status, nextStatus.value, order.value.payment_status, order.value.payment_method)
   if (!check.allowed) {
     toast.error(check.reason || 'Status update blocked')
     editing.value = false
     return
   }
   const supabase = useSupabaseClient()
+  const patch: Record<string, unknown> = { status: nextStatus.value, updated_at: new Date().toISOString() }
+  if (nextStatus.value === 'delivered') {
+    patch['delivered_at'] = new Date().toISOString()
+  }
+  if (nextStatus.value === 'cancelled') {
+    patch['payment_status'] = 'failed'
+  }
   const { error } = await supabase
     .from('orders')
-    .update({ status: nextStatus.value, updated_at: new Date().toISOString() } as unknown as never)
+    .update(patch as unknown as never)
     .eq('id', order.value.id)
   if (error) {
     toast.error(error.message)
@@ -184,6 +194,49 @@ const confirmStatusChange = async () => {
     toast.success('Order status updated')
   }
   editing.value = false
+  refreshOrder()
+}
+
+const editingPayment = ref(false)
+const nextPaymentStatus = ref<PaymentStatus>('pending')
+const openPaymentChange = (s: PaymentStatus) => {
+  nextPaymentStatus.value = s
+  editingPayment.value = true
+}
+
+const confirmPaymentChange = async () => {
+  if (!order.value) return
+  if (order.value.payment_status === 'paid') {
+    toast.error('Payment already marked as paid')
+    editingPayment.value = false
+    return
+  }
+  const isCOD = (order.value.payment_method || 'online') === 'cod'
+  if (nextPaymentStatus.value === 'paid') {
+    if (isCOD && order.value.status !== 'delivered') {
+      toast.error('Mark order as delivered before recording COD payment')
+      editingPayment.value = false
+      return
+    }
+  }
+  const supabase = useSupabaseClient()
+  const patch: Record<string, unknown> = { payment_status: nextPaymentStatus.value, updated_at: new Date().toISOString() }
+  if (nextPaymentStatus.value === 'paid') {
+    patch['paid_at'] = new Date().toISOString()
+    if (isCOD && order.value.status === 'delivered') {
+      patch['delivered_at'] = order.value.paid_at ? undefined : new Date().toISOString()
+    }
+  }
+  const { error } = await supabase
+    .from('orders')
+    .update(patch as unknown as never)
+    .eq('id', order.value.id)
+  if (error) {
+    toast.error(error.message)
+  } else {
+    toast.success('Payment status updated')
+  }
+  editingPayment.value = false
   refreshOrder()
 }
 
@@ -219,6 +272,17 @@ const formatDate = (iso: string | Date | null | undefined) => {
             <DropdownMenuSeparator />
             <DropdownMenuItem as="button" class="text-destructive" :disabled="!canTo('cancelled').allowed" @click="editing = true; nextStatus = 'cancelled'">Cancel</DropdownMenuItem>
             <DropdownMenuItem as="button" :disabled="!canTo('returned').allowed" @click="editing = true; nextStatus = 'returned'">Return</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="outline">Update Payment</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem as="button" :disabled="order?.payment_status === 'paid'" @click="openPaymentChange('unpaid')">Unpaid</DropdownMenuItem>
+            <DropdownMenuItem as="button" :disabled="order?.payment_status === 'paid'" @click="openPaymentChange('pending')">Pending</DropdownMenuItem>
+            <DropdownMenuItem as="button" :disabled="order?.payment_status === 'paid' || ((order?.payment_method || 'online') === 'cod' && order?.status !== 'delivered')" @click="openPaymentChange('paid')">Paid</DropdownMenuItem>
+            <DropdownMenuItem as="button" :disabled="order?.payment_status === 'paid'" @click="openPaymentChange('failed')">Failed</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -344,6 +408,19 @@ const formatDate = (iso: string | Date | null | undefined) => {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction class="bg-secondary text-white" @click="confirmStatusChange">Confirm</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog :open="editingPayment" @update:open="editingPayment = false">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Change payment status?</AlertDialogTitle>
+          <AlertDialogDescription />
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction class="bg-secondary text-white" @click="confirmPaymentChange">Confirm</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

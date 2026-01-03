@@ -14,6 +14,7 @@ import { useWindowSize } from '@vueuse/core'
 import { useProfile, type ProfileRow } from '@/composables/useProfile'
 import { useAddresses, type AddressRow, type AddressInput } from '@/composables/useAddresses'
 import { useOrders, type OrderRow } from '@/composables/useOrders'
+import { paymentStatusStyle } from '@/utils'
 import PhoneEditContent from '@/components/profile/PhoneEditContent.vue'
 import AddressFormContent from '@/components/profile/AddressFormContent.vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
@@ -352,6 +353,9 @@ const logout = async () => {
               </div>
               <div class="flex items-center gap-3">
                 <Badge variant="outline">{{ o.status }}</Badge>
+                <Badge :variant="paymentStatusStyle(o.payment_status).variant">{{ o.payment_status }}</Badge>
+                <Badge variant="outline">{{ o.payment_method === 'cod' ? 'COD' : 'Online' }}</Badge>
+                <span v-if="o.payment_method === 'cod' && o.payment_status !== 'paid'" class="text-sm text-muted-foreground">Payment will be collected on delivery</span>
                 <p class="font-medium">{{ formatOMR(o.total) }}</p>
                 <Button variant="outline" @click="navigateTo(`/orders/${o.id}`)">View / Track</Button>
               </div>

@@ -103,12 +103,19 @@ export const canOrderTransition = (
   from: string | null | undefined,
   to: string,
   payment_status: string | null | undefined,
+  payment_method?: string | null | undefined,
 ): { allowed: boolean; reason?: string } => {
   const current = ((from || 'pending') as string).toLowerCase() as AdminOrderStatus
   const target = (to as string).toLowerCase() as AdminOrderStatus
   const allowedTargets = ALLOWED_TRANSITIONS[current] || []
   if (!allowedTargets.includes(target)) return { allowed: false, reason: 'Not allowed from current status' }
   const pay = ((payment_status || '').toLowerCase())
-  if (REQUIRE_PAID.has(target) && pay !== 'paid') return { allowed: false, reason: 'Payment required before shipping or completing' }
+  const method = (payment_method || '').toLowerCase()
+  const isCOD = method === 'cod'
+  if (isCOD) {
+    if (target === 'completed' && pay !== 'paid') return { allowed: false, reason: 'Payment required before completing COD order' }
+  } else {
+    if (REQUIRE_PAID.has(target) && pay !== 'paid') return { allowed: false, reason: 'Payment required before shipping or completing' }
+  }
   return { allowed: true }
 }

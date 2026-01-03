@@ -10,6 +10,7 @@ definePageMeta({
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned' | 'completed' | 'confirmed' | 'awaiting_payment'
 type PaymentStatus = 'paid' | 'unpaid' | 'failed' | 'pending'
+type PaymentMethod = 'online' | 'cod'
 
 interface AdminOrder {
   id: string
@@ -18,6 +19,7 @@ interface AdminOrder {
   status: OrderStatus
   created_at: string
   payment_status: PaymentStatus
+  payment_method?: PaymentMethod | null
 }
 
 const status = ref<OrderStatus | 'all'>('all')
@@ -38,7 +40,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   'admin-orders',
   async () => {
     const supabase = useSupabaseClient()
-    let q = supabase.from('orders').select('id,total,status,created_at,user_id,payment_status', { count: 'exact' })
+    let q = supabase.from('orders').select('id,total,status,created_at,user_id,payment_status,payment_method', { count: 'exact' })
     if (params.value.status) q = q.eq('status', params.value.status)
     q = q.order(params.value.sortBy, { ascending: params.value.ascending })
     const from = (params.value.page - 1) * params.value.pageSize
@@ -46,7 +48,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
     q = q.range(from, to)
     const { data, error, count } = await q
     if (error) throw error
-    const rows = ((data || []) as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date; user_id?: string | null; payment_status: string | null }>)
+    const rows = ((data || []) as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date; user_id?: string | null; payment_status: string | null; payment_method?: string | null }>)
       .map((r) => ({
         id: String(r.id),
         total: r.total ?? 0,
@@ -54,6 +56,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
         created_at: typeof r.created_at === 'string' ? r.created_at : new Date(r.created_at).toISOString(),
         user_id: r.user_id || null,
         payment_status: ((r.payment_status || 'pending') as PaymentStatus),
+        payment_method: ((r.payment_method || 'online') as PaymentMethod),
       })) as AdminOrder[]
     return { rows, count: count ?? rows.length }
   },
@@ -114,7 +117,7 @@ const openStatusChange = (id: string, s: OrderStatus) => {
 const confirmStatusChange = async () => {
   if (!editingId.value) return
   const current = rows.value.find(r => r.id === editingId.value)
-  const check = canOrderTransition(current?.status, nextStatus.value, current?.payment_status)
+  const check = canOrderTransition(current?.status, nextStatus.value, current?.payment_status, current?.payment_method)
   if (!check.allowed) {
     toast.error(check.reason || 'Status update blocked')
     editingId.value = null
@@ -206,19 +209,20 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
         <Badge variant="outline">{{ data?.count || 0 }}</Badge>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead class="text-right">Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead class="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Order</TableHead>
+          <TableHead>Date</TableHead>
+          <TableHead>User</TableHead>
+          <TableHead class="text-right">Amount</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Payment</TableHead>
+          <TableHead>Method</TableHead>
+          <TableHead class="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
             <TableRow v-if="pending">
               <TableCell colspan="6"><Skeleton class="h-10 w-full" /></TableCell>
             </TableRow>
@@ -235,7 +239,7 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
                 <TableEmpty>No orders found</TableEmpty>
               </TableCell>
             </TableRow>
-            <TableRow v-else v-for="o in rows" :key="o.id">
+        <TableRow v-else v-for="o in rows" :key="o.id">
               <TableCell>
                 <NuxtLink :to="`/admin/orders/${o.id}`" class="text-foreground underline">#{{ o.id }}</NuxtLink>
               </TableCell>
@@ -245,39 +249,42 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
               <TableCell>
                 <Badge :variant="orderStatusStyle(o.status).variant">{{ o.status }}</Badge>
               </TableCell>
-              <TableCell>
-                <Badge :variant="paymentStatusStyle(o.payment_status).variant">{{ o.payment_status }}</Badge>
-              </TableCell>
-              <TableCell class="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <Button variant="ghost" size="icon">
-                      <Icon name="lucide:ellipsis" class="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'processing', o.payment_status).allowed" @click="openStatusChange(o.id, 'processing')">
-                      <Icon name="lucide:badge" class="h-4 w-4 mr-2" /> Processing
-                    </DropdownMenuItem>
-                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'shipped', o.payment_status).allowed" @click="openStatusChange(o.id, 'shipped')">
-                      <Icon name="lucide:truck" class="h-4 w-4 mr-2" /> Shipped
-                    </DropdownMenuItem>
-                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'delivered', o.payment_status).allowed" @click="openStatusChange(o.id, 'delivered')">
-                      <Icon name="lucide:package-check" class="h-4 w-4 mr-2" /> Delivered
-                    </DropdownMenuItem>
-                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'completed', o.payment_status).allowed" @click="openStatusChange(o.id, 'completed')">
-                      <Icon name="lucide:check-circle" class="h-4 w-4 mr-2" /> Completed
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem as="button" class="text-destructive" :disabled="!canOrderTransition(o.status, 'cancelled', o.payment_status).allowed" @click="openStatusChange(o.id, 'cancelled')">
-                      <Icon name="lucide:x-circle" class="h-4 w-4 mr-2" /> Cancel
-                    </DropdownMenuItem>
-                    <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'returned', o.payment_status).allowed" @click="openStatusChange(o.id, 'returned')">
-                      <Icon name="lucide:undo-2" class="h-4 w-4 mr-2" /> Return
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+          <TableCell>
+            <Badge :variant="paymentStatusStyle(o.payment_status).variant">{{ o.payment_status }}</Badge>
+          </TableCell>
+          <TableCell>
+            <Badge variant="outline">{{ o.payment_method === 'cod' ? 'COD' : 'Online' }}</Badge>
+          </TableCell>
+          <TableCell class="text-right">
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="icon">
+                  <Icon name="lucide:ellipsis" class="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'processing', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'processing')">
+                  <Icon name="lucide:badge" class="h-4 w-4 mr-2" /> Processing
+                </DropdownMenuItem>
+                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'shipped', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'shipped')">
+                  <Icon name="lucide:truck" class="h-4 w-4 mr-2" /> Shipped
+                </DropdownMenuItem>
+                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'delivered', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'delivered')">
+                  <Icon name="lucide:package-check" class="h-4 w-4 mr-2" /> Delivered
+                </DropdownMenuItem>
+                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'completed', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'completed')">
+                  <Icon name="lucide:check-circle" class="h-4 w-4 mr-2" /> Completed
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem as="button" class="text-destructive" :disabled="!canOrderTransition(o.status, 'cancelled', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'cancelled')">
+                  <Icon name="lucide:x-circle" class="h-4 w-4 mr-2" /> Cancel
+                </DropdownMenuItem>
+                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'returned', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'returned')">
+                  <Icon name="lucide:undo-2" class="h-4 w-4 mr-2" /> Return
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TableCell>
             </TableRow>
           </TableBody>
         </Table>

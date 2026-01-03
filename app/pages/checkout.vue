@@ -64,6 +64,7 @@ const items = computed(() => (itemsData.value as CartItemWithProduct[]) || [])
 const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
 const defaultAddress = computed(() => addresses.value.find(a => a.is_default) || addresses.value[0] || null)
 const selectedAddressId = ref<string | null>(null)
+const paymentMethod = ref<'online' | 'cod'>('online')
 watchEffect(() => {
   if (!selectedAddressId.value) selectedAddressId.value = defaultAddress.value?.id || null
 })
@@ -142,12 +143,16 @@ const placeOrder = async () => {
     return
   }
   try {
-    const orderId = await create(selectedAddressId.value, { shippingFee: siteConfig.value.shipping_fee, taxRate: siteConfig.value.tax_rate })
+    const orderId = await create(selectedAddressId.value, { shippingFee: siteConfig.value.shipping_fee, taxRate: siteConfig.value.tax_rate }, paymentMethod.value)
     if (process.client) {
       localStorage.setItem('last_order_id', orderId)
     }
-    toast.success('Order created')
-    await pay(orderId)
+    if (paymentMethod.value === 'online') {
+      toast.success('Order created')
+      await pay(orderId)
+    } else {
+      toast.success('Order created – Awaiting payment on delivery')
+    }
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Order failed'
     toast.error(msg)
@@ -206,6 +211,30 @@ const placeOrder = async () => {
                 <Button variant="outline" size="sm" @click="goToProfile">Manage addresses in Profile</Button>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card class="bg-white rounded-xl border">
+          <CardHeader>
+            <CardTitle class="text-secondary">Payment Method</CardTitle>
+          </CardHeader>
+          <CardContent class="space-y-3">
+            <Label class="text-sm">Select payment method</Label>
+            <Select v-model="paymentMethod">
+              <SelectTrigger class="bg-white">
+                <SelectValue placeholder="Choose payment method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="online">Online Payment</SelectItem>
+                <SelectItem value="cod">Cash on Delivery (COD)</SelectItem>
+              </SelectContent>
+            </Select>
+            <Alert v-if="paymentMethod === 'cod'" variant="default">
+              <AlertTitle>Pay on Delivery</AlertTitle>
+              <AlertDescription>
+                Pay with cash upon delivery. No online payment required.
+              </AlertDescription>
+            </Alert>
           </CardContent>
         </Card>
 

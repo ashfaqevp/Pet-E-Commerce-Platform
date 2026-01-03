@@ -3,8 +3,9 @@ import { ref } from 'vue'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
 import { useAddresses, type AddressRow } from '@/composables/useAddresses'
 
-// Payment status lifecycle: pending -> paid/failed
-type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'failed'
+// Payment status lifecycle
+type PaymentStatus = 'pending' | 'unpaid' | 'paid' | 'refunded' | 'failed'
+type PaymentMethod = 'online' | 'cod'
 
 interface Totals {
   subtotal: number
@@ -26,8 +27,12 @@ interface ShippingAddressSnapshot {
 
 interface OrderInsertRow extends Totals {
   user_id: string
-  status: 'awaiting_payment'
+  status: 'awaiting_payment' | 'pending'
   payment_status: PaymentStatus
+  payment_method: PaymentMethod
+  payment_provider: 'paytabs' | 'cod'
+  tran_ref?: string | null
+  paid_at?: string | null
   shipping_address: ShippingAddressSnapshot
 }
 
@@ -51,7 +56,7 @@ export const useCheckoutOrder = () => {
 
   interface CreateOptions { shippingFee?: number; taxRate?: number }
 
-  const create = async (addressId: string, opts?: CreateOptions): Promise<string> => {
+  const create = async (addressId: string, opts?: CreateOptions, paymentMethod: PaymentMethod = 'online'): Promise<string> => {
     if (creating.value) throw new Error('ALREADY_CREATING')
     if (!user.value) throw new Error('LOGIN_REQUIRED')
     creating.value = true
@@ -67,10 +72,15 @@ export const useCheckoutOrder = () => {
       const shipping = items.length ? Number(cfgShipping || 0) : 0
       const tax = round3(subtotal * Number(cfgTaxRate || 0))
       const total = round3(subtotal + shipping + tax)
+      const isCOD = paymentMethod === 'cod'
       const payload: OrderInsertRow = {
         user_id: user.value.id,
-        status: 'awaiting_payment',
-        payment_status: 'pending',
+        status: isCOD ? 'pending' : 'awaiting_payment',
+        payment_status: isCOD ? 'pending' : 'unpaid',
+        payment_method: paymentMethod,
+        payment_provider: isCOD ? 'cod' : 'paytabs',
+        tran_ref: null,
+        paid_at: null,
         subtotal: round3(subtotal),
         shipping_fee: round3(shipping),
         tax: round3(tax),

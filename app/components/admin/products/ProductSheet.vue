@@ -53,7 +53,7 @@ const schema = toTypedSchema(
       type: z.string().min(1),
       age: z.string().optional(),
       unit: z.string().optional(),
-      size: z.string().optional(),
+      size: z.number().min(0).optional(),
       flavour: z.string().optional(),
       price: z.number().min(0),
       offer_percentage: z.number().min(0).max(90).optional(),
@@ -68,7 +68,7 @@ const schema = toTypedSchema(
         type: val.type,
         age: val.age,
         unit: val.unit,
-        size: val.size,
+        size: undefined,
         flavour: val.flavour,
       }
       for (const key of ['pet', 'type', 'age', 'unit', 'size', 'flavour'] as const) {
@@ -96,7 +96,7 @@ const { value: pet, errorMessage: petError, meta: petMeta } = useField<string>('
 const { value: type, errorMessage: typeError, meta: typeMeta } = useField<string>('type')
 const { value: age, errorMessage: ageError, meta: ageMeta } = useField<string | undefined>('age')
 const { value: unit, errorMessage: unitError, meta: unitMeta } = useField<string | undefined>('unit')
-const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<string | undefined>('size')
+const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<number | undefined>('size')
 const { value: flavour, errorMessage: flavourError, meta: flavourMeta } = useField<string | undefined>('flavour')
 const { value: price, errorMessage: priceError, meta: priceMeta } = useField<number>('price')
 const { value: offerPct, errorMessage: offerPctError, meta: offerPctMeta } = useField<number | undefined>('offer_percentage')
@@ -121,7 +121,6 @@ watch(() => props.open, async (open) => {
     if (initialType) setCategory('type', initialType); else clearCategory('type')
     if (initialUnit) setCategory('unit', initialUnit); else clearCategory('unit')
     if (initialAge) setCategory('age', initialAge); else clearCategory('age')
-    if (initialSize) setCategory('size', initialSize); else clearCategory('size')
     if (initialFlavour) setCategory('flavour', initialFlavour); else clearCategory('flavour')
 
     setValues({
@@ -131,7 +130,7 @@ watch(() => props.open, async (open) => {
       type: initialType,
       age: initialAge ?? undefined,
       unit: initialUnit ?? undefined,
-      size: initialSize ?? undefined,
+      size: parseSizeToNumber(initialSize) ?? undefined,
       flavour: initialFlavour ?? undefined,
       price: Number(props.initial?.retail_price ?? 0),
       offer_percentage: undefined,
@@ -147,11 +146,15 @@ watch(() => props.open, async (open) => {
     valueMap.type.value = initialType || undefined
     valueMap.unit.value = initialUnit || undefined
     valueMap.age.value = initialAge || undefined
-    valueMap.size.value = initialSize || undefined
+    
     valueMap.flavour.value = initialFlavour || undefined
     existingThumbnailUrl.value = props.initial?.thumbnail_url ?? null
     hasThumbnailRef.value = !!(existingThumbnailUrl.value || thumbnailFile.value)
     existingGalleryUrls.value = Array.isArray(props.initial?.image_urls) ? (props.initial!.image_urls as string[]) : []
+    {
+      const tokens = (props.initial?.name || '').trim().split(/\s+/)
+      baseSearch.value = tokens.slice(0, 2).join(' ') || ''
+    }
     initializing.value = false
   } else {
     initializing.value = true
@@ -172,17 +175,18 @@ watch(() => props.open, async (open) => {
     clearCategory('type')
     clearCategory('age')
     clearCategory('unit')
-    clearCategory('size')
+    
     clearCategory('flavour')
     initializing.value = false
   }
 })
 
-const categoryKeys = ['pet','type','age','unit','size','flavour'] as const
+const categoryKeys = ['pet','type','age','unit','flavour'] as const
+const sizeStr = ref<string | undefined>(undefined)
 const valueMap: Record<CategoryKey, Ref<string | undefined>> = {
   pet: pet as unknown as Ref<string | undefined>,
   type: type as unknown as Ref<string | undefined>,
-  age, unit, size, flavour,
+  age, unit, size: sizeStr, flavour,
 }
 const errorMap: Record<CategoryKey, Ref<string | undefined>> = {
   pet: petError as Ref<string | undefined>,
@@ -208,7 +212,7 @@ attachWatcher('pet')
 attachWatcher('type')
 attachWatcher('unit')
 attachWatcher('age')
-attachWatcher('size')
+
 attachWatcher('flavour')
 
 const visibleKeys = computed(() => getVisibleKeysFromCtx())
@@ -226,7 +230,7 @@ const onSubmit = async () => {
       product_type: values.type,
       age: values.age,
       unit: values.unit,
-      size: values.size,
+      size: formatSizeToString(values.size),
       flavour: values.flavour,
       retail_price: values.price,
       stock_quantity: 1000,
@@ -239,6 +243,15 @@ const onSubmit = async () => {
       existingGalleryUrls: existingGalleryUrls.value,
     })
   })()
+}
+
+const parseSizeToNumber = (s?: string | null) => {
+  if (!s) return undefined
+  const m = String(s).match(/\d+(?:\.\d+)?/)
+  return m ? Number(m[0]) : undefined
+}
+const formatSizeToString = (n?: number) => {
+  return typeof n === 'number' ? n.toFixed(2) : undefined
 }
 
 const thumbnailFile = ref<File | null>(null)
@@ -306,6 +319,20 @@ const baseProducts = computed(() => {
 })
 const baseProductsLoading = computed(() => !!baseProductsState.pending.value)
 const baseProductsErrored = computed(() => !!baseProductsState.error.value)
+const baseSearch = ref('')
+const filteredBaseProducts = computed(() => {
+  const q = baseSearch.value.trim().toLowerCase()
+  const list = (baseProducts.value || []) as { id: string; name: string }[]
+  if (!q) return list
+  return list.filter(p => p.name.toLowerCase().includes(q))
+})
+watch(name, (v) => {
+  if (!baseProductId.value) {
+    const tokens = String(v || '').trim().split(/\s+/)
+    const firstWords = tokens.slice(0, 2).join(' ')
+    if (!baseSearch.value || baseSearch.value.trim().length === 0) baseSearch.value = firstWords
+  }
+})
 </script>
 
 <template>
@@ -359,18 +386,26 @@ const baseProductsErrored = computed(() => !!baseProductsState.error.value)
                     <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
                   </SelectContent>
                 </Select>
-                <p v-if="errorMap[k]?.value && (k === 'pet' ? petMeta.touched : k === 'type' ? typeMeta.touched : k === 'age' ? ageMeta.touched : k === 'unit' ? unitMeta.touched : k === 'size' ? sizeMeta.touched : flavourMeta.touched)" class="text-destructive text-xs">{{ errorMap[k]?.value }}</p>
+                <p v-if="errorMap[k]?.value && (k === 'pet' ? petMeta.touched : k === 'type' ? typeMeta.touched : k === 'age' ? ageMeta.touched : k === 'unit' ? unitMeta.touched : flavourMeta.touched)" class="text-destructive text-xs">{{ errorMap[k]?.value }}</p>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <Label for="size">Size</Label>
+                <div class="flex items-center gap-2">
+                  <Input id="size" type="number" step="0.01" min="0" v-model.number="size" placeholder="0.00" class="w-full" />
+                  <span class="text-xs text-muted-foreground">{{ unit || 'unit' }}</span>
+                </div>
+                <p v-if="sizeError && sizeMeta.touched" class="text-destructive text-xs">{{ sizeError }}</p>
               </div>
               <div class="flex flex-col gap-1.5">
                 <Label for="price">Price</Label>
                 <Input id="price" type="number" step="0.01" v-model.number="price" class="w-full" />
                 <p v-if="priceError && priceMeta.touched" class="text-destructive text-xs">{{ priceError }}</p>
               </div>
-              <div class="flex flex-col gap-1.5">
+              <!-- <div class="flex flex-col gap-1.5">
                 <Label for="offer">Offer %</Label>
                 <Input id="offer" type="number" step="1" min="0" max="90" v-model.number="offerPct" class="w-full" />
                 <p v-if="offerPctError && offerPctMeta.touched" class="text-destructive text-xs">{{ offerPctError }}</p>
-              </div>
+              </div> -->
               <div class="flex flex-col gap-1.5">
                 <Label for="default-rating">Default Rating</Label>
                 <Input id="default-rating" type="number" step="0.1" v-model.number="defaultRating" class="w-full" />
@@ -395,9 +430,12 @@ const baseProductsErrored = computed(() => !!baseProductsState.error.value)
                 <Select v-model="baseProductId">
                   <SelectTrigger id="baseProduct" class="w-full"><SelectValue placeholder="Select base product" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem v-if="baseProductsLoading" value="" disabled>Loading...</SelectItem>
-                    <SelectItem v-else-if="baseProductsErrored" value="" disabled>Error loading</SelectItem>
-                    <SelectItem v-for="p in baseProducts" :key="p.id" :value="p.id">{{ p.name }}</SelectItem>
+                    <div class="sticky top-0 z-10 bg-background p-2 border-b">
+                      <Input v-model="baseSearch" placeholder="Search base products..." class="w-full" @click.stop @keydown.stop />
+                    </div>
+                    <SelectItem v-if="baseProductsLoading" value="__loading__" disabled>Loading...</SelectItem>
+                    <SelectItem v-else-if="baseProductsErrored" value="__error__" disabled>Error loading</SelectItem>
+                    <SelectItem v-for="p in filteredBaseProducts" :key="p.id" :value="p.id">{{ p.name }}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p v-if="baseProductIdError && (baseProductIdMeta.touched || submitCount > 0)" class="text-destructive text-xs">{{ baseProductIdError }}</p>

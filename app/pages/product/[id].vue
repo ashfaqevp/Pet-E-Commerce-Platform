@@ -108,10 +108,10 @@ function buildGroups() {
       flavourSet.set(r.flavour, { id: r.flavour, label, value: r.flavour });
     }
     if (r.size) {
-      const unit = cur.unit ?? r.unit ?? undefined;
-      const rules = CATEGORY_CONFIG.size.rules || [];
-      const rule = unit ? rules.find(x => x.when.values.includes(unit)) : undefined;
-      const label = rule?.options.find(o => o.id === r.size)?.label || r.size;
+      const raw = String(r.size);
+      const numeric = raw.match(/\d+(?:\.\d+)?/)?.[0] || raw;
+      const unit = r.unit || cur.unit || '';
+      const label = unit ? `${numeric} ${unit}` : numeric;
       sizeSet.set(r.size, { id: r.size, label, value: r.size });
     }
     if (r.age) {

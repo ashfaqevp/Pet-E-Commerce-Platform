@@ -79,60 +79,7 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   size: {
     label: 'Size',
     dependsOn: 'unit',
-    rules: [
-      {
-        when: { category: 'unit', values: ['g'] },
-        options: [
-          1.3, 3, 14, 15, 16, 19.25, 19.8, 20, 21.25, 21.8,
-          25, 37, 40, 45, 50, 60, 70, 75, 80, 85, 90,
-          100, 110, 140, 150, 170, 180, 185, 195, 200,
-          220, 250, 350, 360, 400, 425, 500, 570, 600,
-          800, 850, 900, 907, 908, 1000, 1362,
-        ].map(v => ({ id: `${v}g`, label: `${v} g` })),
-      },
-      {
-        when: { category: 'unit', values: ['kg'] },
-        options: [
-          1, 1.3, 1.5, 1.8, 2, 2.5, 3, 3.5, 4,
-          7, 8, 10, 12.5, 15, 20, 800,
-        ].map(v => ({ id: `${v}kg`, label: `${v} kg` })),
-      },
-      {
-        when: { category: 'unit', values: ['ml'] },
-        options: [
-          10, 20, 30, 50, 100, 120, 135, 150,
-          175, 200, 220, 250, 430, 500, 1000,
-        ].map(v => ({ id: `${v}ml`, label: `${v} ml` })),
-      },
-      {
-        when: { category: 'unit', values: ['l'] },
-        options: [
-          1, 5, 10, 12, 20, 25, 80, 150,
-        ].map(v => ({ id: `${v}l`, label: `${v} L` })),
-      },
-      {
-        when: { category: 'unit', values: ['cm'] },
-        options: [
-          2, 3, 5, 6, 8, 10, 12, 16, 18, 20,
-          22, 25, 26, 30, 35, 36, 45, 60,
-          75, 80, 100, 120, 150, 180, 230,
-          300, 380,
-        ].map(v => ({ id: `${v}cm`, label: `${v} cm` })),
-      },
-      {
-        when: { category: 'unit', values: ['pcs'] },
-        options: [1, 2, 5, 6].map(v => ({ id: `${v}pcs`, label: `${v} pcs` })),
-      },
-      {
-        when: { category: 'unit', values: ['watt'] },
-        options: [
-          1, 2, 3, 4, 5, 6, 7, 8, 10, 12,
-          13, 15, 18, 20, 23, 25, 30, 32,
-          34, 35, 36, 40, 45, 50, 55, 60,
-          82, 91, 100, 150, 200, 300,
-        ].map(v => ({ id: `${v}w`, label: `${v} W` })),
-      },
-    ],
+    rules: [],
   },
 
 flavour: {

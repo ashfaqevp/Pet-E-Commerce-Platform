@@ -15,11 +15,12 @@ definePageMeta({
 })
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 400)
 const ALL = '__all__' as const
 const petType = ref<string | typeof ALL | undefined>()
 const productType = ref<string | typeof ALL | undefined>()
 const status = ref<'active' | 'inactive' | typeof ALL | undefined>()
-const sortBy = ref<'name' | 'stock_quantity' | 'retail_price' | 'created_at'>('created_at')
+const sortBy = ref<'name' | 'retail_price' | 'created_at'>('created_at')
 const ascending = ref(false)
 const page = ref(1)
 const pageSize = ref(10)
@@ -29,7 +30,7 @@ const editProduct = ref<AdminProduct | null>(null)
 const deletingId = ref<string | null>(null)
 
 const params = computed(() => ({
-  search: search.value || undefined,
+  search: debouncedSearch.value || undefined,
   petType: petType.value === ALL ? undefined : (petType.value || undefined),
   productType: productType.value === ALL ? undefined : (productType.value || undefined),
   status: status.value === ALL ? undefined : (status.value || undefined),
@@ -75,7 +76,6 @@ const columns = [
   columnHelper.accessor('product_type', { header: 'Product Type', enableSorting: false }),
   columnHelper.display({ id: 'price', header: 'Price', enableSorting: true }),
   columnHelper.display({ id: 'rating', header: 'Rating', enableSorting: false }),
-  columnHelper.accessor('stock_quantity', { header: 'Stock', enableSorting: true }),
   columnHelper.display({ id: 'status', header: 'Status', enableSorting: false }),
   columnHelper.display({ id: 'actions', header: 'Actions', enableSorting: false }),
 ] 
@@ -89,7 +89,7 @@ const table = useVueTable({
     valueUpdater(updater, sorting)
     const s = sorting.value[0]
     if (s) {
-      const id = s.id === 'price' ? 'retail_price' : (s.id as 'name' | 'stock_quantity')
+      const id = s.id === 'price' ? 'retail_price' : 'name'
       sortBy.value = id
       ascending.value = !s.desc
     } else {
@@ -153,7 +153,7 @@ const typeLabelMap = computed<Record<string, string>>(() => {
 
 const headerAlignClass = (id: string) => {
   if (id === 'serial') return 'text-center'
-  if (id === 'price' || id === 'stock_quantity') return 'text-right'
+  if (id === 'price') return 'text-right'
   if (id === 'rating') return 'text-center'
   if (id === 'pet_type' || id === 'product_type') return 'text-center'
   if (id === 'status' || id === 'actions') return 'text-center'
@@ -306,7 +306,7 @@ const onSubmitSheet = async (payload: { name: string; description?: string; pet_
   }
 }
 
-const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quantity', asc: boolean) => {
+const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean) => {
   sortBy.value = key
   ascending.value = asc
   sorting.value = key === 'retail_price' ? [{ id: 'price', desc: !asc }] : [{ id: key, desc: !asc }]
@@ -369,7 +369,6 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
             <DropdownMenuItem as="button" @click="setServerSort('name', true)">Name</DropdownMenuItem>
             <DropdownMenuItem as="button" @click="setServerSort('retail_price', true)">Price ↑</DropdownMenuItem>
             <DropdownMenuItem as="button" @click="setServerSort('retail_price', false)">Price ↓</DropdownMenuItem>
-            <DropdownMenuItem as="button" @click="setServerSort('stock_quantity', false)">Stock</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button class="bg-secondary text-white" @click="openCreate">
@@ -405,10 +404,10 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
           </TableHeader>
           <TableBody>
             <TableRow v-if="pending">
-              <TableCell colspan="9"><Skeleton v-for="i in 9" :key="i" class="h-10 w-full mb-3" /></TableCell>
+              <TableCell :colspan="columns.length"><Skeleton v-for="i in columns.length" :key="i" class="h-10 w-full mb-3" /></TableCell>
             </TableRow>
             <TableRow v-else-if="error">
-              <TableCell colspan="9">
+              <TableCell :colspan="columns.length">
                 <Alert variant="destructive">
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{{ error.message }}</AlertDescription>
@@ -416,7 +415,7 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
               </TableCell>
             </TableRow>
             <TableRow v-else-if="rows.length === 0">
-              <TableCell colspan="9"><TableEmpty>No products found</TableEmpty></TableCell>
+              <TableCell :colspan="columns.length"><TableEmpty>No products found</TableEmpty></TableCell>
             </TableRow>
             <TableRow v-else v-for="row in table.getRowModel().rows" :key="row.id">
               <TableCell class="py-3 text-center w-10">{{ (page - 1) * pageSize + row.index + 1 }}</TableCell>
@@ -460,42 +459,48 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price' | 'stock_quan
                   <span class="text-xs text-muted-foreground">{{ getRatingParts(row.original.default_rating).value.toFixed(1) }}</span>
                 </div>
               </TableCell>
-              <TableCell class="py-3 text-right">{{ row.original.stock_quantity }}</TableCell>
               <TableCell class="py-3 text-center">
-                <Badge :variant="row.original.is_active ? 'secondary' : 'destructive'">{{ row.original.is_active ? 'active' : 'inactive' }}</Badge>
+                <Badge
+                  variant="outline"
+                  :class="row.original.is_active
+                    ? 'border-green-200 bg-green-50 text-green-700 dark:text-green-600'
+                    : 'border-gray-200 bg-gray-50 text-gray-600 dark:text-gray-500'"
+                >
+                  {{ row.original.is_active ? 'Active' : 'Inactive' }}
+                </Badge>
               </TableCell>
               <TableCell class="py-3 text-center">
-                <DropdownMenu>
-                  <DropdownMenuTrigger as-child>
-                    <div class="flex items-center gap-2 justify-end">
-                      <Button variant="default" size="sm" @click="openEdit(row.original)">
-                        <Icon name="lucide:pencil" class="h-4 w-4 mr-1" /> Edit
-                      </Button>
+                <div class="flex items-center gap-2 justify-end">
+                  <Button variant="default" size="sm" @click="openEdit(row.original)">
+                    <Icon name="lucide:pencil" class="h-4 w-4 mr-1" /> Edit
+                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
                       <Button variant="ghost" size="icon">
                         <Icon name="lucide:ellipsis" class="h-4 w-4" />
                       </Button>
-                    </div>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                  <DropdownMenuItem v-if="!row.original.is_active" as="button" @click="setActive(row.original.id)">
-                    <Icon name="lucide:check-circle" class="h-4 w-4 mr-2" /> Set Active
-                  </DropdownMenuItem>
-                  <DropdownMenuItem v-else as="button" @click="setInactive(row.original.id)">
-                    <Icon name="lucide:slash" class="h-4 w-4 mr-2" /> Set Inactive
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem v-if="!row.original.is_featured" as="button" @click="markFeatured(row.original.id)">
-                    <Icon name="lucide:star" class="h-4 w-4 mr-2" /> Add to Featured
-                  </DropdownMenuItem>
-                  <DropdownMenuItem v-else as="button" @click="unmarkFeatured(row.original.id)">
-                    <Icon name="lucide:star-off" class="h-4 w-4 mr-2" /> Remove Featured
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem as="button" class="text-destructive" @click="confirmDelete(row.original.id)">
-                    <Icon name="lucide:trash" class="h-4 w-4 mr-2" /> Delete
-                  </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem v-if="!row.original.is_active" as="button" @click="setActive(row.original.id)">
+                        <Icon name="lucide:check-circle" class="h-4 w-4 mr-2" /> Set Active
+                      </DropdownMenuItem>
+                      <DropdownMenuItem v-else as="button" @click="setInactive(row.original.id)">
+                        <Icon name="lucide:slash" class="h-4 w-4 mr-2" /> Set Inactive
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem v-if="!row.original.is_featured" as="button" @click="markFeatured(row.original.id)">
+                        <Icon name="lucide:star" class="h-4 w-4 mr-2" /> Add to Featured
+                      </DropdownMenuItem>
+                      <DropdownMenuItem v-else as="button" @click="unmarkFeatured(row.original.id)">
+                        <Icon name="lucide:star-off" class="h-4 w-4 mr-2" /> Remove Featured
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem as="button" class="text-destructive" @click="confirmDelete(row.original.id)">
+                        <Icon name="lucide:trash" class="h-4 w-4 mr-2" /> Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </TableCell>
             </TableRow>
           </TableBody>

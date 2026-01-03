@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Logo from "@/components/common/Logo.vue";
 import { toast } from 'vue-sonner'
 
 interface MenuItem {
@@ -101,8 +100,8 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
   <SidebarProvider>
     <Sidebar side="left" variant="sidebar" collapsible="offcanvas" class="bg-white text-foreground">
       <SidebarHeader class="bg-white px-4 py-5">
-        <NuxtLink to="/admin" class="font-semibold tracking-wide">
-          <Logo />
+        <NuxtLink to="/admin" class="flex items-center gap-2">
+          <img src="/images/logo-name.png" alt="Logo" class="h-13 w-auto" />
         </NuxtLink>
       </SidebarHeader>
       <SidebarContent class="bg-white px-3 py-3">
@@ -192,25 +191,21 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
               </DropdownMenu> -->
               <DropdownMenu>
                 <DropdownMenuTrigger as-child>
-                  <Button variant="ghost" class="gap-2">
-                    <Avatar class="h-6 w-6">
-                      <AvatarImage :src="avatarUrl || ''" />
-                      <AvatarFallback>{{ initials }}</AvatarFallback>
-                    </Avatar>
+                  <Button variant="ghost" class="gap-2 ">
+                    <div class="size-5 rounded-full border bg-gray-50 flex items-center justify-center p-4">
+                      <Icon name="lucide:user-star" class="size-5 " />
+                    </div>
                     {{ displayName }}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" class="w-[calc(100vw-2rem)] max-w-[calc(100vw-2rem)] md:w-[260px]">
                   <DropdownMenuLabel>{{ displayName }}</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem v-if="role" disabled>
-                    <Badge variant="outline" class="border-[#0f766e] text-[#0f766e]">{{ role }}</Badge>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem as="button" @click="navigateTo('/admin/settings')">
+                  <DropdownMenuItem as="button" class="w-full" @click="navigateTo('/admin/settings')">
                     <Icon name="lucide:settings" class="h-4 w-4 mr-2" />Settings
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem as="button" @click="confirmLogoutOpen = true">
+                  <DropdownMenuItem as="button" class="w-full text-destructive" @click="confirmLogoutOpen = true">
                     <Icon name="lucide:log-out" class="h-4 w-4 mr-2" />Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>

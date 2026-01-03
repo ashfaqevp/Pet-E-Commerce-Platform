@@ -3,7 +3,7 @@ import { orderStatusStyle, paymentStatusStyle } from '@/utils'
 definePageMeta({
   layout: 'admin',
   middleware: 'admin',
-  title: 'Admin Dashboard',
+  title: 'Dashboard',
 })
 
 type OrderStatus = 'pending' | 'shipped' | 'delivered' | 'cancelled' | 'returned' | 'completed'

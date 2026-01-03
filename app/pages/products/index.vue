@@ -177,6 +177,7 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
       .select('*', { count: 'exact' })
       .eq('is_active', true)
       .order('created_at', { ascending: false })
+      .order('id', { ascending: false })
 
     if (params.value.pet.length > 0) query = query.in('pet_type', params.value.pet)
     if (params.value.type.length > 0) query = query.in('product_type', params.value.type)
@@ -215,11 +216,7 @@ watch(pageData, (val) => {
   }
 })
 
-const resetAndRefresh = async () => {
-  page.value = 1
-  products.value = []
-  await refresh()
-}
+let _reset: (() => void) | undefined
 
 const loadNextPage = async () => {
   if (pending.value) return
@@ -228,21 +225,28 @@ const loadNextPage = async () => {
   await refresh()
 }
 
+
 // Check if more products available
 const hasMore = computed(() => {
   return products.value.length < totalCount.value
 })
 
 // Setup infinite scroll
-useInfiniteScroll(
+const { reset } = useInfiniteScroll(
   listContainer,
-  () => {
+  async () => {
     if (hasMore.value && !pending.value) {
-      loadNextPage()
+      await loadNextPage()
     }
   },
-  { distance: 300 }
+  {
+    distance: 100,
+    interval: 300,
+    direction: 'bottom',
+    canLoadMore: () => products.value.length < totalCount.value && !pending.value,
+  }
 )
+_reset = reset
 
 // Watch filter changes and reset
 let lastFilterSig = filterSignature.value
@@ -316,6 +320,19 @@ function applyFilters() {
 }
 
 onMounted(() => { resetAndRefresh() })
+
+const resetAndRefresh = async () => {
+  page.value = 1
+  products.value = []
+  _reset?.()
+  await refresh()
+}
+
+const apiError = computed(() => {
+  const msg = error.value?.message ?? ''
+  if (msg.includes('Range Not Satisfiable')) return null
+  return error.value ?? null
+})
 </script>
 
 <template>
@@ -423,54 +440,57 @@ onMounted(() => { resetAndRefresh() })
         </div>
 
         <!-- Error Alert -->
-        <Alert v-if="error" variant="destructive" class="mb-4">
+        <Alert v-if="apiError" variant="destructive" class="mb-4">
           <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{{ error?.message }}</AlertDescription>
+          <AlertDescription>{{ apiError?.message }}</AlertDescription>
         </Alert>
 
-        <!-- Products Grid -->
-        <div ref="listContainer" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6">
-          <!-- Loading Skeletons -->
-          <template v-if="initialLoading">
-            <div v-for="i in 6" :key="`skeleton-${i}`" class="w-full">
-              <Skeleton class="h-64 w-full rounded-lg" />
-            </div>
-          </template>
-
-          <!-- Product Cards -->
-          <template v-else>
-            <ProductCard
-              v-for="product in products"
-              :key="product.id"
-              :product="product"
-            />
-          </template>
-        </div>
-
-        <!-- Loading More Indicator -->
-        <div v-if="loading && products.length > 0" class="mt-6 flex justify-center">
-          <Skeleton class="h-12 w-full max-w-sm rounded-lg" />
-        </div>
-
-        <!-- Empty State -->
-        <div v-if="!initialLoading && products.length === 0" class="mt-8">
-          <Card>
-            <CardContent class="py-12">
-              <div class="text-center text-muted-foreground">
-                <Icon name="lucide:package-open" class="mx-auto h-12 w-12 mb-4 opacity-50" />
-                <p class="text-lg font-medium mb-1">No products found</p>
-                <p class="text-sm">Try adjusting your filters to see more results</p>
+        <!-- Scroll Container -->
+        <div ref="listContainer" class="overflow-y-auto h-[75vh]">
+          <!-- Products Grid -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6">
+            <!-- Loading Skeletons -->
+            <template v-if="initialLoading">
+              <div v-for="i in 6" :key="`skeleton-${i}`" class="w-full">
+                <Skeleton class="h-64 w-full rounded-lg" />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </template>
 
-        <!-- Products Counter -->
-        <CardFooter class="mt-6 justify-center">
-          <Badge variant="outline" class="border-[#0f766e] text-[#0f766e]">
-            Showing {{ products.length }} of {{ totalCount }} products
-          </Badge>
-        </CardFooter>
+            <!-- Product Cards -->
+            <template v-else>
+              <ProductCard
+                v-for="product in products"
+                :key="product.id"
+                :product="product"
+              />
+            </template>
+          </div>
+
+          <!-- Loading More Indicator -->
+          <div v-if="loading && products.length > 0" class="mt-6 flex justify-center">
+            <Skeleton class="h-12 w-full max-w-sm rounded-lg" />
+          </div>
+
+          <!-- Empty State -->
+          <div v-if="!initialLoading && products.length === 0" class="mt-8">
+            <Card>
+              <CardContent class="py-12">
+                <div class="text-center text-muted-foreground">
+                  <Icon name="lucide:package-open" class="mx-auto h-12 w-12 mb-4 opacity-50" />
+                  <p class="text-lg font-medium mb-1">No products found</p>
+                  <p class="text-sm">Try adjusting your filters to see more results</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <!-- Products Counter -->
+          <CardFooter class="mt-6 justify-center">
+            <Badge variant="outline" class="border-[#0f766e] text-[#0f766e]">
+              Showing {{ products.length }} of {{ totalCount }} products
+            </Badge>
+          </CardFooter>
+        </div>
       </div>
     </div>
     </div>

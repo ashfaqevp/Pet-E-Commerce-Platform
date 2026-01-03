@@ -1,6 +1,6 @@
 <template>
   <Card
-    class="border-none rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white py-3 md:py-4 md:pb-0 cursor-pointer"
+    class="border-none rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow bg-white py-3 md:py-4 md:pb-0 cursor-pointer min-h-64"
     @click="goToProduct"
   >
     <div class="relative">

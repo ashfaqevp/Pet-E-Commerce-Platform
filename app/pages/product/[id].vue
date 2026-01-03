@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted } from "vue";
-import { useRoute, definePageMeta, useLazyAsyncData, useSupabaseClient, useHead, useState, useSeoMeta, useRuntimeConfig } from "#imports";
+import { useRoute, useRouter, definePageMeta, useLazyAsyncData, useSupabaseClient, useHead, useState, useSeoMeta, useRuntimeConfig } from "#imports";
 import { Button } from "@/components/ui/button";
 import { useCart, type CartItemWithProduct } from "@/composables/useCart";
 import AddToCartButton from "@/components/AddToCartButton.vue";
@@ -9,7 +9,9 @@ import type { UnwrapRefCarouselApi } from "@/components/ui/carousel/interface";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/common/PageHeader.vue";
+import { formatOMR } from "@/utils";
 import { CATEGORY_CONFIG } from "~/domain/categories/category.config";
+import ProductCard from "@/components/product/ProductCard.vue";
 
 definePageMeta({ layout: "default" });
 const pageTitle = useState<string>("pageTitle", () => "")
@@ -31,6 +33,7 @@ type VariantGroup = {
 interface ProductRow {
   id: string;
   name: string;
+  description?: string | null;
   brand?: string | null;
   pet_type?: string | null;
   product_type?: string | null;
@@ -41,12 +44,34 @@ interface ProductRow {
   retail_price?: number | null;
   default_rating?: number | null;
   thumbnail_url?: string | null;
+  image_urls?: string[] | null;
   base_product_id?: string | null;
   is_active?: boolean | null;
 }
 
+interface CardProduct {
+  id: string;
+  name: string;
+  brand: string;
+  price: number;
+  rating: number;
+  discount?: number;
+  image?: string;
+}
+
+const mapRowToCard = (row: ProductRow): CardProduct => ({
+  id: String(row.id),
+  name: row.name,
+  brand: String(row.brand || ''),
+  price: Number(row.retail_price || 0),
+  rating: Number(row.default_rating || 0),
+  discount: 0,
+  image: row.thumbnail_url || undefined,
+})
+
 const route = useRoute();
-const id = route.params.id as string;
+const router = useRouter();
+const productId = computed(() => String(route.params.id));
 const supabase = useSupabaseClient();
 
 const qty = ref(1);
@@ -54,12 +79,12 @@ const activeIndex = ref(0);
 const carouselApiRef = ref<UnwrapRefCarouselApi | null>(null);
 
 const { data, pending, error, refresh } = await useLazyAsyncData(
-  `product-${id}`,
+  () => `product-${productId.value}`,
   async () => {
     const { data: row, error: e } = await supabase
       .from("products")
       .select("*")
-      .eq("id", id)
+      .eq("id", productId.value)
       .single();
     if (e) throw e;
     const current = row as unknown as ProductRow;
@@ -73,7 +98,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
     const variants = (variantsData || []) as unknown as ProductRow[];
     return { current, variants, baseId };
   },
-  { server: true }
+  { server: true, watch: [productId] }
 );
 
 const current = computed(() => data.value?.current as ProductRow | undefined);
@@ -124,8 +149,7 @@ function buildGroups() {
   }
   const groups: VariantGroup[] = [];
   const type = cur.product_type || undefined;
-  const showFlavour = !!type && CATEGORY_CONFIG.flavour.requiredWhen?.some(x => x.values.includes(type));
-  if (showFlavour && flavourSet.size > 0) groups.push({ name: "Flavour", key: "flavour", options: Array.from(flavourSet.values()) });
+  if (flavourSet.size > 0) groups.push({ name: "Flavour", key: "flavour", options: Array.from(flavourSet.values()) });
   if (sizeSet.size > 0) groups.push({ name: "Size", key: "size", options: Array.from(sizeSet.values()) });
   const pet = cur.pet_type || undefined;
   const showAge = !!pet && CATEGORY_CONFIG.age.requiredWhen?.some(x => x.values.includes(pet));
@@ -185,9 +209,10 @@ const selectedVariant = computed<ProductRow | undefined>(() => {
 });
 
 const images = computed(() => {
-  const list: string[] = [];
+  const arr = selectedVariant.value?.image_urls || current.value?.image_urls || null;
   const thumb = selectedVariant.value?.thumbnail_url || current.value?.thumbnail_url || undefined;
-  if (thumb) list.push(thumb);
+  const list = Array.isArray(arr) && arr.length ? (arr.filter(Boolean) as string[]) : [];
+  if (thumb && !list.length) list.push(thumb);
   return list.length ? list : ["/images/placeholder.svg"];
 });
 
@@ -197,7 +222,7 @@ const product = computed(() => {
   const price = Number(sel?.retail_price ?? cur?.retail_price ?? 0) || 0;
   const rating = Number(sel?.default_rating ?? cur?.default_rating ?? 0) || 0;
   return {
-    id: String(sel?.id ?? id),
+    id: String(sel?.id ?? productId.value),
     name: String(cur?.name || "Product"),
     brand: cur?.brand || undefined,
     price,
@@ -220,6 +245,45 @@ const product = computed(() => {
     variants?: VariantGroup[];
   };
 });
+const descriptionText = computed(() => selectedVariant.value?.description || current.value?.description || "");
+
+const similarVariants = computed<CardProduct[]>(() => {
+  const rows = variantRows.value || [];
+  const excludeId = product.value?.id || '';
+  const list = rows.filter(r => String(r.id) !== excludeId);
+  return list.slice(0, 8).map(mapRowToCard);
+});
+
+const { data: relatedData, pending: relatedPending, error: relatedError, refresh: refreshRelated } = await useLazyAsyncData(
+  () => `related-${productId.value}`,
+  async () => {
+    const cur = current.value;
+    const pet = cur?.pet_type || null;
+    const type = cur?.product_type || null;
+    if (!pet || !type) return [] as ProductRow[];
+    let q = supabase
+      .from('products')
+      .select('id,name,retail_price,default_rating,thumbnail_url,pet_type,product_type,base_product_id', { count: 'exact' })
+      .eq('is_active', true)
+      .eq('pet_type', pet)
+      .eq('product_type', type)
+      .order('is_featured', { ascending: false })
+      .order('row_index', { ascending: true })
+      .order('created_at', { ascending: false })
+      .range(0, 7)
+
+    const excludeId = product.value?.id || ''
+    const baseId = data.value?.baseId || ''
+    if (excludeId) q = q.neq('id', excludeId)
+    if (baseId) q = q.neq('base_product_id', baseId)
+
+    const { data: rows, error } = await q
+    if (error) throw error
+    return (rows ?? []) as ProductRow[]
+  },
+  { server: true, watch: [productId] }
+)
+const relatedProducts = computed<CardProduct[]>(() => ((relatedData.value ?? []) as ProductRow[]).map(mapRowToCard))
 const runtimeConfig = useRuntimeConfig()
 const siteUrl = String(runtimeConfig.public.siteUrl || '').replace(/\/+$/, '')
 const ogUrl = computed(() => `${siteUrl}${route.fullPath.split('?')[0]}`)
@@ -247,7 +311,7 @@ useHead({
     {
       type: 'application/ld+json',
       key: 'ld-product',
-      children: () => JSON.stringify({
+      innerHTML: () => JSON.stringify({
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: product.value?.name || 'Product',
@@ -304,6 +368,56 @@ const reviews = ref([
 const user = useSupabaseUser()
 
 const { data: _data_test } = await supabase.auth.getSession()
+
+function onSelectVariant(group: 'flavour' | 'size' | 'age' | string, opt: VariantOption) {
+  if (group === 'flavour') selectedFlavour.value = opt;
+  else if (group === 'size') selectedSize.value = opt;
+  else if (group === 'age') selectedAge.value = opt;
+  const next = selectedVariant.value;
+  const nextId = String(next?.id || '');
+  if (nextId && nextId !== productId.value) router.push(`/product/${nextId}`);
+}
+
+
+const availableFlavourOptions = computed<VariantOption[]>(() => {
+  const rows = variantRows.value;
+  const s = selectedSize.value?.id || null;
+  const a = selectedAge.value?.id || null;
+  const map = new Map<string, VariantOption>();
+  for (const r of rows) {
+    if (s && r.size !== s) continue;
+    if (a && r.age !== a) continue;
+    if (!r.flavour) continue;
+    const opts = CATEGORY_CONFIG.flavour.rules?.flatMap(x => x.options) || [];
+    const label = opts.find(o => o.id === r.flavour)?.label || r.flavour;
+    map.set(r.flavour, { id: r.flavour, label, value: r.flavour });
+  }
+  const arr = Array.from(map.values());
+  const sel = selectedFlavour.value;
+  if (sel) {
+    const idx = arr.findIndex(o => o.id === sel.id);
+    if (idx > 0) {
+      const opt = arr[idx]!;
+      arr.splice(idx, 1);
+      arr.unshift(opt);
+    }
+  }
+  return arr;
+});
+
+watch([selectedSize, selectedAge, variantRows], () => {
+  const opts = availableFlavourOptions.value;
+  if (!opts.length) { selectedFlavour.value = null; return; }
+  if (!selectedFlavour.value || !opts.some(o => o.id === selectedFlavour.value!.id)) {
+    selectedFlavour.value = opts[0] || null;
+  }
+});
+
+const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.value;
+
+// function getAvailableFlavours(): VariantOption[] {
+//   return availableFlavourOptions.value
+// }
 </script>
 
 <template>
@@ -367,6 +481,8 @@ const { data: _data_test } = await supabase.auth.getSession()
           </div>
         </div>
 
+        <p v-if="descriptionText" class="text-sm text-muted-foreground mt-2">{{ descriptionText }}</p>
+
 
 
         <div class="flex items-center justify-between gap-3 mt-4">
@@ -399,11 +515,11 @@ const { data: _data_test } = await supabase.auth.getSession()
 
         </div>
 
-        <div v-if="flavourGroup?.options?.length" class="mt-6">
+        <div v-if="getAvailableFlavours().length" class="mt-6">
           <h3 class="font-semibold mb-2 text-foreground">Flavour</h3>
           <div class="flex flex-wrap gap-2">
             <Button
-              v-for="opt in flavourGroup!.options"
+              v-for="opt in getAvailableFlavours()"
               :key="opt.id"
               variant="outline"
               :class="
@@ -412,7 +528,7 @@ const { data: _data_test } = await supabase.auth.getSession()
                   : 'border-muted-foreground text-muted-foreground'
               "
               class="rounded-md px-4 py-2"
-              @click="selectedFlavour = opt"
+              @click="onSelectVariant('flavour', opt)"
             >
               {{ opt.label ?? opt.value }}
             </Button>
@@ -432,7 +548,7 @@ const { data: _data_test } = await supabase.auth.getSession()
                   : 'border-muted-foreground text-muted-foreground'
               "
               class="w-fit h-fit rounded-full"
-              @click="selectedSize = opt"
+              @click="onSelectVariant('size', opt)"
             >
               {{ opt.label ?? opt.value }}
             </Button>
@@ -452,7 +568,7 @@ const { data: _data_test } = await supabase.auth.getSession()
                   : 'border-muted-foreground text-muted-foreground'
               "
               class="rounded-md px-4 py-2"
-              @click="selectedAge = opt"
+              @click="onSelectVariant('age', opt)"
             >
               {{ opt.label ?? opt.value }}
             </Button>
@@ -500,8 +616,10 @@ const { data: _data_test } = await supabase.auth.getSession()
           </div>
         </section> -->
 
-        <!-- Reviews section stacked below details -->
-        <!-- <section class="mt-8">
+  </div>
+  
+  <!-- Reviews section stacked below details -->
+  <!-- <section class="mt-8">
           <h2 class="text-lg font-medium text-foreground">Reviews</h2>
           <div class="pt-2">
             <div v-if="reviews.length" class="space-y-4">
@@ -520,6 +638,38 @@ const { data: _data_test } = await supabase.auth.getSession()
           </div>
         </section> -->
       </div>
-    </div>
+    
+
+    <section class="container mx-auto px-4 py-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold">Similar Variants</h3>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <template v-if="similarVariants.length === 0">
+          <Skeleton v-for="i in 4" :key="`sim-s-${i}`" class="h-64 w-full rounded-lg" />
+        </template>
+        <template v-else>
+          <ProductCard v-for="p in similarVariants" :key="p.id" :product="p" />
+        </template>
+      </div>
+    </section>
+
+    <section class="container mx-auto px-4 py-2">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold">Related Products</h3>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <template v-if="relatedPending">
+          <Skeleton v-for="i in 8" :key="`rel-s-${i}`" class="h-64 w-full rounded-lg" />
+        </template>
+        <template v-else>
+          <ProductCard v-for="p in relatedProducts" :key="p.id" :product="p" />
+        </template>
+      </div>
+      <Alert v-if="relatedError" variant="destructive" class="mt-4">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{{ relatedError.message || 'Failed to load related products' }}</AlertDescription>
+      </Alert>
+    </section>
   </div>
 </template>

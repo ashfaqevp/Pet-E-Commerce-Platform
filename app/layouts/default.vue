@@ -186,6 +186,18 @@ watch(
   }
 );
 
+// Auto-clear products search when input is emptied
+watch(
+  searchQuery,
+  (val, oldVal) => {
+    const prev = (oldVal ?? '').trim()
+    const curr = (val ?? '').trim()
+    if (isProductsPage.value && prev.length > 0 && curr.length === 0) {
+      qSearch.value = ''
+    }
+  }
+)
+
 watch(showSearch, (v) => {
   if (isMobile.value && !v) {
     clearSearch()

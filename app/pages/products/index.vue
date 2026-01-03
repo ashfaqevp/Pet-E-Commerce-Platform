@@ -125,6 +125,43 @@ function getFilteredOptions(rules: readonly CategoryRule[] | undefined, selected
   return Array.from(new Map(options.map(o => [o.id, o])).values())
 }
 
+function getLabelFromRules(rules: readonly CategoryRule[] | undefined, id: string): string {
+  if (!rules || !id) return ''
+  const all = rules.flatMap(r => r.options)
+  return all.find(o => o.id === id)?.label ?? ''
+}
+
+function getLabel(category: CategoryKey, id: string): string {
+  if (!id) return ''
+  if (category === 'pet') return CATEGORY_CONFIG.pet.options?.find(o => o.id === id)?.label ?? ''
+  if (category === 'type') return getLabelFromRules(CATEGORY_CONFIG.type.rules, id)
+  if (category === 'age') return getLabelFromRules(CATEGORY_CONFIG.age.rules, id)
+  if (category === 'flavour') return getLabelFromRules(CATEGORY_CONFIG.flavour.rules, id)
+  return ''
+}
+
+const selectedLabels = computed(() => ({
+  pet: getLabel('pet', qPet.value || ''),
+  type: getLabel('type', qType.value || ''),
+  age: getLabel('age', qAge.value || ''),
+  flavour: getLabel('flavour', qFlavour.value || ''),
+}))
+
+const summaryParts = computed(() => {
+  const parts: string[] = []
+  const term = (qSearch.value || '').trim()
+  if (term) parts.push(`Search: "${term}"`)
+  const lbl = selectedLabels.value
+  if (filters.value.pet) parts.push(`Pet: ${lbl.pet}`)
+  if (filters.value.type) parts.push(`Type: ${lbl.type}`)
+  if (filters.value.age) parts.push(`Age: ${lbl.age}`)
+  if (filters.value.flavour) parts.push(`Flavour: ${lbl.flavour}`)
+  return parts
+})
+
+const summaryText = computed(() => summaryParts.value.join(' • '))
+const hasActiveCriteria = computed(() => summaryParts.value.length > 0)
+
 // Map database row to card product
 function mapProductRow(row: ProductRow): CardProduct {
   return {
@@ -246,6 +283,11 @@ watch(qSearch, async () => {
 
 function clearSearchQuery() {
   qSearch.value = ''
+}
+
+function clearAllCriteria() {
+  qSearch.value = ''
+  clearAllFiltersDesktop()
 }
 
 // Clear dependent filters when parent changes
@@ -412,28 +454,18 @@ const apiError = computed(() => {
 
       <!-- Products List -->
       <div class="lg:col-span-3">
-        <!-- Search Summary -->
-        <div v-if="(qSearch || '').trim().length > 0" class="mb-4 relative">
+        <!-- Active Criteria Summary -->
+        <div v-if="hasActiveCriteria" class="mb-4 relative">
           <Alert variant="default">
-            <AlertTitle class="text-[#0f766e]">Search results</AlertTitle>
+            <AlertTitle class="text-[#0f766e]">Filtered results</AlertTitle>
             <AlertDescription class="flex items-center gap-3">
-              <span>Showing results for "{{ (qSearch || '').trim() }}"</span>
-              <Button variant="ghost" size="sm" class="h-7 px-2 absolute right-2 top-1/2 -translate-y-1/2" @click="clearSearchQuery">
+              <span>{{ summaryText }}</span>
+              <Button variant="ghost" size="sm" class="h-7 px-2 absolute right-2 top-1/2 -translate-y-1/2" @click="clearAllCriteria">
                 <Icon name="lucide:x" class="h-4 w-4 mr-1" />
                 Clear
               </Button>
             </AlertDescription>
           </Alert>
-        </div>
-        <!-- Active Filter Badges -->
-        <div v-if="Object.values(filters).some(f => !!f) || (qSearch || '').trim().length > 0" class="flex flex-wrap gap-2 mb-4">
-          <Badge v-if="(qSearch || '').trim().length > 0" variant="outline">
-            Search: {{ (qSearch || '').trim() }}
-          </Badge>
-          <Badge v-if="filters.pet" variant="outline">Pet: {{ filters.pet }}</Badge>
-          <Badge v-if="filters.type" variant="outline">Type: {{ filters.type }}</Badge>
-          <Badge v-if="filters.age" variant="outline">Age: {{ filters.age }}</Badge>
-          <Badge v-if="filters.flavour" variant="outline">Flavour: {{ filters.flavour }}</Badge>
         </div>
 
         <!-- Error Alert -->

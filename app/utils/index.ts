@@ -115,6 +115,7 @@ export const canOrderTransition = (
   if (isCOD) {
     if (target === 'completed' && pay !== 'paid') return { allowed: false, reason: 'Payment required before completing COD order' }
   } else {
+    if (target === 'confirmed' && pay !== 'paid') return { allowed: false, reason: 'Online orders must be paid before confirmation' }
     if (REQUIRE_PAID.has(target) && pay !== 'paid') return { allowed: false, reason: 'Payment required before shipping or completing' }
   }
   return { allowed: true }

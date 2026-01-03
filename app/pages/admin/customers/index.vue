@@ -20,13 +20,14 @@ interface AdminCustomer {
 }
 
 const search = ref('')
+const debouncedSearch = useDebounce(search, 400)
 const sortBy = ref<'joined_at' | 'total_spent' | 'total_orders'>('joined_at')
 const ascending = ref(false)
 const page = ref(1)
 const pageSize = ref(10)
 
 const params = computed(() => ({
-  search: search.value || undefined,
+  search: debouncedSearch.value || undefined,
   sortBy: sortBy.value,
   ascending: ascending.value,
   page: page.value,
@@ -166,7 +167,7 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
   <div class="space-y-4">
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
       <div class="flex items-center gap-2">
-        <Input v-model="search" placeholder="Search phone or user ID" class="w-64" />
+        <Input v-model="search" placeholder="Search phone or user ID" class="w-64 bg-white" />
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="outline" class="gap-2">
@@ -180,11 +181,6 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
             <DropdownMenuItem as="button" @click="sortBy = 'total_orders'; ascending = false">Total Orders</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
-      <div class="flex items-center gap-2">
-        <Button variant="outline" :disabled="page === 1" @click="page = Math.max(1, page - 1)">Prev</Button>
-        <Button variant="outline" :disabled="page >= totalPages" @click="page = Math.min(totalPages, page + 1)">Next</Button>
-        <div class="text-sm">Page {{ page }} of {{ totalPages }}</div>
       </div>
     </div>
 
@@ -200,7 +196,7 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
               <TableHead>Customer</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Orders</TableHead>
-              <TableHead class="text-right">Total Spent</TableHead>
+              <TableHead class="">Total Spent</TableHead>
               <TableHead>Joined</TableHead>
               <TableHead class="text-right">Actions</TableHead>
             </TableRow>
@@ -237,9 +233,9 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
               </TableCell>
               <TableCell>{{ formatPhone(c.phone) }}</TableCell>
               <TableCell>{{ c.total_orders }}</TableCell>
-              <TableCell class="text-right">{{ formatCurrency(c.total_spent) }}</TableCell>
+              <TableCell class="">{{ formatCurrency(c.total_spent) }}</TableCell>
               <TableCell>{{ formatDate(c.joined_at) }}</TableCell>
-              <TableCell class="text-right">
+              <TableCell class="">
                 <div class="flex items-center justify-end gap-2">
                   <Button size="sm" variant="default" @click="$router.push(`/admin/customers/${c.id}`)">View</Button>
                   <AlertDialog>

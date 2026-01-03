@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
-import { orderStatusStyle, paymentStatusStyle, canOrderTransition } from '@/utils'
+import { formatOMR, canOrderTransition } from '@/utils'
+import AdminDashboardStatCard from '@/components/admin/AdminDashboardStatCard.vue'
+import { DollarSign, CreditCard, Clock } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
@@ -15,14 +17,18 @@ type PaymentMethod = 'online' | 'cod'
 interface AdminOrder {
   id: string
   user_id?: string | null
+  user_email?: string | null
   total: number | null
   status: OrderStatus
   created_at: string
   payment_status: PaymentStatus
   payment_method?: PaymentMethod | null
+  payment_provider?: string | null
+  tran_ref?: string | null
 }
 
 const status = ref<OrderStatus | 'all'>('all')
+const payment = ref<PaymentStatus | 'all'>('all')
 const sortBy = ref<'created_at' | 'total'>('created_at')
 const ascending = ref(false)
 const page = ref(1)
@@ -30,6 +36,7 @@ const pageSize = ref(10)
 
 const params = computed(() => ({
   status: status.value === 'all' ? undefined : status.value,
+  payment: payment.value === 'all' ? undefined : payment.value,
   sortBy: sortBy.value,
   ascending: ascending.value,
   page: page.value,
@@ -40,24 +47,42 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   'admin-orders',
   async () => {
     const supabase = useSupabaseClient()
-    let q = supabase.from('orders').select('id,total,status,created_at,user_id,payment_status,payment_method', { count: 'exact' })
+    let q = supabase.from('orders').select('id,total,status,created_at,user_id,payment_status,payment_method,payment_provider,tran_ref', { count: 'exact' })
     if (params.value.status) q = q.eq('status', params.value.status)
+    if (params.value.payment) q = q.eq('payment_status', params.value.payment)
     q = q.order(params.value.sortBy, { ascending: params.value.ascending })
     const from = (params.value.page - 1) * params.value.pageSize
     const to = from + params.value.pageSize - 1
     q = q.range(from, to)
     const { data, error, count } = await q
     if (error) throw error
-    const rows = ((data || []) as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date; user_id?: string | null; payment_status: string | null; payment_method?: string | null }>)
-      .map((r) => ({
-        id: String(r.id),
-        total: r.total ?? 0,
-        status: (r.status || 'pending') as OrderStatus,
-        created_at: typeof r.created_at === 'string' ? r.created_at : new Date(r.created_at).toISOString(),
-        user_id: r.user_id || null,
-        payment_status: ((r.payment_status || 'pending') as PaymentStatus),
-        payment_method: ((r.payment_method || 'online') as PaymentMethod),
-      })) as AdminOrder[]
+    const rowsRaw = ((data || []) as unknown as Array<{ id: string; total: number | null; status: string | null; created_at: string | Date; user_id?: string | null; payment_status: string | null; payment_method?: string | null; payment_provider?: string | null; tran_ref?: string | null }>)
+    const rows = rowsRaw.map((r) => ({
+      id: String(r.id),
+      total: r.total ?? 0,
+      status: (r.status || 'pending') as OrderStatus,
+      created_at: typeof r.created_at === 'string' ? r.created_at : new Date(r.created_at).toISOString(),
+      user_id: r.user_id || null,
+      user_email: null,
+      payment_status: ((r.payment_status || 'pending') as PaymentStatus),
+      payment_method: ((r.payment_method || 'online') as PaymentMethod),
+      payment_provider: r.payment_provider || null,
+      tran_ref: r.tran_ref || null,
+    })) as AdminOrder[]
+    const ids = Array.from(new Set(rows.map(r => r.user_id).filter(Boolean))) as string[]
+    if (ids.length) {
+      let users: unknown[] | null = null
+      const viewRes = await supabase.from('user_profiles_view').select('id,email').in('id', ids)
+      if (!viewRes.error) users = (viewRes.data as unknown[] | null) || null
+      else {
+        const tblRes = await supabase.from('user_profiles').select('id,email').in('id', ids)
+        users = (tblRes.data as unknown[] | null) || null
+      }
+      const map = new Map<string, string | null>((users || []).map(u => [String((u as { id: string }).id), ((u as { email?: string | null }).email || null)]))
+      for (const r of rows) {
+        r.user_email = r.user_id ? (map.get(String(r.user_id)) || null) : null
+      }
+    }
     return { rows, count: count ?? rows.length }
   },
   { server: true }
@@ -105,78 +130,42 @@ onMounted(() => {
 
 const totalPages = computed(() => Math.max(1, Math.ceil(Number(data.value?.count || 0) / pageSize.value)))
 const rows = computed(() => data.value?.rows || [])
-
-const editingId = ref<string | null>(null)
-const nextStatus = ref<OrderStatus>('pending')
-
-const openStatusChange = (id: string, s: OrderStatus) => {
-  editingId.value = id
-  nextStatus.value = s
-}
-
-const confirmStatusChange = async () => {
-  if (!editingId.value) return
-  const current = rows.value.find(r => r.id === editingId.value)
-  const check = canOrderTransition(current?.status, nextStatus.value, current?.payment_status, current?.payment_method)
-  if (!check.allowed) {
-    toast.error(check.reason || 'Status update blocked')
-    editingId.value = null
-    return
-  }
-  const supabase = useSupabaseClient()
-  const { error: e } = await supabase
-    .from('orders')
-    .update({ status: nextStatus.value, updated_at: new Date().toISOString() } as unknown as never)
-    .eq('id', editingId.value)
-  if (e) {
-    toast.error(e.message)
-  } else {
-    toast.success('Order status updated')
-  }
-  editingId.value = null
-  refresh()
-  refreshMetrics()
-}
-
 const formatCurrency = (v: number | null | undefined) => formatOMR(Number(v || 0))
 const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(iso))
+
+const statusBadgeClass = (s: OrderStatus) => {
+  const v = (s || 'pending').toLowerCase()
+  if (v === 'completed' || v === 'delivered' || v === 'confirmed') return 'text-green-700 border-green-300'
+  if (v === 'cancelled' || v === 'returned') return 'text-red-700 border-red-300'
+  if (v === 'awaiting_payment') return 'text-orange-700 border-orange-300'
+  return 'text-slate-700 border-slate-300'
+}
+
+const paymentBadgeClass = (s: PaymentStatus) => {
+  const v = (s || 'pending').toLowerCase()
+  if (v === 'paid') return 'text-green-700 border-green-300'
+  if (v === 'failed') return 'text-red-700 border-red-300'
+  if (v === 'pending' || v === 'unpaid') return 'text-orange-700 border-orange-300'
+  return 'text-slate-700 border-slate-300'
+}
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="space-y-4 overflow-hidden">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card class="bg-white rounded-sm">
-        <CardHeader>
-          <CardTitle class="text-sm">Paid Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton v-if="metricsPending" class="h-6 w-12" />
-          <p v-else class="text-2xl font-semibold">{{ metrics?.paidCount || 0 }}</p>
-        </CardContent>
-      </Card>
-      <Card class="bg-white rounded-sm">
-        <CardHeader>
-          <CardTitle class="text-sm">Revenue</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton v-if="metricsPending" class="h-6 w-24" />
-          <p v-else class="text-2xl font-semibold">{{ formatCurrency(metrics?.revenue || 0) }}</p>
-        </CardContent>
-      </Card>
-      <Card class="bg-white rounded-sm">
-        <CardHeader>
-          <CardTitle class="text-sm">Pending Payments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton v-if="metricsPending" class="h-6 w-12" />
-          <p v-else class="text-2xl font-semibold">{{ metrics?.pendingCount || 0 }}</p>
-        </CardContent>
-      </Card>
+      <AdminDashboardStatCard :label="'Paid Orders'" :value="metrics?.paidCount || 0" :icon="CreditCard" :loading="metricsPending" accent="teal" />
+      <AdminDashboardStatCard :label="'Revenue'" :value="formatCurrency(metrics?.revenue || 0)" :icon="DollarSign" :loading="metricsPending" accent="orange" currency />
+      <AdminDashboardStatCard :label="'Pending Payments'" :value="metrics?.pendingCount || 0" :icon="Clock" :loading="metricsPending" accent="slate" />
     </div>
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-      <div class="flex items-center gap-2">
+      <div class="flex flex-1 flex-wrap items-center gap-2 gap-y-3">
         <Select v-model="status">
-          <SelectTrigger class="w-44"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectTrigger class="w-44 min-w-[160px] shrink-0 bg-white">
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-muted-foreground">Status:</span>
+              <SelectValue placeholder="All" />
+            </div>
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
@@ -186,8 +175,27 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
             <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
             <SelectItem value="returned">Returned</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
+            <SelectItem value="awaiting_payment">Awaiting</SelectItem>
           </SelectContent>
         </Select>
+        <Select v-model="payment">
+          <SelectTrigger class="w-44 min-w-[160px] shrink-0 bg-white">
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-muted-foreground">Payment:</span>
+              <SelectValue placeholder="All" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="paid">Paid</SelectItem>
+            <SelectItem value="unpaid">Unpaid</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div class="flex items-center gap-2">
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="outline" class="gap-2">
@@ -203,31 +211,33 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
       </div>
     </div>
 
-    <Card>
+    <Card class="flex flex-col mx-auto h-[calc(100vh-280px)] md:h-[calc(100vh-260px)]">
       <CardHeader class="flex items-center justify-between">
         <CardTitle>Orders</CardTitle>
         <Badge variant="outline">{{ data?.count || 0 }}</Badge>
       </CardHeader>
-      <CardContent>
+      <CardContent class="p-0 flex-1 overflow-hidden min-h-0">
+    <div class="h-full overflow-x-auto">
+      <div class="h-full overflow-y-auto max-h-[65vh] px-2 sm:px-3">
     <Table>
       <TableHeader>
-        <TableRow>
+        <TableRow class="sticky top-0 bg-white z-10">
           <TableHead>Order</TableHead>
-          <TableHead>Date</TableHead>
           <TableHead>User</TableHead>
-          <TableHead class="text-right">Amount</TableHead>
+          <TableHead class="">Amount</TableHead>
           <TableHead>Status</TableHead>
           <TableHead>Payment</TableHead>
+          <TableHead>Transaction Ref</TableHead>
           <TableHead>Method</TableHead>
           <TableHead class="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
             <TableRow v-if="pending">
-              <TableCell colspan="6"><Skeleton class="h-10 w-full" /></TableCell>
+              <TableCell colspan="8"><Skeleton class="h-10 w-full" /></TableCell>
             </TableRow>
             <TableRow v-else-if="error">
-              <TableCell colspan="6">
+              <TableCell colspan="8">
                 <Alert variant="destructive">
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{{ error.message }}</AlertDescription>
@@ -235,59 +245,61 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
               </TableCell>
             </TableRow>
             <TableRow v-else-if="rows.length === 0">
-              <TableCell colspan="6">
+              <TableCell colspan="8">
                 <TableEmpty>No orders found</TableEmpty>
               </TableCell>
             </TableRow>
         <TableRow v-else v-for="o in rows" :key="o.id">
-              <TableCell>
-                <NuxtLink :to="`/admin/orders/${o.id}`" class="text-foreground underline">#{{ o.id }}</NuxtLink>
-              </TableCell>
-              <TableCell>{{ formatDate(o.created_at) }}</TableCell>
-              <TableCell>{{ o.user_id || '—' }}</TableCell>
-              <TableCell class="text-right">{{ formatCurrency(o.total) }}</TableCell>
-              <TableCell>
-                <Badge :variant="orderStatusStyle(o.status).variant">{{ o.status }}</Badge>
-              </TableCell>
           <TableCell>
-            <Badge :variant="paymentStatusStyle(o.payment_status).variant">{{ o.payment_status }}</Badge>
+            <div class="space-y-0.5">
+              <div class="text-foreground font-medium">#{{ o.id.slice(0,8) }}</div>
+              <div class="text-xs text-muted-foreground">{{ formatDate(o.created_at) }}</div>
+            </div>
           </TableCell>
+          <TableCell>{{ o.user_email || '—' }}</TableCell>
+          <TableCell class="">{{ formatCurrency(o.total) }}</TableCell>
+          <TableCell>
+            <Badge variant="outline" :class="[statusBadgeClass(o.status), 'capitalize']">{{ o.status === 'awaiting_payment' ? 'Awaiting' : o.status }}</Badge>
+          </TableCell>
+          <TableCell>
+            <Badge variant="outline" :class="[paymentBadgeClass(o.payment_status), 'capitalize']">{{ o.payment_status }}</Badge>
+          </TableCell>
+          <TableCell class="font-mono text-xs">{{ o.tran_ref || '—' }}</TableCell>
           <TableCell>
             <Badge variant="outline">{{ o.payment_method === 'cod' ? 'COD' : 'Online' }}</Badge>
           </TableCell>
           <TableCell class="text-right">
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button variant="ghost" size="icon">
-                  <Icon name="lucide:ellipsis" class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'processing', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'processing')">
-                  <Icon name="lucide:badge" class="h-4 w-4 mr-2" /> Processing
-                </DropdownMenuItem>
-                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'shipped', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'shipped')">
-                  <Icon name="lucide:truck" class="h-4 w-4 mr-2" /> Shipped
-                </DropdownMenuItem>
-                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'delivered', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'delivered')">
-                  <Icon name="lucide:package-check" class="h-4 w-4 mr-2" /> Delivered
-                </DropdownMenuItem>
-                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'completed', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'completed')">
-                  <Icon name="lucide:check-circle" class="h-4 w-4 mr-2" /> Completed
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem as="button" class="text-destructive" :disabled="!canOrderTransition(o.status, 'cancelled', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'cancelled')">
-                  <Icon name="lucide:x-circle" class="h-4 w-4 mr-2" /> Cancel
-                </DropdownMenuItem>
-                <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'returned', o.payment_status, o.payment_method).allowed" @click="openStatusChange(o.id, 'returned')">
-                  <Icon name="lucide:undo-2" class="h-4 w-4 mr-2" /> Return
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div class="flex items-center justify-end gap-2">
+              <Button variant="default" size="sm" @click="navigateTo(`/admin/orders/${o.id}`)">
+                <Icon name="lucide:eye" class="h-4 w-4 mr-2" /> View
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger as-child>
+                  <Button variant="outline" size="icon"><Icon name="lucide:ellipsis" class="h-4 w-4" /></Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>Update Status</DropdownMenuLabel>
+                  <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'processing', o.payment_status, o.payment_method).allowed" @click="navigateTo(`/admin/orders/${o.id}?action=status&target=processing`)">Processing</DropdownMenuItem>
+                  <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'shipped', o.payment_status, o.payment_method).allowed" @click="navigateTo(`/admin/orders/${o.id}?action=status&target=shipped`)">Shipped</DropdownMenuItem>
+                  <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'delivered', o.payment_status, o.payment_method).allowed" @click="navigateTo(`/admin/orders/${o.id}?action=status&target=delivered`)">Delivered</DropdownMenuItem>
+                  <DropdownMenuItem as="button" :disabled="!canOrderTransition(o.status, 'completed', o.payment_status, o.payment_method).allowed" @click="navigateTo(`/admin/orders/${o.id}?action=status&target=completed`)">Completed</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Update Payment</DropdownMenuLabel>
+                  <DropdownMenuItem as="button" :disabled="o.payment_status === 'paid'" @click="navigateTo(`/admin/orders/${o.id}?action=payment&target=unpaid`)">Unpaid</DropdownMenuItem>
+                  <DropdownMenuItem as="button" :disabled="o.payment_status === 'paid'" @click="navigateTo(`/admin/orders/${o.id}?action=payment&target=pending`)">Pending</DropdownMenuItem>
+                  <DropdownMenuItem as="button" :disabled="o.payment_status === 'paid' || (o.payment_method === 'cod' && o.status !== 'delivered')" @click="navigateTo(`/admin/orders/${o.id}?action=payment&target=paid`)">Paid</DropdownMenuItem>
+                  <DropdownMenuItem as="button" :disabled="o.payment_status === 'paid'" @click="navigateTo(`/admin/orders/${o.id}?action=payment&target=failed`)">Failed</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem as="button" @click="navigateTo(`/admin/orders/${o.id}?edit=ref`)">Edit Reference</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        </TableRow>
+      </TableBody>
+    </Table>
+      </div>
+    </div>
       </CardContent>
       <CardFooter class="flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -298,17 +310,6 @@ const formatDate = (iso: string) => new Intl.DateTimeFormat(undefined, { dateSty
       </CardFooter>
     </Card>
 
-    <AlertDialog :open="!!editingId" @update:open="editingId = null">
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Change status?</AlertDialogTitle>
-          <AlertDialogDescription />
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction class="bg-secondary text-white" @click="confirmStatusChange">Confirm</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    
   </div>
 </template>

@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
-import { orderStatusStyle, paymentStatusStyle, canOrderTransition } from '@/utils'
+import { formatOMR, canOrderTransition } from '@/utils'
+import AdminDashboardStatCard from '@/components/admin/AdminDashboardStatCard.vue'
+import { DollarSign, CreditCard, ShoppingBag } from 'lucide-vue-next'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 definePageMeta({
   layout: 'admin',
@@ -26,6 +30,7 @@ interface Address {
 interface OrderDetail {
   id: string
   user_id: string | null
+  user_email?: string | null
   status: OrderStatus
   payment_status: PaymentStatus
   payment_method?: PaymentMethod | null
@@ -69,6 +74,7 @@ const { data: order, pending: orderPending, error: orderError, refresh: refreshO
       user_id: string | null
       status: string | null
       payment_status: string | null
+      payment_method?: string | null
       total: number | string | null
       subtotal?: number | string | null
       shipping_fee?: number | string | null
@@ -91,12 +97,25 @@ const { data: order, pending: orderPending, error: orderError, refresh: refreshO
       }
       return a as Address
     }
+    let user_email: string | null = null
+    if (o.user_id) {
+      const { data: u, error: ue } = await supabase
+        .from('user_profiles_view')
+        .select('email')
+        .eq('id', o.user_id)
+        .maybeSingle()
+      if (!ue && u) {
+        const row = u as unknown as { email?: string | null }
+        user_email = row.email || null
+      }
+    }
     return {
       id: String(o.id),
       user_id: o.user_id || null,
+      user_email,
       status: (o.status || 'pending') as OrderStatus,
       payment_status: (o.payment_status || 'pending') as PaymentStatus,
-      payment_method: ((o as any).payment_method || 'online') as PaymentMethod,
+      payment_method: ((o.payment_method || 'online') as PaymentMethod),
       total: Number(o.total || 0),
       subtotal: o.subtotal != null ? Number(o.subtotal) : null,
       shipping_fee: o.shipping_fee != null ? Number(o.shipping_fee) : null,
@@ -180,6 +199,10 @@ const confirmStatusChange = async () => {
   const patch: Record<string, unknown> = { status: nextStatus.value, updated_at: new Date().toISOString() }
   if (nextStatus.value === 'delivered') {
     patch['delivered_at'] = new Date().toISOString()
+    if ((order.value.payment_method || 'online') === 'cod') {
+      patch['payment_status'] = 'paid'
+      patch['paid_at'] = new Date().toISOString()
+    }
   }
   if (nextStatus.value === 'cancelled') {
     patch['payment_status'] = 'failed'
@@ -223,9 +246,12 @@ const confirmPaymentChange = async () => {
   const patch: Record<string, unknown> = { payment_status: nextPaymentStatus.value, updated_at: new Date().toISOString() }
   if (nextPaymentStatus.value === 'paid') {
     patch['paid_at'] = new Date().toISOString()
-    if (isCOD && order.value.status === 'delivered') {
-      patch['delivered_at'] = order.value.paid_at ? undefined : new Date().toISOString()
+    if (!isCOD) {
+      patch['status'] = 'confirmed'
     }
+  }
+  if (nextPaymentStatus.value === 'failed' && !isCOD) {
+    patch['status'] = 'awaiting_payment'
   }
   const { error } = await supabase
     .from('orders')
@@ -240,6 +266,46 @@ const confirmPaymentChange = async () => {
   refreshOrder()
 }
 
+const editingRef = ref(false)
+const refTran = ref('')
+const refProvider = ref('')
+const confirmEditRef = async () => {
+  if (!order.value) return
+  const supabase = useSupabaseClient()
+  const { error } = await supabase
+    .from('orders')
+    .update({ tran_ref: refTran.value || null, payment_provider: refProvider.value || null, updated_at: new Date().toISOString() } as unknown as never)
+    .eq('id', order.value.id)
+  if (error) {
+    toast.error(error.message)
+  } else {
+    toast.success('Reference updated')
+  }
+  editingRef.value = false
+  refreshOrder()
+}
+
+watch(order, (o) => {
+  if (!o) return
+  const action = String((route.query as any).action || '')
+  const target = String((route.query as any).target || '')
+  const edit = String((route.query as any).edit || '')
+  if (action === 'status') {
+    nextStatus.value = (target || o.status) as OrderStatus
+    editing.value = true
+  } else if (action === 'payment') {
+    nextPaymentStatus.value = (target || o.payment_status) as PaymentStatus
+    editingPayment.value = true
+  } else if (edit === 'ref') {
+    refTran.value = o.tran_ref || ''
+    refProvider.value = o.payment_provider || ''
+    editingRef.value = true
+  }
+  if (action || edit) {
+    navigateTo({ path: route.path }, { replace: true })
+  }
+}, { immediate: true })
+
 const formatCurrency = (v: number | null | undefined) => formatOMR(Number(v || 0))
 const formatDate = (iso: string | Date | null | undefined) => {
   if (!iso) return '—'
@@ -250,21 +316,23 @@ const formatDate = (iso: string | Date | null | undefined) => {
 
 <template>
   <div class="space-y-6">
-    <div class="flex items-center justify-between">
-      <div class="space-y-1">
-        <h1 class="text-xl font-semibold">Order #{{ order?.id }}</h1>
-        <div class="flex items-center gap-2">
-          <Badge :variant="orderStatusStyle(order?.status).variant">{{ order?.status }}</Badge>
-          <Badge :variant="paymentStatusStyle(order?.payment_status).variant">{{ order?.payment_status }}</Badge>
-        </div>
+  <div class="flex items-center justify-between">
+    <div class="space-y-1">
+      <h1 class="text-xl font-semibold">Order #{{ order?.id }}</h1>
+      <div class="text-sm text-muted-foreground">
+        Status: <span class="capitalize">{{ order?.status }}</span> • Payment: <span class="capitalize">{{ order?.payment_status }}</span>
       </div>
-      <div class="flex items-center gap-2">
-        <Button variant="outline" as="button" @click="$router.push('/admin/orders')">Back</Button>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="default">Update Status</Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+      <div class="text-sm text-muted-foreground">
+        Customer: {{ order?.user_email || '—' }}
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <Button variant="outline" as="button" @click="$router.push('/admin/orders')">Back</Button>
+      <DropdownMenu>
+        <DropdownMenuTrigger as-child>
+          <Button variant="default">Update Status</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
             <DropdownMenuItem as="button" :disabled="!canTo('processing').allowed" @click="editing = true; nextStatus = 'processing'">Processing</DropdownMenuItem>
             <DropdownMenuItem as="button" :disabled="!canTo('shipped').allowed" @click="editing = true; nextStatus = 'shipped'">Shipped</DropdownMenuItem>
             <DropdownMenuItem as="button" :disabled="!canTo('delivered').allowed" @click="editing = true; nextStatus = 'delivered'">Delivered</DropdownMenuItem>
@@ -285,7 +353,14 @@ const formatDate = (iso: string | Date | null | undefined) => {
             <DropdownMenuItem as="button" :disabled="order?.payment_status === 'paid'" @click="openPaymentChange('failed')">Failed</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <Button variant="outline" @click="refProvider = order?.payment_provider || ''; refTran = order?.tran_ref || ''; editingRef = true">Edit Reference</Button>
       </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <AdminDashboardStatCard :label="'Total'" :value="formatOMR(order?.total || 0)" :icon="DollarSign" :loading="orderPending" accent="orange" currency />
+      <AdminDashboardStatCard :label="'Order Status'" :value="order?.status || '—'" :icon="ShoppingBag" :loading="orderPending" accent="teal" />
+      <AdminDashboardStatCard :label="'Payment Status'" :value="order?.payment_status || '—'" :icon="CreditCard" :loading="orderPending" accent="slate" />
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -421,6 +496,29 @@ const formatDate = (iso: string | Date | null | undefined) => {
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction class="bg-secondary text-white" @click="confirmPaymentChange">Confirm</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+
+    <AlertDialog :open="editingRef" @update:open="editingRef = false">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Edit reference</AlertDialogTitle>
+          <AlertDialogDescription />
+        </AlertDialogHeader>
+        <div class="space-y-3">
+          <div class="space-y-2">
+            <Label>Provider</Label>
+            <Input v-model="refProvider" placeholder="paytabs" />
+          </div>
+          <div class="space-y-2">
+            <Label>Tran Ref</Label>
+            <Input v-model="refTran" placeholder="XXX-YYY" />
+          </div>
+        </div>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction class="bg-secondary text-white" @click="confirmEditRef">Save</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

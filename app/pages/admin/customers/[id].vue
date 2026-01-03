@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { toast } from 'vue-sonner'
-import { orderStatusStyle, paymentStatusStyle } from '@/utils'
+import { formatOMR, formatOmanPhone } from '@/utils'
+import AdminDashboardStatCard from '@/components/admin/AdminDashboardStatCard.vue'
+import { DollarSign, ShoppingCart, Calendar } from 'lucide-vue-next'
 
 definePageMeta({
   layout: 'admin',
@@ -10,6 +12,7 @@ definePageMeta({
 
 type OrderStatus = 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'returned' | 'completed' | 'confirmed' | 'awaiting_payment'
 type PaymentStatus = 'paid' | 'unpaid' | 'failed' | 'pending'
+type PaymentMethod = 'online' | 'cod'
 
 interface CustomerProfile {
   id: string
@@ -38,7 +41,7 @@ interface CustomerOrder {
   id: string
   status: OrderStatus
   payment_status: PaymentStatus
-  payment_provider?: string | null
+  payment_method?: PaymentMethod | null
   total: number | null
   created_at: string
 }
@@ -97,7 +100,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
     const to = from + params.value.pageSize - 1
     const ordersPageReq = supabase
       .from('orders')
-      .select('id,status,payment_status,payment_provider,total,created_at')
+      .select('id,status,payment_status,payment_method,total,created_at')
       .eq('user_id', params.value.id)
       .order('created_at', { ascending: false })
       .range(from, to)
@@ -124,12 +127,12 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
 
     const profile = (profileRes.data as unknown as { id: string; phone?: string | null; role?: string | null; full_name?: string | null; avatar_url?: string | null; created_at?: string | Date | null } | null)
     const addresses = ((addressesRes.data || []) as unknown as Array<CustomerAddress>)
-    const orders = ((ordersPageRes.data || []) as unknown as Array<{ id: string; status: string | null; payment_status: string | null; payment_provider?: string | null; total: number | string | null; created_at: string | Date }>)
+    const orders = ((ordersPageRes.data || []) as unknown as Array<{ id: string; status: string | null; payment_status: string | null; payment_method?: string | null; total: number | string | null; created_at: string | Date }>)
       .map((o) => ({
         id: String(o.id),
         status: ((o.status || 'pending') as OrderStatus),
         payment_status: ((o.payment_status || 'pending') as PaymentStatus),
-        payment_provider: o.payment_provider || null,
+        payment_method: ((o.payment_method || 'online') as PaymentMethod),
         total: o.total == null ? 0 : Number(o.total),
         created_at: typeof o.created_at === 'string' ? o.created_at : new Date(o.created_at).toISOString(),
       })) as CustomerOrder[]
@@ -247,6 +250,22 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
   const short = (id || '').slice(0, 5)
   return short ? `Customer ${short}` : 'Customer'
 }
+
+const statusBadgeClass = (s: OrderStatus) => {
+  const v = (s || 'pending').toLowerCase()
+  if (v === 'completed' || v === 'delivered' || v === 'confirmed') return 'text-green-700 border-green-300'
+  if (v === 'cancelled' || v === 'returned') return 'text-red-700 border-red-300'
+  if (v === 'awaiting_payment') return 'text-orange-700 border-orange-300'
+  return 'text-slate-700 border-slate-300'
+}
+
+const paymentBadgeClass = (s: PaymentStatus) => {
+  const v = (s || 'pending').toLowerCase()
+  if (v === 'paid') return 'text-green-700 border-green-300'
+  if (v === 'failed') return 'text-red-700 border-red-300'
+  if (v === 'pending' || v === 'unpaid') return 'text-orange-700 border-orange-300'
+  return 'text-slate-700 border-slate-300'
+}
 </script>
 
 <template>
@@ -274,33 +293,9 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card class="bg-white rounded-sm">
-        <CardHeader>
-          <CardTitle class="text-sm">Account Created</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton v-if="pending" class="h-6 w-24" />
-          <p v-else class="text-2xl font-semibold">{{ formatDate(profile?.created_at || null) }}</p>
-        </CardContent>
-      </Card>
-      <Card class="bg-white rounded-sm">
-        <CardHeader>
-          <CardTitle class="text-sm">Total Orders</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton v-if="pending" class="h-6 w-12" />
-          <p v-else class="text-2xl font-semibold">{{ data?.ordersCount || 0 }}</p>
-        </CardContent>
-      </Card>
-      <Card class="bg-white rounded-sm">
-        <CardHeader>
-          <CardTitle class="text-sm">Total Paid</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Skeleton v-if="pending" class="h-6 w-24" />
-          <p v-else class="text-2xl font-semibold">{{ formatCurrency(data?.totalPaid || 0) }}</p>
-        </CardContent>
-      </Card>
+      <AdminDashboardStatCard :label="'Total Orders'" :value="data?.ordersCount || 0" :icon="ShoppingCart" :loading="pending" accent="teal" />
+      <AdminDashboardStatCard :label="'Total Paid'" :value="formatCurrency(data?.totalPaid || 0)" :icon="DollarSign" :loading="pending" accent="orange" currency />
+      <AdminDashboardStatCard :label="'Account Created'" :value="formatDate(profile?.created_at || null)" :icon="Calendar" :loading="pending" accent="slate" />
     </div>
 
     <Card>
@@ -332,96 +327,105 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
       </CardContent>
     </Card>
 
-    <Card>
+    <Card class="flex flex-col mx-auto h-[calc(100vh-280px)] md:h-[calc(100vh-260px)]">
       <CardHeader class="flex items-center justify-between">
         <CardTitle>Orders</CardTitle>
         <Badge variant="outline">{{ data?.ordersCount || 0 }}</Badge>
       </CardHeader>
-      <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead class="text-right">Amount</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead>Provider</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            <TableRow v-if="pending">
-              <TableCell colspan="7"><Skeleton class="h-10 w-full" /></TableCell>
-            </TableRow>
-            <TableRow v-else-if="error">
-              <TableCell colspan="7">
-                <Alert variant="destructive">
-                  <AlertTitle>Error</AlertTitle>
-                  <AlertDescription>{{ error.message }}</AlertDescription>
-                </Alert>
-              </TableCell>
-            </TableRow>
-            <TableRow v-else-if="orders.length === 0">
-              <TableCell colspan="7">
-                <TableEmpty>No orders found</TableEmpty>
-              </TableCell>
-            </TableRow>
-            <template v-else>
-              <TableRow v-for="o in orders" :key="o.id">
-                <TableCell>#{{ o.id }}</TableCell>
-                <TableCell>{{ formatDate(o.created_at) }}</TableCell>
-                <TableCell class="text-right">{{ formatCurrency(o.total) }}</TableCell>
-                <TableCell>
-                  <Badge :variant="orderStatusStyle(o.status).variant">{{ o.status }}</Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge :variant="paymentStatusStyle(o.payment_status).variant">{{ o.payment_status }}</Badge>
-                </TableCell>
-                <TableCell>{{ o.payment_provider || '—' }}</TableCell>
-                <TableCell>
-                  <div class="flex items-center gap-2">
-                    <NuxtLink :to="`/admin/orders/${o.id}`" class="underline text-foreground">View</NuxtLink>
-                    <Button variant="outline" size="sm" @click="toggleExpand(o.id)">
-                      <span v-if="expanded.has(o.id)">Hide Items</span>
-                      <span v-else>Show Items</span>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-              <TableRow v-for="o in orders" :key="`${o.id}-items`" v-show="expanded.has(o.id)">
-                <TableCell colspan="7">
-                  <div class="border rounded-sm p-3 space-y-2">
-                    <div v-if="loadingItems.has(o.id)"><Skeleton class="h-10 w-full" /></div>
-                    <div v-else-if="(itemsByOrder[o.id] || []).length === 0">
-                      <TableEmpty>No items</TableEmpty>
+      <CardContent class="p-0 flex-1 overflow-hidden min-h-0">
+        <div class="h-full overflow-x-auto">
+          <div class="h-full overflow-y-auto max-h-[65vh] px-2 sm:px-3">
+            <Table>
+              <TableHeader>
+                <TableRow class="sticky top-0 bg-white z-10">
+                  <TableHead>Order</TableHead>
+                  <TableHead class="">Amount</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Payment</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead class="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-if="pending">
+                  <TableCell colspan="6"><Skeleton class="h-10 w-full" /></TableCell>
+                </TableRow>
+                <TableRow v-else-if="error">
+                  <TableCell colspan="6">
+                    <Alert variant="destructive">
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{{ error.message }}</AlertDescription>
+                    </Alert>
+                  </TableCell>
+                </TableRow>
+                <TableRow v-else-if="orders.length === 0">
+                  <TableCell colspan="6">
+                    <TableEmpty>No orders found</TableEmpty>
+                  </TableCell>
+                </TableRow>
+                <TableRow v-else v-for="o in orders" :key="o.id">
+                  <TableCell>
+                    <div class="space-y-0.5">
+                      <div class="text-foreground font-medium">#{{ o.id.slice(0, 8) }}</div>
+                      <div class="text-xs text-muted-foreground">{{ formatDate(o.created_at) }}</div>
                     </div>
-                    <div v-else>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Product</TableHead>
-                            <TableHead>Qty</TableHead>
-                            <TableHead class="text-right">Unit Price</TableHead>
-                            <TableHead class="text-right">Total</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow v-for="it in itemsByOrder[o.id]" :key="it.id">
-                            <TableCell>{{ it.product_name }}</TableCell>
-                            <TableCell>{{ it.quantity }}</TableCell>
-                            <TableCell class="text-right">{{ formatCurrency(it.unit_price) }}</TableCell>
-                            <TableCell class="text-right">{{ formatCurrency(it.total_price) }}</TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
+                  </TableCell>
+                  <TableCell class="">{{ formatCurrency(o.total) }}</TableCell>
+                  <TableCell>
+                  <Badge variant="outline" :class="[statusBadgeClass(o.status), 'capitalize']">{{ o.status === 'awaiting_payment' ? 'Awaiting' : o.status }}</Badge>
+                  </TableCell>
+                  <TableCell>
+                  <Badge variant="outline" :class="[paymentBadgeClass(o.payment_status), 'capitalize']">{{ o.payment_status }}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{{ o.payment_method === 'cod' ? 'COD' : 'Online' }}</Badge>
+                  </TableCell>
+                  <TableCell class="text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <Button variant="default" size="sm" @click="navigateTo(`/admin/orders/${o.id}`)">
+                        <Icon name="lucide:eye" class="h-4 w-4 mr-2" /> View
+                      </Button>
+                      <Button variant="outline" size="sm" @click="toggleExpand(o.id)">
+                        <span v-if="expanded.has(o.id)">Hide Items</span>
+                        <span v-else>Show Items</span>
+                      </Button>
                     </div>
-                  </div>
-                </TableCell>
-              </TableRow>
-            </template>
-          </TableBody>
-        </Table>
+                  </TableCell>
+                </TableRow>
+                <TableRow v-for="o in orders" :key="`${o.id}-items`" v-show="expanded.has(o.id)">
+                  <TableCell colspan="6">
+                    <div class="border rounded-sm p-3 space-y-2">
+                      <div v-if="loadingItems.has(o.id)"><Skeleton class="h-10 w-full" /></div>
+                      <div v-else-if="(itemsByOrder[o.id] || []).length === 0">
+                        <TableEmpty>No items</TableEmpty>
+                      </div>
+                      <div v-else>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Product</TableHead>
+                              <TableHead>Qty</TableHead>
+                              <TableHead class="text-right">Unit Price</TableHead>
+                              <TableHead class="text-right">Total</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            <TableRow v-for="it in itemsByOrder[o.id]" :key="it.id">
+                              <TableCell>{{ it.product_name }}</TableCell>
+                              <TableCell>{{ it.quantity }}</TableCell>
+                              <TableCell class="text-right">{{ formatCurrency(it.unit_price) }}</TableCell>
+                              <TableCell class="text-right">{{ formatCurrency(it.total_price) }}</TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </div>
+        </div>
       </CardContent>
       <CardFooter class="flex items-center justify-between">
         <div class="flex items-center gap-2">

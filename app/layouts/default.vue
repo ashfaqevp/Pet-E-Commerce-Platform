@@ -216,6 +216,21 @@ watch(user, () => {
       <slot />
     </main>
 
+    <NuxtLink
+      to="https://wa.me/96879188368"
+      external
+      target="_blank"
+      aria-label="Chat on WhatsApp"
+      class="fixed z-50 right-4 bottom-20 md:right-6 md:bottom-6"
+    >
+      <Button
+        size="icon"
+        class="h-14 w-14 rounded-full bg-[#25D366] hover:bg-[#1ebe57] text-white shadow-xl shadow-black/25"
+      >
+        <Icon name="logos:whatsapp-icon" class="size-8" />
+      </Button>
+    </NuxtLink>
+
     <!-- Mobile Bottom Navigation -->
     <nav
       class="md:hidden fixed bottom-0 inset-x-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70"
@@ -266,28 +281,28 @@ watch(user, () => {
                   <ul class="mt-2 space-y-2 text-sm">
                     <li>
                       <NuxtLink
-                        to="/products/dogs"
+                        :to="{ path: '/products', query: { pet: 'dog' } }"
                         class="text-muted-foreground hover:text-secondary"
                         >Dogs</NuxtLink
                       >
                     </li>
                     <li>
                       <NuxtLink
-                        to="/products/cats"
+                        :to="{ path: '/products', query: { pet: 'cat' } }"
                         class="text-muted-foreground hover:text-secondary"
                         >Cats</NuxtLink
                       >
                     </li>
                     <li>
                       <NuxtLink
-                        to="/products/birds"
+                        :to="{ path: '/products', query: { pet: 'bird' } }"
                         class="text-muted-foreground hover:text-secondary"
                         >Birds</NuxtLink
                       >
                     </li>
                     <li>
                       <NuxtLink
-                        to="/products/fish"
+                        :to="{ path: '/products', query: { pet: 'fish' } }"
                         class="text-muted-foreground hover:text-secondary"
                         >Fish</NuxtLink
                       >
@@ -297,7 +312,7 @@ watch(user, () => {
               </AccordionItem>
 
               <AccordionItem value="about">
-                <AccordionTrigger class="text-base font-semibold text-foreground"
+                <AccordionTrigger class="text-base font-medium text-foreground"
                   >About</AccordionTrigger
                 >
                 <AccordionContent>
@@ -311,16 +326,20 @@ watch(user, () => {
                     </li>
                     <li>
                       <NuxtLink
-                        to="/careers"
+                        to="https://www.instagram.com/black_horse_authentic/?"
+                        external
+                        target="_blank"
                         class="text-muted-foreground hover:text-secondary"
-                        >Careers</NuxtLink
+                        >Instagram</NuxtLink
                       >
                     </li>
                     <li>
                       <NuxtLink
-                        to="/press"
+                        to="https://www.facebook.com/p/Black-Horse-Authentic-100071719360687/"
+                        external
+                        target="_blank"
                         class="text-muted-foreground hover:text-secondary"
-                        >Press</NuxtLink
+                        >Facebook</NuxtLink
                       >
                     </li>
                   </ul>
@@ -328,11 +347,18 @@ watch(user, () => {
               </AccordionItem>
 
               <AccordionItem value="support">
-                <AccordionTrigger class="text-base font-semibold text-foreground"
+                <AccordionTrigger class="text-base font-medium text-foreground"
                   >Support</AccordionTrigger
                 >
                 <AccordionContent>
                   <ul class="mt-2 space-y-2 text-sm">
+                    <li>
+                      <NuxtLink
+                        to="/support"
+                        class="text-muted-foreground hover:text-secondary"
+                        >Support Center</NuxtLink
+                      >
+                    </li>
                     <li>
                       <NuxtLink
                         to="/contact"
@@ -359,11 +385,18 @@ watch(user, () => {
               </AccordionItem>
 
               <AccordionItem value="legal">
-                <AccordionTrigger class="text-base font-semibold text-foreground"
+                <AccordionTrigger class="text-base font-medium text-foreground"
                   >Legal</AccordionTrigger
                 >
                 <AccordionContent>
                   <ul class="mt-2 space-y-2 text-sm">
+                    <li>
+                      <NuxtLink
+                        to="/legal"
+                        class="text-muted-foreground hover:text-secondary"
+                        >Legal Overview</NuxtLink
+                      >
+                    </li>
                     <li>
                       <NuxtLink
                         to="/terms"
@@ -391,28 +424,28 @@ watch(user, () => {
               <ul class="mt-4 space-y-2 text-sm">
                 <li>
                   <NuxtLink
-                    to="/products/dogs"
+                    :to="{ path: '/products', query: { pet: 'dog' } }"
                     class="text-muted-foreground hover:text-secondary"
                     >Dogs</NuxtLink
                   >
                 </li>
                 <li>
                   <NuxtLink
-                    to="/products/cats"
+                    :to="{ path: '/products', query: { pet: 'cat' } }"
                     class="text-muted-foreground hover:text-secondary"
                     >Cats</NuxtLink
                   >
                 </li>
                 <li>
                   <NuxtLink
-                    to="/products/birds"
+                    :to="{ path: '/products', query: { pet: 'bird' } }"
                     class="text-muted-foreground hover:text-secondary"
                     >Birds</NuxtLink
                   >
                 </li>
                 <li>
                   <NuxtLink
-                    to="/products/fish"
+                    :to="{ path: '/products', query: { pet: 'fish' } }"
                     class="text-muted-foreground hover:text-secondary"
                     >Fish</NuxtLink
                   >
@@ -429,14 +462,16 @@ watch(user, () => {
                 </li>
                 <li>
                   <NuxtLink
-                    to="/careers"
+                    to="https://www.instagram.com/black_horse_authentic/?"
+                    external
+                    target="_blank"
                     class="text-muted-foreground hover:text-secondary"
-                    >Careers</NuxtLink
+                    >Instagram</NuxtLink
                   >
                 </li>
                 <li>
-                  <NuxtLink to="/press" class="text-muted-foreground hover:text-secondary"
-                    >Press</NuxtLink
+                  <NuxtLink to="https://www.facebook.com/p/Black-Horse-Authentic-100071719360687/" external target="_blank" class="text-muted-foreground hover:text-secondary"
+                    >Facebook</NuxtLink
                   >
                 </li>
               </ul>
@@ -444,6 +479,13 @@ watch(user, () => {
             <div>
               <h3 class="font-medium text-foreground">Support</h3>
               <ul class="mt-4 space-y-2 text-sm">
+                <!-- <li>
+                  <NuxtLink
+                    to="/support"
+                    class="text-muted-foreground hover:text-secondary"
+                    >Support Center</NuxtLink
+                  >
+                </li> -->
                 <li>
                   <NuxtLink
                     to="/contact"
@@ -468,6 +510,11 @@ watch(user, () => {
             <div>
               <h3 class="font-medium text-foreground">Legal</h3>
               <ul class="mt-4 space-y-2 text-sm">
+                <!-- <li>
+                  <NuxtLink to="/legal" class="text-muted-foreground hover:text-secondary"
+                    >Legal Overview</NuxtLink
+                  >
+                </li> -->
                 <li>
                   <NuxtLink to="/terms" class="text-muted-foreground hover:text-secondary"
                     >Terms of Service</NuxtLink

@@ -672,7 +672,7 @@ const logout = async () => {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel :disabled="cancelling">No, Keep Order</AlertDialogCancel>
-          <AlertDialogAction class="bg-destructive text-destructive-foreground" :disabled="cancelling" @click="performCancel">Yes, Cancel Order</AlertDialogAction>
+          <AlertDialogAction class="bg-destructive text-white" :disabled="cancelling" @click="performCancel">Yes, Cancel Order</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

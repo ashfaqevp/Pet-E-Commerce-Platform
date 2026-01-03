@@ -118,6 +118,54 @@ const onSaveConfig = handleSaveConfig(async (values) => {
     toast.error(msg)
   }
 })
+
+interface ChangePasswordForm {
+  new_password: string
+  confirm_password: string
+}
+
+const passwordSchema = toTypedSchema(
+  z
+    .object({
+      new_password: z.string().min(8, 'Minimum 8 characters'),
+      confirm_password: z.string().min(8, 'Minimum 8 characters'),
+    })
+    .refine(v => v.confirm_password === v.new_password, {
+      path: ['confirm_password'],
+      message: 'Passwords must match',
+    })
+)
+
+const {
+  handleSubmit: submitPasswordChange,
+  isSubmitting: changingPassword,
+  resetForm: resetPasswordForm,
+} = useForm<ChangePasswordForm>({
+  validationSchema: passwordSchema,
+  initialValues: {
+    new_password: '',
+    confirm_password: '',
+  },
+})
+
+const { value: newPassword, errorMessage: newPasswordError } = useField<string>('new_password')
+const { value: confirmPassword, errorMessage: confirmPasswordError } = useField<string>('confirm_password')
+
+const showNewPassword = ref<boolean>(false)
+const showConfirmPassword = ref<boolean>(false)
+
+const onChangePassword = submitPasswordChange(async (values) => {
+  const supabase = useSupabaseClient()
+  try {
+    const { error: e } = await supabase.auth.updateUser({ password: values.new_password })
+    if (e) throw e
+    toast.success('Password updated successfully')
+    resetPasswordForm()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to update password'
+    toast.error(msg)
+  }
+})
 </script>
 
 <template>
@@ -189,6 +237,38 @@ const onSaveConfig = handleSaveConfig(async (values) => {
             </div>
           </form>
         </div>
+      </CardContent>
+    </Card>
+    
+    <Card>
+      <CardHeader>
+        <CardTitle>Change Password</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form class="space-y-4" @submit.prevent="onChangePassword">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label for="new-password">New Password</Label>
+              <div class="flex gap-2">
+                <Input id="new-password" :type="showNewPassword ? 'text' : 'password'" v-model="newPassword" placeholder="••••••••" />
+                <Button type="button" variant="ghost" size="sm" @click="showNewPassword = !showNewPassword">{{ showNewPassword ? 'Hide' : 'Show' }}</Button>
+              </div>
+              <p v-if="newPasswordError" class="text-destructive text-xs mt-1">{{ newPasswordError }}</p>
+              <p class="text-xs text-muted-foreground">Use at least 8 characters</p>
+            </div>
+            <div>
+              <Label for="confirm-password">Confirm New Password</Label>
+              <div class="flex gap-2">
+                <Input id="confirm-password" :type="showConfirmPassword ? 'text' : 'password'" v-model="confirmPassword" placeholder="••••••••" />
+                <Button type="button" variant="ghost" size="sm" @click="showConfirmPassword = !showConfirmPassword">{{ showConfirmPassword ? 'Hide' : 'Show' }}</Button>
+              </div>
+              <p v-if="confirmPasswordError" class="text-destructive text-xs mt-1">{{ confirmPasswordError }}</p>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2">
+            <Button type="submit" :disabled="changingPassword">Update Password</Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   </div>

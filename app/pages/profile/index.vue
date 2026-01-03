@@ -331,32 +331,36 @@ const askCancel = (entry: OrderEntry) => {
 }
 const performCancel = async () => {
   if (!cancelOrderId.value || !user.value) return
+
+  const entry = ordersList.value.find(e => e.order.id === cancelOrderId.value)
+  if (!entry || !canCancel(entry.order)) {
+    toast.error('Cancellation not allowed')
+    confirmCancelOpen.value = false
+    cancelOrderId.value = null
+    return
+  }
+
+  cancelling.value = true
   try {
-    const entry = ordersList.value.find(e => e.order.id === cancelOrderId.value)
-    if (!entry || !canCancel(entry.order)) {
-      toast.error('Cancellation not allowed')
-      confirmCancelOpen.value = false
-      cancelOrderId.value = null
-      return
-    }
-    cancelling.value = true
     const { error } = await supabase
       .from('orders')
       .update({ status: 'cancelled' })
-      .eq('id', cancelOrderId.value as unknown as never)
-      .eq('user_id', user.value.id as unknown as never)
+      .eq('id', cancelOrderId.value)
+      .eq('user_id', user.value.id)
+
     if (error) throw error
+
     toast.success('Order cancelled')
     confirmCancelOpen.value = false
     cancelOrderId.value = null
     await refreshOrders()
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Cancel failed'
-    toast.error(msg)
+    toast.error(e instanceof Error ? e.message : 'Cancel failed')
   } finally {
     cancelling.value = false
   }
 }
+
 
 const loggingOut = ref(false)
 const logout = async () => {
@@ -600,10 +604,14 @@ const logout = async () => {
                     <Icon name="lucide:eye" class="h-4 w-4" />
                     View
                   </Button>
-                  <Button v-if="canCancel(o.order)" size="sm" variant="outline" class="text-destructive border-destructive/40" @click="askCancel(o)">
-                    <Icon name="lucide:x-circle" class="h-4 w-4" />
-                    Cancel Order
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger as-child>
+                      <Button variant="outline" size="icon-sm"><Icon name="lucide:ellipsis" class="h-4 w-4" /></Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem as="button" :disabled="!canCancel(o.order)" @click="askCancel(o)">Cancel Order</DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </div>

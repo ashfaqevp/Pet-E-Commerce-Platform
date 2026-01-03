@@ -388,6 +388,68 @@ const apiError = computed(() => {
   if (msg.includes('Range Not Satisfiable')) return null
   return error.value ?? null
 })
+
+const bodyScrollLocked = ref(false)
+let originalDocOverflow = ''
+let originalBodyOverflow = ''
+function lockBodyScroll() {
+  if (!process.client) return
+  if (bodyScrollLocked.value) return
+  originalDocOverflow = document.documentElement.style.overflow
+  originalBodyOverflow = document.body.style.overflow
+  document.documentElement.style.overflow = 'hidden'
+  document.body.style.overflow = 'hidden'
+  bodyScrollLocked.value = true
+}
+function unlockBodyScroll() {
+  if (!process.client) return
+  if (!bodyScrollLocked.value) return
+  document.documentElement.style.overflow = originalDocOverflow
+  document.body.style.overflow = originalBodyOverflow
+  bodyScrollLocked.value = false
+}
+function updateBodyScrollLock() {
+  const el = listContainer.value
+  if (!el) return
+  const atBottom = Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight - 1
+  if (atBottom) unlockBodyScroll()
+  else lockBodyScroll()
+}
+let onListMouseEnter: ((e: Event) => void) | undefined
+let onListMouseLeave: ((e: Event) => void) | undefined
+let onListScroll: ((e: Event) => void) | undefined
+let onListWheel: ((e: Event) => void) | undefined
+let onListTouchStart: ((e: Event) => void) | undefined
+let onListTouchMove: ((e: Event) => void) | undefined
+onMounted(() => {
+  const el = listContainer.value
+  if (!el) return
+  onListMouseEnter = (_e) => updateBodyScrollLock()
+  onListMouseLeave = (_e) => unlockBodyScroll()
+  onListScroll = (_e) => updateBodyScrollLock()
+  onListWheel = (_e) => updateBodyScrollLock()
+  onListTouchStart = (_e) => updateBodyScrollLock()
+  onListTouchMove = (_e) => updateBodyScrollLock()
+  el.addEventListener('mouseenter', onListMouseEnter)
+  el.addEventListener('mouseleave', onListMouseLeave)
+  el.addEventListener('scroll', onListScroll, { passive: true })
+  el.addEventListener('wheel', onListWheel, { passive: true })
+  el.addEventListener('touchstart', onListTouchStart, { passive: true })
+  el.addEventListener('touchmove', onListTouchMove, { passive: true })
+  updateBodyScrollLock()
+})
+onBeforeUnmount(() => {
+  const el = listContainer.value
+  if (el) {
+    if (onListMouseEnter) el.removeEventListener('mouseenter', onListMouseEnter)
+    if (onListMouseLeave) el.removeEventListener('mouseleave', onListMouseLeave)
+    if (onListScroll) el.removeEventListener('scroll', onListScroll)
+    if (onListWheel) el.removeEventListener('wheel', onListWheel)
+    if (onListTouchStart) el.removeEventListener('touchstart', onListTouchStart)
+    if (onListTouchMove) el.removeEventListener('touchmove', onListTouchMove)
+  }
+  unlockBodyScroll()
+})
 </script>
 
 <template>
@@ -475,7 +537,7 @@ const apiError = computed(() => {
         </Alert>
 
         <!-- Scroll Container -->
-        <div ref="listContainer" class="overflow-y-auto h-[75vh]">
+        <div ref="listContainer" class="overflow-y-auto h-[calc(100vh-11rem)] sm:h-[calc(100vh-12rem)]">
           <!-- Products Grid -->
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Loading Skeletons -->

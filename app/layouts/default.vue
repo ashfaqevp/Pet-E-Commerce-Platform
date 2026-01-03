@@ -72,7 +72,7 @@ onMounted(() => {
   if (initialQ.length) {
     searchQuery.value = initialQ
     if (isProductsPage.value) {
-      suggestionsOpen.value = initialQ.length >= 3
+      // suggestionsOpen.value = initialQ.length >= 3
       if (isMobile.value) showSearch.value = true
     }
   }
@@ -437,7 +437,7 @@ watch(user, () => {
     </header>
 
     <!-- Page Content -->
-    <main class="pb:10 md:pb-20 bg-gray-50">
+    <main class="bg-gray-50" :class="isProductsPage ? 'pb-0' : 'pb-10 md:pb-20'">
       <slot />
     </main>
 
@@ -457,7 +457,7 @@ watch(user, () => {
     </NuxtLink>
 
     <!-- Mobile Bottom Navigation -->
-    <nav
+    <nav v-if="!isProductsPage"
       class="md:hidden fixed bottom-0 inset-x-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70"
     >
       <div class="grid grid-cols-3 gap-1 py-2">
@@ -482,7 +482,7 @@ watch(user, () => {
     </nav>
 
     <!-- Footer -->
-    <footer class="py-10 border-t">
+    <footer v-if="!isProductsPage" class="py-10 border-t">
       <div class="container mx-auto px-4">
         <div
           class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8"

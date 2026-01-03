@@ -210,7 +210,7 @@ watch(qSearch, (q) => {
   if (isProductsPage.value && isMobile.value) {
     if (val.trim().length) {
       showSearch.value = true
-      // suggestionsOpen.value = true
+      suggestionsOpen.value = true
     }
   }
 })

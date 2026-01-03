@@ -20,13 +20,13 @@ export const CATEGORY_CONFIG: CategoryConfig = {
       {
         when: { category: 'pet', values: ['cat', 'dog', 'bird', 'fish', 'other'] },
         options: [
-          { id: 'food', label: 'Food' },
-          { id: 'treats', label: 'Treats' },
-          { id: 'toys', label: 'Toys' },
-          { id: 'medicine', label: 'Medicine' },
-          { id: 'accessories', label: 'Accessories' },
-          { id: 'grooming', label: 'Grooming' },
-          { id: 'shelter', label: 'Shelter & Beds' },
+          { id: 'food', label: 'Food & Nutrition' },
+          { id: 'treats', label: 'Treats & Supplements' },
+          { id: 'health', label: 'Health & Wellness' },
+          { id: 'grooming', label: 'Grooming & Hygiene' },
+          { id: 'accessories', label: 'Accessories & Essentials' },
+          { id: 'equipment', label: 'Equipment & Hardware' },
+          { id: 'habitat', label: 'Tanks, Cages & Habitat' },
         ],
       },
     ],
@@ -66,11 +66,13 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   unit: {
     label: 'Unit',
     options: [
-      { id: 'gram', label: 'Gram (g)' },
+      { id: 'g', label: 'Gram (g)' },
       { id: 'kg', label: 'Kilogram (kg)' },
       { id: 'ml', label: 'Millilitre (ml)' },
-      { id: 'liter', label: 'Litre (L)' },
-      { id: 'piece', label: 'Piece' },
+      { id: 'l', label: 'Litre (L)' },
+      { id: 'cm', label: 'Centimetre (cm)' },
+      { id: 'pcs', label: 'Pieces (pcs)' },
+      { id: 'watt', label: 'Watt (W)' },
     ],
   },
 
@@ -79,44 +81,56 @@ export const CATEGORY_CONFIG: CategoryConfig = {
     dependsOn: 'unit',
     rules: [
       {
-        when: { category: 'unit', values: ['gram'] },
+        when: { category: 'unit', values: ['g'] },
         options: [
-          { id: '85g', label: '85 g' },
-          { id: '100g', label: '100 g' },
-          { id: '250g', label: '250 g' },
-          { id: '500g', label: '500 g' },
-          { id: '1kg', label: '1 kg' },
-            // Multipack sizes (Felix specific)
-          { id: '85g-x12', label: '85 g × 12' },
-          { id: '85g-x13', label: '85 g × 13' },
-
-          { id: '70g-12', label: '70 g × 12' },
-        ],
+          1.3, 3, 14, 15, 16, 19.25, 19.8, 20, 21.25, 21.8,
+          25, 37, 40, 45, 50, 60, 70, 75, 80, 85, 90,
+          100, 110, 140, 150, 170, 180, 185, 195, 200,
+          220, 250, 350, 360, 400, 425, 500, 570, 600,
+          800, 850, 900, 907, 908, 1000, 1362,
+        ].map(v => ({ id: `${v}g`, label: `${v} g` })),
       },
       {
         when: { category: 'unit', values: ['kg'] },
         options: [
-          { id: '1kg', label: '1 kg' },
-          { id: '1.5kg', label: '1.5 kg' },
-          { id: '2kg', label: '2 kg' },
-          { id: '5kg', label: '5 kg' },
-        ],
+          1, 1.3, 1.5, 1.8, 2, 2.5, 3, 3.5, 4,
+          7, 8, 10, 12.5, 15, 20, 800,
+        ].map(v => ({ id: `${v}kg`, label: `${v} kg` })),
       },
       {
-        when: { category: 'unit', values: ['liter', 'ml'] },
+        when: { category: 'unit', values: ['ml'] },
         options: [
-          { id: '250ml', label: '250 ml' },
-          { id: '500ml', label: '500 ml' },
-          { id: '1l', label: '1 L' },
-        ],
+          10, 20, 30, 50, 100, 120, 135, 150,
+          175, 200, 220, 250, 430, 500, 1000,
+        ].map(v => ({ id: `${v}ml`, label: `${v} ml` })),
       },
       {
-        when: { category: 'unit', values: ['piece'] },
+        when: { category: 'unit', values: ['l'] },
         options: [
-          { id: 'small', label: 'Small' },
-          { id: 'medium', label: 'Medium' },
-          { id: 'large', label: 'Large' },
-        ],
+          1, 5, 10, 12, 20, 25, 80, 150,
+        ].map(v => ({ id: `${v}l`, label: `${v} L` })),
+      },
+      {
+        when: { category: 'unit', values: ['cm'] },
+        options: [
+          2, 3, 5, 6, 8, 10, 12, 16, 18, 20,
+          22, 25, 26, 30, 35, 36, 45, 60,
+          75, 80, 100, 120, 150, 180, 230,
+          300, 380,
+        ].map(v => ({ id: `${v}cm`, label: `${v} cm` })),
+      },
+      {
+        when: { category: 'unit', values: ['pcs'] },
+        options: [1, 2, 5, 6].map(v => ({ id: `${v}pcs`, label: `${v} pcs` })),
+      },
+      {
+        when: { category: 'unit', values: ['watt'] },
+        options: [
+          1, 2, 3, 4, 5, 6, 7, 8, 10, 12,
+          13, 15, 18, 20, 23, 25, 30, 32,
+          34, 35, 36, 40, 45, 50, 55, 60,
+          82, 91, 100, 150, 200, 300,
+        ].map(v => ({ id: `${v}w`, label: `${v} W` })),
       },
     ],
   },

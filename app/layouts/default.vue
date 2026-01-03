@@ -445,7 +445,7 @@ watch(user, () => {
       external
       target="_blank"
       aria-label="Chat on WhatsApp"
-      class="fixed z-50 right-4 bottom-20 md:right-6 md:bottom-6"
+      class="fixed z-50 right-4 bottom-18 md:right-6 md:bottom-6"
     >
       <Button
         size="icon"
@@ -456,7 +456,7 @@ watch(user, () => {
     </NuxtLink>
 
     <!-- Mobile Bottom Navigation -->
-    <nav v-if="!isProductsPage"
+    <nav 
       class="md:hidden fixed bottom-0 inset-x-0 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70"
     >
       <div class="grid grid-cols-3 gap-1 py-2">

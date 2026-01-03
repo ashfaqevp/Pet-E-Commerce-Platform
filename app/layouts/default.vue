@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch } from "vue";
+import { useDebounceFn } from "@vueuse/core";
+import { useRouteQuery } from "@vueuse/router";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +17,11 @@ import Logo from "@/components/common/Logo.vue";
 
 const route = useRoute();
 const router = useRouter();
-const searchQuery = ref("");
+const qSearch = useRouteQuery<string>("q", "");
+const searchQuery = ref(qSearch.value || "");
+const searchSuggestions = ref<Array<{ id: string; name: string }>>([]);
+const suggestionsLoading = ref(false);
+const suggestionsError = ref<string | null>(null);
 const isSearchFocused = ref(false);
 const pageTitle = useState<string>('pageTitle', () => '')
 
@@ -48,6 +54,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   if (updateMobile) window.removeEventListener("resize", updateMobile);
   if (onScroll) window.removeEventListener("scroll", onScroll);
+  if (process.client) document.body.style.overflow = '';
 });
 
 const navItems = [
@@ -64,13 +71,96 @@ const isActive = (path: string) => {
 
 const isProductDetail = computed(() => route.path.startsWith('/product/'));
 const isHome = computed(() => route.path === '/')
+const isProductsPage = computed(() => route.path.startsWith('/products'))
+
+const supabase = useSupabaseClient();
+
+async function performSearchNavigate(term: string) {
+  const q = term.trim();
+  if (!q) return;
+  qSearch.value = q;
+  await router.push({ path: "/products", query: { ...route.query, q } });
+  isSearchFocused.value = false;
+}
 
 function handleSearch() {
-  if (searchQuery.value.trim()) {
-    router.push({ path: '/products', query: { q: searchQuery.value.trim() } })
-    isSearchFocused.value = false
-  }
+  void performSearchNavigate(searchQuery.value);
 }
+
+function navigateProduct(id: string) {
+  isSearchFocused.value = false;
+  router.push({ path: `/product/${id}` });
+}
+
+function clearSearch() {
+  isSearchFocused.value = false
+  searchQuery.value = ''
+  searchSuggestions.value = []
+  suggestionsError.value = null
+  suggestionsLoading.value = false
+}
+
+const fetchSuggestions = async (term: string) => {
+  const q = term.trim();
+  searchSuggestions.value = [];
+  suggestionsError.value = null;
+  if (q.length < 3) {
+    suggestionsLoading.value = false;
+    return;
+  }
+  suggestionsLoading.value = true;
+  try {
+    const esc = q.replace(/%/g, "\\%").replace(/_/g, "\\_");
+    const { data, error } = await supabase
+      .from("products")
+      .select("id,name")
+      .ilike("name", `%${esc}%`)
+      .limit(5);
+    if (error) throw error;
+    searchSuggestions.value = (data || []).map((row) => ({
+      id: String((row as { id: string }).id),
+      name: (row as { name: string }).name,
+    }));
+  } catch (err) {
+    suggestionsError.value = err instanceof Error ? err.message : "Failed to load suggestions";
+  } finally {
+    suggestionsLoading.value = false;
+  }
+};
+
+const debouncedFetchSuggestions = useDebounceFn((value: string) => {
+  void fetchSuggestions(value);
+}, 400, { maxWait: 1200 });
+
+const isSuggestionsOpen = computed(() => isSearchFocused.value && searchQuery.value.trim().length >= 3);
+
+watch(isSuggestionsOpen, (open) => {
+  if (!process.client) return;
+  document.body.style.overflow = open ? 'hidden' : '';
+});
+
+watch(
+  searchQuery,
+  (val) => {
+    if (!isSearchFocused.value) return;
+    if (val.trim().length < 3) {
+      searchSuggestions.value = [];
+      suggestionsError.value = null;
+      suggestionsLoading.value = false;
+      return;
+    }
+    debouncedFetchSuggestions(val);
+  }
+);
+
+watch(() => route.path, (p) => {
+  if (!p.startsWith('/products')) {
+    searchQuery.value = ''
+    searchSuggestions.value = []
+    suggestionsError.value = null
+    suggestionsLoading.value = false
+  }
+})
 
 function goBack() {
   if (process.client && window.history.length > 1) {
@@ -105,7 +195,7 @@ watch(user, () => {
         </div>
 
         <!-- Mobile: page header with back and title -->
-        <div v-if="isMobile && pageTitle && !isHome" class="md:hidden flex items-center justify-between w-full">
+        <div v-if="isMobile && pageTitle && !isHome && !isSearchFocused" class="md:hidden flex items-center justify-between w-full">
           <div class="flex items-center gap-2">
             <Button variant="ghost" size="icon" class="rounded-full border bg-background shadow-sm" @click="goBack">
               <Icon name="lucide:arrow-left" class="h-5 w-5 text-foreground" />
@@ -114,27 +204,51 @@ watch(user, () => {
           </div>
         </div>
 
-        <!-- Mobile searchbar: rounded pill with inline icon and Cancel button -->
-        <div v-show="isSearchFocused && !isProductDetail" class="md:hidden flex items-center gap-2 w-full">
-          <div class="relative flex-1">
-            <Input
-              v-model="searchQuery"
-              class="w-full rounded-full bg-muted border-none pl-4 pr-10"
-              placeholder="Search"
-              @keyup.enter="handleSearch"
-            />
-            <Icon
-              name="lucide:search"
-              class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/80"
-            />
+        <!-- Mobile searchbar: rounded pill with suggestions and actions -->
+        <div v-show="isMobile && (isProductsPage || isHome) && isSearchFocused" class="md:hidden flex flex-col gap-2 w-full">
+          <div class="flex items-center gap-2 w-full">
+            <div class="relative flex-1">
+              <Input
+                v-model="searchQuery"
+                class="w-full rounded-full bg-muted border-none pl-4 pr-10"
+                placeholder="Search"
+                @focus="isSearchFocused = true"
+                @blur="isSearchFocused = false"
+                @keyup.enter="handleSearch"
+              />
+
+            <Button
+              variant="default"
+              size="sm"
+              class="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-3 rounded-full text-xs"
+              @mousedown.prevent
+              @click.stop="handleSearch"
+            >
+              <Icon name="lucide:search" class=" h-4 w-4" />
+            </Button>
+
+              <div
+                v-if="searchQuery.trim().length >= 3"
+                class="absolute z-50 left-0 right-0 top-full mt-1 w-full rounded-xl border bg-background shadow-xl"
+              >
+                <div v-if="suggestionsLoading" class="px-3 py-2 text-xs text-muted-foreground">Searching...</div>
+                <div v-else-if="suggestionsError" class="px-3 py-2 text-xs text-destructive">{{ suggestionsError }}</div>
+                <div v-else-if="searchSuggestions.length === 0" class="px-3 py-2 text-xs text-muted-foreground">No suggestions found</div>
+                <ul v-else class="py-1">
+                  <li
+                    v-for="item in searchSuggestions"
+                    :key="item.id"
+                    class="px-3 py-2 text-sm text-foreground flex items-center justify-between hover:bg-muted/80 active:bg-muted cursor-pointer"
+                    @mousedown.prevent
+                    @click="navigateProduct(item.id)"
+                  >
+                    <span class="truncate">{{ item.name }}</span>
+                    <Icon name="lucide:arrow-up-right" class="ml-2 h-4 w-4 text-muted-foreground" />
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            class="text-foreground px-1"
-            @click="isSearchFocused = false"
-            ><Icon name="lucide:x" class="h-5 w-5"
-          /></Button>
         </div>
 
         <!-- Desktop: Logo -->
@@ -142,27 +256,70 @@ watch(user, () => {
           <img src="/images/logo-name.png" alt="Logo" class="h-12 w-auto" />
         </div>
 
-        <!-- Desktop: Search -->
+        <!-- Desktop: Search with suggestions and action button -->
         <div v-if="!isMobile" class="hidden md:flex flex-1 items-center justify-center mx-auto w-full">
           <div class="w-full max-w-xl relative">
             <Input
               v-model="searchQuery"
-              class="w-full rounded-full border-none pl-4 pr-10 border bg-background/80 shadow-sm"
-              placeholder="Search for food, toys, etc."
+              class="w-full rounded-full border-none pl-4 pr-24 border bg-background/80 shadow-sm"
+              placeholder="Search for food, accessories, etc."
+              @focus="isSearchFocused = true"
+              @blur="isSearchFocused = false"
               @keyup.enter="handleSearch"
             />
-            <Icon name="lucide:search" class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/80" />
+            <Button
+              v-if="isSearchFocused"
+              variant="default"
+              size="sm"
+              class="absolute right-1 top-1/2 -translate-y-1/2 h-8 px-3 rounded-full text-xs"
+              @mousedown.prevent
+              @click.stop="handleSearch"
+            >
+              <Icon name="lucide:search" class="mr-1 h-4 w-4" />
+              Search
+            </Button>
+            <Icon
+              v-else
+              name="lucide:search"
+              class="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-foreground/80"
+            />
+            <div
+              v-if="isSearchFocused && searchQuery.trim().length >= 3"
+              class="absolute z-50 mt-1 w-full rounded-xl border bg-background shadow-xl"
+            >
+              <div v-if="suggestionsLoading" class="px-3 py-2 text-xs text-muted-foreground">
+                Searching...
+              </div>
+              <div v-else-if="suggestionsError" class="px-3 py-2 text-xs text-destructive">
+                {{ suggestionsError }}
+              </div>
+              <div v-else-if="searchSuggestions.length === 0" class="px-3 py-2 text-xs text-muted-foreground">
+                No suggestions found
+              </div>
+              <ul v-else class="py-1">
+                <li
+                  v-for="item in searchSuggestions"
+                  :key="item.id"
+                  class="px-3 py-2 text-sm text-foreground flex items-center justify-between hover:bg-muted/80 active:bg-muted cursor-pointer"
+                  @mousedown.prevent
+                  @click="navigateProduct(item.id)"
+                >
+                  <span class="truncate">{{ item.name }}</span>
+                  <Icon name="lucide:arrow-up-right" class="ml-2 h-4 w-4 text-muted-foreground" />
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
 
         <Button
-          v-if="(!isProductDetail && !isSearchFocused && !pageTitle) || isHome"
+          v-if="isMobile && (isProductsPage || isHome)"
           variant="ghost"
           size="icon"
           class="md:hidden rounded-full border bg-background/80 shadow-sm hover:bg-secondary/10 text-foreground"
-          @click="isSearchFocused = true"
+          @click="isSearchFocused ? clearSearch() : (isSearchFocused = true)"
         >
-          <Icon name="lucide:search" class="h-5 w-5" />
+          <Icon :name="isSearchFocused ? 'lucide:x' : 'lucide:search'" class="h-5 w-5" />
         </Button>
 
         <!-- Actions -->
@@ -265,7 +422,7 @@ watch(user, () => {
           <div class="max-w-sm">
             <img src="/images/logo-name.png" alt="Logo" class="h-14 w-auto" />
             <p class=" text-sm text-muted-foreground">
-              Your one-stop shop for all pet needs. High-quality food, toys, and
+              Your one-stop shop for all pet needs. High-quality food, supplements, and
               accessories.
             </p>
           </div>

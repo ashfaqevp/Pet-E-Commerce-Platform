@@ -63,13 +63,11 @@ const toStringArray = (val: string | string[] | null | undefined): string[] => {
   return Array.isArray(val) ? val : [val]
 }
 
-// Route query parameters - using useRouteQuery for automatic URL sync
-const qPet = useRouteQuery<string[]>('pet', [], { transform: toStringArray })
-const qType = useRouteQuery<string[]>('type', [], { transform: toStringArray })
-const qAge = useRouteQuery<string[]>('age', [], { transform: toStringArray })
-const qUnit = useRouteQuery<string[]>('unit', [], { transform: toStringArray })
-const qSize = useRouteQuery<string[]>('size', [], { transform: toStringArray })
-const qFlavour = useRouteQuery<string[]>('flavour', [], { transform: toStringArray })
+// Route query parameters - single selection per filter
+const qPet = useRouteQuery<string>('pet', '')
+const qType = useRouteQuery<string>('type', '')
+const qAge = useRouteQuery<string>('age', '')
+const qFlavour = useRouteQuery<string>('flavour', '')
 
 // State
 const products = ref<CardProduct[]>([])
@@ -83,23 +81,17 @@ const mobileFilterOpen = ref(false)
 
 // Computed filters object
 const filters = computed(() => ({
-  pet: qPet.value,
-  type: qType.value,
-  age: qAge.value,
-  unit: qUnit.value,
-  size: qSize.value,
-  flavour: qFlavour.value,
+  pet: qPet.value || '',
+  type: qType.value || '',
+  age: qAge.value || '',
+  flavour: qFlavour.value || '',
 }))
-
-// Create a stable filter signature for comparison
 const filterSignature = computed(() => {
   return JSON.stringify({
-    pet: [...qPet.value].sort(),
-    type: [...qType.value].sort(),
-    age: [...qAge.value].sort(),
-    unit: [...qUnit.value].sort(),
-    size: [...qSize.value].sort(),
-    flavour: [...qFlavour.value].sort(),
+    pet: qPet.value || '',
+    type: qType.value || '',
+    age: qAge.value || '',
+    flavour: qFlavour.value || '',
   })
 })
 
@@ -109,32 +101,26 @@ const typeOpts = computed(() => {
 })
 
 const ageOpts = computed(() => {
-  return getFilteredOptions(CATEGORY_CONFIG.age.rules, qPet.value)
-})
-
-const sizeOpts = computed(() => {
-  return getFilteredOptions(CATEGORY_CONFIG.size.rules, qUnit.value)
+  return qPet.value
+    ? getFilteredOptions(CATEGORY_CONFIG.age.rules, qPet.value)
+    : []
 })
 
 const flavourOpts = computed(() => {
-  return getFilteredOptions(CATEGORY_CONFIG.flavour.rules, qType.value)
+  return qType.value
+    ? getFilteredOptions(CATEGORY_CONFIG.flavour.rules, qType.value)
+    : []
 })
 
-function getFilteredOptions(rules: readonly CategoryRule[] | undefined, selected: string[]): CategoryOption[] {
+function getFilteredOptions(rules: readonly CategoryRule[] | undefined, selected: string | string[]): CategoryOption[] {
   if (!rules) return []
-  
-  // If nothing selected, show all unique options
-  if (!selected.length) {
+  const selectedArr = Array.isArray(selected) ? selected : (selected ? [selected] : [])
+  if (selectedArr.length === 0) {
     const allOptions = rules.flatMap(r => r.options)
     return Array.from(new Map(allOptions.map(o => [o.id, o])).values())
   }
-  
-  // Filter options based on selected values
-  const selectedSet = new Set(selected)
-  const matchingRules = rules.filter(rule => 
-    rule.when.values.some(v => selectedSet.has(v))
-  )
-  
+  const selectedSet = new Set(selectedArr)
+  const matchingRules = rules.filter(rule => rule.when.values.some(v => selectedSet.has(v)))
   const options = matchingRules.flatMap(r => r.options)
   return Array.from(new Map(options.map(o => [o.id, o])).values())
 }
@@ -157,12 +143,10 @@ const qSearch = useRouteQuery<string>('q', '')
 const qFeatured = useRouteQuery<string>('featured', '')
 
 const params = computed(() => ({
-  pet: qPet.value,
-  type: qType.value,
-  age: qAge.value,
-  unit: qUnit.value,
-  size: qSize.value,
-  flavour: qFlavour.value,
+  pet: qPet.value || '',
+  type: qType.value || '',
+  age: qAge.value || '',
+  flavour: qFlavour.value || '',
   search: (qSearch.value || '').trim(),
   featured: qFeatured.value === '1',
   page: page.value,
@@ -179,12 +163,10 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
       .order('created_at', { ascending: false })
       .order('id', { ascending: false })
 
-    if (params.value.pet.length > 0) query = query.in('pet_type', params.value.pet)
-    if (params.value.type.length > 0) query = query.in('product_type', params.value.type)
-    if (params.value.age.length > 0) query = query.in('age', params.value.age)
-    if (params.value.unit.length > 0) query = query.in('unit', params.value.unit)
-    if (params.value.size.length > 0) query = query.in('size', params.value.size)
-    if (params.value.flavour.length > 0) query = query.in('flavour', params.value.flavour)
+    if (params.value.pet) query = query.eq('pet_type', params.value.pet)
+    if (params.value.type) query = query.eq('product_type', params.value.type)
+    if (params.value.age) query = query.eq('age', params.value.age)
+    if (params.value.flavour) query = query.eq('flavour', params.value.flavour)
     if (params.value.featured) query = query.eq('is_featured', true)
 
     const term = params.value.search
@@ -268,55 +250,86 @@ function clearSearchQuery() {
 
 // Clear dependent filters when parent changes
 watch(qPet, () => {
-  qType.value = []
-  qAge.value = []
-}, { deep: true })
+  qType.value = ''
+  qAge.value = ''
+})
 
 watch(qType, () => {
-  qFlavour.value = []
-}, { deep: true })
+  qFlavour.value = ''
+})
 
-watch(qUnit, () => {
-  qSize.value = []
-}, { deep: true })
+// Mobile filters local state
+const mobileFilters = ref<{ pet: string; type: string; age: string; flavour: string }>({
+  pet: '',
+  type: '',
+  age: '',
+  flavour: '',
+})
 
-// Toggle filter
-function toggleFilter(key: CategoryKey, id: string, checked: boolean) {
-  const filterMap: Record<CategoryKey, typeof qPet> = {
-    pet: qPet,
-    type: qType,
-    age: qAge,
-    unit: qUnit,
-    size: qSize,
-    flavour: qFlavour,
-  }
-  
-  const currentFilter = filterMap[key]
-  
-  if (checked) {
-    if (!currentFilter.value.includes(id)) {
-      currentFilter.value = [...currentFilter.value, id]
-    }
-  } else {
-    currentFilter.value = currentFilter.value.filter(v => v !== id)
+// Initial sync from route to mobile filters and keep in sync when sheet is closed
+function syncMobileFromRoute() {
+  mobileFilters.value = {
+    pet: qPet.value || '',
+    type: qType.value || '',
+    age: qAge.value || '',
+    flavour: qFlavour.value || '',
   }
 }
 
+onMounted(() => {
+  syncMobileFromRoute()
+})
+
+watch(filterSignature, () => {
+  if (!mobileFilterOpen.value) {
+    syncMobileFromRoute()
+  }
+})
+
+// Dependent clearing for mobile local filters
+watch(() => mobileFilters.value.pet, () => {
+  mobileFilters.value.type = ''
+  mobileFilters.value.age = ''
+})
+
+watch(() => mobileFilters.value.type, () => {
+  mobileFilters.value.flavour = ''
+})
+
+// Toggle filter
+function selectFilterDesktop(key: CategoryKey, id: string) {
+  if (key === 'pet') qPet.value = id
+  else if (key === 'type') qType.value = id
+  else if (key === 'age') qAge.value = id
+  else if (key === 'flavour') qFlavour.value = id
+}
+
+function selectFilterMobile(key: CategoryKey, id: string) {
+  if (key === 'pet') mobileFilters.value.pet = id
+  else if (key === 'type') mobileFilters.value.type = id
+  else if (key === 'age') mobileFilters.value.age = id
+  else if (key === 'flavour') mobileFilters.value.flavour = id
+}
+
 // Clear all filters
-function clearAllFilters() {
-  qPet.value = []
-  qType.value = []
-  qAge.value = []
-  qUnit.value = []
-  qSize.value = []
-  qFlavour.value = []
-  resetAndRefresh()
+function clearAllFiltersDesktop() {
+  qPet.value = ''
+  qType.value = ''
+  qAge.value = ''
+  qFlavour.value = ''
+}
+
+function clearAllFiltersMobile() {
+  mobileFilters.value = { pet: '', type: '', age: '', flavour: '' }
 }
 
 // Apply filters (for mobile)
 function applyFilters() {
+  qPet.value = mobileFilters.value.pet || ''
+  qType.value = mobileFilters.value.type || ''
+  qAge.value = mobileFilters.value.age || ''
+  qFlavour.value = mobileFilters.value.flavour || ''
   mobileFilterOpen.value = false
-  resetAndRefresh()
 }
 
 onMounted(() => { resetAndRefresh() })
@@ -362,14 +375,13 @@ const apiError = computed(() => {
             </SheetHeader>
             <div class="space-y-4 py-4">
               <ProductFilters
-                :filters="filters"
-                :type-opts="typeOpts"
-                :age-opts="ageOpts"
-                :size-opts="sizeOpts"
-                :flavour-opts="flavourOpts"
-                :toggle-filter="toggleFilter"
+                :filters="mobileFilters"
+                :type-opts="getFilteredOptions(CATEGORY_CONFIG.type.rules, mobileFilters.pet)"
+                :age-opts="getFilteredOptions(CATEGORY_CONFIG.age.rules, mobileFilters.pet)"
+                :flavour-opts="getFilteredOptions(CATEGORY_CONFIG.flavour.rules, mobileFilters.type)"
+                :on-select="selectFilterMobile"
                 :on-apply="applyFilters"
-                :on-clear="clearAllFilters"
+                :on-clear="clearAllFiltersMobile"
                 layout="grid"
               />
             </div>
@@ -389,11 +401,10 @@ const apiError = computed(() => {
             :filters="filters"
             :type-opts="typeOpts"
             :age-opts="ageOpts"
-            :size-opts="sizeOpts"
             :flavour-opts="flavourOpts"
-            :toggle-filter="toggleFilter"
+            :on-select="selectFilterDesktop"
             :on-apply="applyFilters"
-            :on-clear="clearAllFilters"
+            :on-clear="clearAllFiltersDesktop"
             layout="column"
           />
         </CardContent>
@@ -415,28 +426,14 @@ const apiError = computed(() => {
           </Alert>
         </div>
         <!-- Active Filter Badges -->
-        <div v-if="Object.values(filters).some(f => f.length > 0) || (qSearch || '').trim().length > 0" class="flex flex-wrap gap-2 mb-4">
+        <div v-if="Object.values(filters).some(f => !!f) || (qSearch || '').trim().length > 0" class="flex flex-wrap gap-2 mb-4">
           <Badge v-if="(qSearch || '').trim().length > 0" variant="outline">
             Search: {{ (qSearch || '').trim() }}
           </Badge>
-          <Badge v-for="v in filters.pet" :key="`pet-${v}`" variant="outline">
-            Pet: {{ v }}
-          </Badge>
-          <Badge v-for="v in filters.type" :key="`type-${v}`" variant="outline">
-            Type: {{ v }}
-          </Badge>
-          <Badge v-for="v in filters.age" :key="`age-${v}`" variant="outline">
-            Age: {{ v }}
-          </Badge>
-          <Badge v-for="v in filters.unit" :key="`unit-${v}`" variant="outline">
-            Unit: {{ v }}
-          </Badge>
-          <Badge v-for="v in filters.size" :key="`size-${v}`" variant="outline">
-            Size: {{ v }}
-          </Badge>
-          <Badge v-for="v in filters.flavour" :key="`flavour-${v}`" variant="outline">
-            Flavour: {{ v }}
-          </Badge>
+          <Badge v-if="filters.pet" variant="outline">Pet: {{ filters.pet }}</Badge>
+          <Badge v-if="filters.type" variant="outline">Type: {{ filters.type }}</Badge>
+          <Badge v-if="filters.age" variant="outline">Age: {{ filters.age }}</Badge>
+          <Badge v-if="filters.flavour" variant="outline">Flavour: {{ filters.flavour }}</Badge>
         </div>
 
         <!-- Error Alert -->

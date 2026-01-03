@@ -1,18 +1,19 @@
 <script setup lang="ts">
-import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import type { CategoryKey, CategoryOption } from '@/domain/categories/category.types'
 import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
 
+type FilterKey = 'pet' | 'type' | 'age' | 'flavour'
+
 interface Props {
-  filters: Record<CategoryKey, string[]>
+  filters: Record<FilterKey, string>
   typeOpts: CategoryOption[]
   ageOpts: CategoryOption[]
-  sizeOpts: CategoryOption[]
   flavourOpts: CategoryOption[]
-  toggleFilter: (key: CategoryKey, id: string, checked: boolean) => void
+  onSelect: (key: CategoryKey, id: string) => void
   onApply: () => void
   onClear: () => void
   layout?: 'grid' | 'column'
@@ -28,44 +29,83 @@ const containerClass = computed(() =>
     : 'flex flex-col gap-3'
 )
 
-// Helper to check if filter is active
-function isFilterActive(key: CategoryKey, id: string): boolean {
-  return props.filters[key]?.includes(id) ?? false
-}
+const openKeys = ref<string[]>(['pet'])
 
-// Helper to handle checkbox change
-function handleCheckboxChange(key: CategoryKey, id: string, checked: boolean | 'indeterminate') {
-  if (checked === 'indeterminate') return
-  props.toggleFilter(key, id, checked)
+watchEffect(() => {
+  const selectedKeys: FilterKey[] = []
+  if (props.filters.pet) selectedKeys.push('pet')
+  if (props.filters.type) selectedKeys.push('type')
+  if (props.filters.age) selectedKeys.push('age')
+  if (props.filters.flavour) selectedKeys.push('flavour')
+
+  const next = new Set<string>()
+  next.add('pet')
+
+  if (selectedKeys.length === 0) {
+    if (props.typeOpts.length > 0) next.add('type')
+    if (props.ageOpts.length > 0) next.add('age')
+    if (props.flavourOpts.length > 0) next.add('flavour')
+  }
+  else {
+    for (const k of selectedKeys) next.add(k)
+  }
+
+  openKeys.value = Array.from(next)
+})
+
+function selectAndOpen(key: FilterKey, id: string) {
+  props.onSelect(key, id)
+  const nextFilters = {
+    pet: key === 'pet' ? id : props.filters.pet,
+    type: key === 'type' ? id : props.filters.type,
+    age: key === 'age' ? id : props.filters.age,
+    flavour: key === 'flavour' ? id : props.filters.flavour,
+  }
+  const selectedKeys: FilterKey[] = []
+  if (nextFilters.pet) selectedKeys.push('pet')
+  if (nextFilters.type) selectedKeys.push('type')
+  if (nextFilters.age) selectedKeys.push('age')
+  if (nextFilters.flavour) selectedKeys.push('flavour')
+  const next = new Set<string>()
+  next.add('pet')
+  if (selectedKeys.length === 0) {
+    if (props.typeOpts.length > 0) next.add('type')
+    if (props.ageOpts.length > 0) next.add('age')
+    if (props.flavourOpts.length > 0) next.add('flavour')
+  }
+  else {
+    for (const k of selectedKeys) next.add(k)
+  }
+  openKeys.value = Array.from(next)
 }
 </script>
 
 <template>
   <div class="space-y-4">
-    <Accordion type="multiple" class="space-y-2" :default-value="['pet']">
+    <Accordion type="multiple" class="space-y-2" :default-value="['pet']" v-model:value="openKeys">
       <!-- Pet Filter -->
       <AccordionItem value="pet">
         <AccordionTrigger class="text-sm font-medium">
           Pet Type
-          <Badge v-if="filters.pet.length > 0" variant="secondary" class="ml-2">
-            {{ filters.pet.length }}
-          </Badge>
         </AccordionTrigger>
         <AccordionContent>
-          <div :class="containerClass">
-            <Label
-              v-for="option in CATEGORY_CONFIG.pet.options"
-              :key="option.id"
-              class="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                :id="`pet-${option.id}`"
-                :checked="isFilterActive('pet', option.id)"
-                @update:checked="handleCheckboxChange('pet', option.id, $event)"
-              />
-              <span class="text-sm">{{ option.label }}</span>
-            </Label>
-          </div>
+          <RadioGroup :model-value="filters.pet" @update:modelValue="v => selectAndOpen('pet', String(v))">
+            <div :class="containerClass">
+              <Label :for="'pet-all'" class="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="pet-all" value="" />
+                <span class="text-sm">All</span>
+              </Label>
+              <Label
+                v-for="option in CATEGORY_CONFIG.pet.options"
+                :key="option.id"
+                class="flex items-center gap-2 cursor-pointer"
+                :for="`pet-${option.id}`"
+              >
+                <RadioGroupItem :id="`pet-${option.id}`" :value="option.id" />
+                <span class="text-sm">{{ option.label }}</span>
+              </Label>
+            </div>
+          </RadioGroup>
         </AccordionContent>
       </AccordionItem>
 
@@ -73,141 +113,82 @@ function handleCheckboxChange(key: CategoryKey, id: string, checked: boolean | '
       <AccordionItem value="type" :disabled="typeOpts.length === 0">
         <AccordionTrigger class="text-sm font-medium">
           Product Type
-          <Badge v-if="filters.type.length > 0" variant="secondary" class="ml-2">
-            {{ filters.type.length }}
-          </Badge>
         </AccordionTrigger>
         <AccordionContent>
           <div v-if="typeOpts.length === 0" class="text-sm text-muted-foreground py-2">
             Select a pet type first
           </div>
-          <div v-else :class="containerClass">
-            <Label
-              v-for="option in typeOpts"
-              :key="option.id"
-              class="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                :id="`type-${option.id}`"
-                :checked="isFilterActive('type', option.id)"
-                @update:checked="handleCheckboxChange('type', option.id, $event)"
-              />
-              <span class="text-sm">{{ option.label }}</span>
-            </Label>
+          <div v-else>
+            <RadioGroup :model-value="filters.type" @update:modelValue="v => selectAndOpen('type', String(v))">
+              <div :class="containerClass">
+                <Label :for="'type-all'" class="flex items-center gap-2 cursor-pointer">
+                  <RadioGroupItem id="type-all" value="" />
+                  <span class="text-sm">All</span>
+                </Label>
+                <Label
+                  v-for="option in typeOpts"
+                  :key="option.id"
+                  class="flex items-center gap-2 cursor-pointer"
+                  :for="`type-${option.id}`"
+                >
+                  <RadioGroupItem :id="`type-${option.id}`" :value="option.id" />
+                  <span class="text-sm">{{ option.label }}</span>
+                </Label>
+              </div>
+            </RadioGroup>
           </div>
         </AccordionContent>
       </AccordionItem>
 
       <!-- Age Filter -->
-      <AccordionItem value="age" :disabled="ageOpts.length === 0">
+      <AccordionItem v-if="ageOpts.length > 0" value="age">
         <AccordionTrigger class="text-sm font-medium">
           Age Group
-          <Badge v-if="filters.age.length > 0" variant="secondary" class="ml-2">
-            {{ filters.age.length }}
-          </Badge>
         </AccordionTrigger>
         <AccordionContent>
-          <div v-if="ageOpts.length === 0" class="text-sm text-muted-foreground py-2">
-            Select a pet type first
-          </div>
-          <div v-else :class="containerClass">
-            <Label
-              v-for="option in ageOpts"
-              :key="option.id"
-              class="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                :id="`age-${option.id}`"
-                :checked="isFilterActive('age', option.id)"
-                @update:checked="handleCheckboxChange('age', option.id, $event)"
-              />
-              <span class="text-sm">{{ option.label }}</span>
-            </Label>
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-
-      <!-- Unit Filter -->
-      <AccordionItem value="unit">
-        <AccordionTrigger class="text-sm font-medium">
-          Unit
-          <Badge v-if="filters.unit.length > 0" variant="secondary" class="ml-2">
-            {{ filters.unit.length }}
-          </Badge>
-        </AccordionTrigger>
-        <AccordionContent>
-          <div :class="containerClass">
-            <Label
-              v-for="option in CATEGORY_CONFIG.unit.options"
-              :key="option.id"
-              class="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                :id="`unit-${option.id}`"
-                :checked="isFilterActive('unit', option.id)"
-                @update:checked="handleCheckboxChange('unit', option.id, $event)"
-              />
-              <span class="text-sm">{{ option.label }}</span>
-            </Label>
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-
-      <!-- Size Filter -->
-      <AccordionItem value="size" :disabled="sizeOpts.length === 0">
-        <AccordionTrigger class="text-sm font-medium">
-          Size
-          <Badge v-if="filters.size.length > 0" variant="secondary" class="ml-2">
-            {{ filters.size.length }}
-          </Badge>
-        </AccordionTrigger>
-        <AccordionContent>
-          <div v-if="sizeOpts.length === 0" class="text-sm text-muted-foreground py-2">
-            Select a unit first
-          </div>
-          <div v-else :class="containerClass">
-            <Label
-              v-for="option in sizeOpts"
-              :key="option.id"
-              class="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                :id="`size-${option.id}`"
-                :checked="isFilterActive('size', option.id)"
-                @update:checked="handleCheckboxChange('size', option.id, $event)"
-              />
-              <span class="text-sm">{{ option.label }}</span>
-            </Label>
-          </div>
+          <RadioGroup :model-value="filters.age" @update:modelValue="v => selectAndOpen('age', String(v))">
+            <div :class="containerClass">
+              <Label :for="'age-all'" class="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="age-all" value="" />
+                <span class="text-sm">All</span>
+              </Label>
+              <Label
+                v-for="option in ageOpts"
+                :key="option.id"
+                class="flex items-center gap-2 cursor-pointer"
+                :for="`age-${option.id}`"
+              >
+                <RadioGroupItem :id="`age-${option.id}`" :value="option.id" />
+                <span class="text-sm">{{ option.label }}</span>
+              </Label>
+            </div>
+          </RadioGroup>
         </AccordionContent>
       </AccordionItem>
 
       <!-- Flavour Filter -->
-      <AccordionItem value="flavour" :disabled="flavourOpts.length === 0">
+      <AccordionItem v-if="flavourOpts.length > 0" value="flavour">
         <AccordionTrigger class="text-sm font-medium">
           Flavour
-          <Badge v-if="filters.flavour.length > 0" variant="secondary" class="ml-2">
-            {{ filters.flavour.length }}
-          </Badge>
         </AccordionTrigger>
         <AccordionContent>
-          <div v-if="flavourOpts.length === 0" class="text-sm text-muted-foreground py-2">
-            Select a product type first
-          </div>
-          <div v-else :class="containerClass">
-            <Label
-              v-for="option in flavourOpts"
-              :key="option.id"
-              class="flex items-center gap-2 cursor-pointer"
-            >
-              <Checkbox
-                :id="`flavour-${option.id}`"
-                :checked="isFilterActive('flavour', option.id)"
-                @update:checked="handleCheckboxChange('flavour', option.id, $event)"
-              />
-              <span class="text-sm">{{ option.label }}</span>
-            </Label>
-          </div>
+          <RadioGroup :model-value="filters.flavour" @update:modelValue="v => selectAndOpen('flavour', String(v))">
+            <div :class="containerClass">
+              <Label :for="'flavour-all'" class="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="flavour-all" value="" />
+                <span class="text-sm">All</span>
+              </Label>
+              <Label
+                v-for="option in flavourOpts"
+                :key="option.id"
+                class="flex items-center gap-2 cursor-pointer"
+                :for="`flavour-${option.id}`"
+              >
+                <RadioGroupItem :id="`flavour-${option.id}`" :value="option.id" />
+                <span class="text-sm">{{ option.label }}</span>
+              </Label>
+            </div>
+          </RadioGroup>
         </AccordionContent>
       </AccordionItem>
     </Accordion>

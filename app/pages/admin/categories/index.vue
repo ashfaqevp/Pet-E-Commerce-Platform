@@ -12,14 +12,12 @@ type PetId = CategoryOption['id']
 type TypeId = CategoryRule['options'][number]['id']
 type AgeId = CategoryRule['options'][number]['id']
 type UnitId = CategoryOption['id']
-type SizeId = CategoryRule['options'][number]['id']
 type FlavourId = CategoryRule['options'][number]['id']
 
 const selectedPet = ref<PetId | null>(null)
 const selectedType = ref<TypeId | null>(null)
 const selectedAge = ref<AgeId | null>(null)
 const selectedUnit = ref<UnitId | null>(null)
-const selectedSize = ref<SizeId | null>(null)
 const selectedFlavour = ref<FlavourId | null>(null)
 
 function getRuleOptions(
@@ -43,10 +41,6 @@ const ageOptions = computed(() => {
   if (!selectedPet.value) return [] as readonly { id: string; label: string }[]
   return getRuleOptions(CATEGORY_CONFIG.age.rules, { pet: selectedPet.value })
 })
-const sizeOptions = computed(() => {
-  if (!selectedUnit.value) return [] as readonly { id: string; label: string }[]
-  return getRuleOptions(CATEGORY_CONFIG.size.rules, { unit: selectedUnit.value })
-})
 const flavourOptions = computed(() => {
   if (!selectedType.value) return [] as readonly { id: string; label: string }[]
   return getRuleOptions(CATEGORY_CONFIG.flavour.rules, { type: selectedType.value })
@@ -58,10 +52,6 @@ const isAgeRequired = computed(() => {
   if (!selectedPet.value) return false
   return CATEGORY_CONFIG.age.requiredWhen?.some((w) => w.category === 'pet' && w.values.includes(selectedPet.value as string)) ?? false
 })
-const isSizeRequired = computed(() => {
-  if (!selectedUnit.value) return false
-  return CATEGORY_CONFIG.size.requiredWhen?.some((w) => w.category === 'unit' && w.values.includes(selectedUnit.value as string)) ?? false
-})
 const isFlavourRequired = computed(() => {
   if (!selectedType.value) return false
   return CATEGORY_CONFIG.flavour.requiredWhen?.some((w) => w.category === 'type' && w.values.includes(selectedType.value as string)) ?? false
@@ -72,16 +62,12 @@ watch(selectedPet, () => {
   selectedAge.value = null
   selectedFlavour.value = null
 })
-watch(selectedUnit, () => {
-  selectedSize.value = null
-})
 
 const requiredKeys = computed(() => {
   const keys: string[] = []
   if (isPetRequired) keys.push('pet')
   if (isTypeRequired) keys.push('type')
   if (isAgeRequired.value) keys.push('age')
-  if (isSizeRequired.value) keys.push('size')
   if (isFlavourRequired.value) keys.push('flavour')
   return keys
 })
@@ -91,7 +77,6 @@ const filledRequiredKeys = computed(() => {
     pet: selectedPet.value,
     type: selectedType.value,
     age: selectedAge.value,
-    size: selectedSize.value,
     flavour: selectedFlavour.value,
   }
   return requiredKeys.value.filter((k) => !!map[k])
@@ -108,13 +93,12 @@ const resetAll = () => {
   selectedType.value = null
   selectedAge.value = null
   selectedUnit.value = null
-  selectedSize.value = null
   selectedFlavour.value = null
 }
 
 const formatLabel = (text: string) => text.replace(/([a-z])([A-Z])/g, '$1 $2')
 
-const selectedTab = ref('explorer')
+const selectedTab = ref('definitions')
 </script>
 
 <template>
@@ -221,24 +205,6 @@ const selectedTab = ref('explorer')
 
                 <div class="space-y-2">
                   <div class="flex items-center justify-between">
-                    <Label>Size</Label>
-                    <Badge :class="isSizeRequired ? 'bg-[#FF9500] text-white' : 'bg-muted'">{{ isSizeRequired ? 'Required Now' : 'Optional' }}</Badge>
-                  </div>
-                  <Select v-model="selectedSize" :disabled="!selectedUnit || sizeOptions.length === 0">
-                    <SelectTrigger class="w-full">
-                      <SelectValue :placeholder="!selectedUnit ? 'Select unit first' : (sizeOptions.length ? 'Select size' : 'Not applicable')" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Size</SelectLabel>
-                        <SelectItem v-for="o in sizeOptions" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div class="space-y-2">
-                  <div class="flex items-center justify-between">
                     <Label>Flavour</Label>
                     <Badge :class="isFlavourRequired ? 'bg-[#FF9500] text-white' : 'bg-muted'">{{ isFlavourRequired ? 'Required Now' : 'Optional' }}</Badge>
                   </div>
@@ -282,7 +248,6 @@ const selectedTab = ref('explorer')
                 <div class="flex items-center justify-between"><span class="text-sm">Type</span><Badge variant="outline">{{ selectedType || '—' }}</Badge></div>
                 <div class="flex items-center justify-between"><span class="text-sm">Age</span><Badge variant="outline">{{ selectedAge || '—' }}</Badge></div>
                 <div class="flex items-center justify-between"><span class="text-sm">Unit</span><Badge variant="outline">{{ selectedUnit || '—' }}</Badge></div>
-                <div class="flex items-center justify-between"><span class="text-sm">Size</span><Badge variant="outline">{{ selectedSize || '—' }}</Badge></div>
                 <div class="flex items-center justify-between"><span class="text-sm">Flavour</span><Badge variant="outline">{{ selectedFlavour || '—' }}</Badge></div>
               </div>
             </CardContent>
@@ -353,21 +318,6 @@ const selectedTab = ref('explorer')
                 <AccordionContent>
                   <div class="flex flex-wrap gap-2">
                     <Badge v-for="o in CATEGORY_CONFIG.unit.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-
-              <AccordionItem value="size">
-                <AccordionTrigger>Size</AccordionTrigger>
-                <AccordionContent>
-                  <div class="flex items-center gap-2 mb-2"><Badge variant="outline">Depends on: Unit</Badge></div>
-                  <div class="space-y-3">
-                    <div v-for="r in CATEGORY_CONFIG.size.rules" :key="r.when.values.join(',')" class="space-y-2">
-                      <div class="text-xs text-muted-foreground">When Unit ∈ {{ r.when.values.join(', ') }}</div>
-                      <div class="flex flex-wrap gap-2">
-                        <Badge v-for="o in r.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
-                      </div>
-                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>

@@ -151,10 +151,6 @@ watch(() => props.open, async (open) => {
     existingThumbnailUrl.value = props.initial?.thumbnail_url ?? null
     hasThumbnailRef.value = !!(existingThumbnailUrl.value || thumbnailFile.value)
     existingGalleryUrls.value = Array.isArray(props.initial?.image_urls) ? (props.initial!.image_urls as string[]) : []
-    {
-      const tokens = (props.initial?.name || '').trim().split(/\s+/)
-      baseSearch.value = tokens.slice(0, 2).join(' ') || ''
-    }
     initializing.value = false
   } else {
     initializing.value = true
@@ -325,13 +321,6 @@ const filteredBaseProducts = computed(() => {
   const list = (baseProducts.value || []) as { id: string; name: string }[]
   if (!q) return list
   return list.filter(p => p.name.toLowerCase().includes(q))
-})
-watch(name, (v) => {
-  if (!baseProductId.value) {
-    const tokens = String(v || '').trim().split(/\s+/)
-    const firstWords = tokens.slice(0, 2).join(' ')
-    if (!baseSearch.value || baseSearch.value.trim().length === 0) baseSearch.value = firstWords
-  }
 })
 </script>
 

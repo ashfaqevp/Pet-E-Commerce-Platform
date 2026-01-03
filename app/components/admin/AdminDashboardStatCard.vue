@@ -45,7 +45,7 @@ const displayParts = computed((): { prefix: string; main: string } => {
       <Skeleton v-if="props.loading" class="h-6 w-24" />
       <p v-else :class="accentClasses.value" class="font-semibold">
         <span v-if="props.currency && displayParts.prefix" class="text-xs mr-1">{{ displayParts.prefix }}</span>
-        <span :class="props.currency ? 'text-3xl' : 'text-2xl'">{{ displayParts.main }}</span>
+        <span :class="props.currency ? 'text-2xl' : 'text-2xl'">{{ displayParts.main }}</span>
       </p>
     </CardContent>
   </Card>

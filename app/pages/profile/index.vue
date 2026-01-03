@@ -214,6 +214,13 @@ const statusBadgeClass = (s: OrderRow['status']): string => {
 }
 const paymentIcon = (m: 'cod' | 'online'): string => (m === 'cod' ? 'lucide:wallet' : 'lucide:credit-card')
 const paymentBadgeClass = (_m: 'cod' | 'online'): string => 'border-muted-foreground/20 text-foreground'
+const canCancel = (o: OrderRow): boolean => {
+  const s = o.status
+  const m = o.payment_method === 'cod' ? 'cod' : 'online'
+  if (m === 'online') return s === 'pending' || s === 'awaiting_payment' || s === 'confirmed'
+  if (m === 'cod') return s === 'pending' || s === 'confirmed'
+  return false
+}
 watch(user, async (u) => {
   if (!u) {
     useAuthStore().requireAuth()
@@ -313,6 +320,42 @@ const selectedOrder = ref<OrderEntry | null>(null)
 const openDetails = (entry: OrderEntry) => {
   selectedOrder.value = entry
   detailsOpen.value = true
+}
+
+const confirmCancelOpen = ref(false)
+const cancelOrderId = ref<string | null>(null)
+const cancelling = ref(false)
+const askCancel = (entry: OrderEntry) => {
+  cancelOrderId.value = entry.order.id
+  confirmCancelOpen.value = true
+}
+const performCancel = async () => {
+  if (!cancelOrderId.value || !user.value) return
+  try {
+    const entry = ordersList.value.find(e => e.order.id === cancelOrderId.value)
+    if (!entry || !canCancel(entry.order)) {
+      toast.error('Cancellation not allowed')
+      confirmCancelOpen.value = false
+      cancelOrderId.value = null
+      return
+    }
+    cancelling.value = true
+    const { error } = await supabase
+      .from('orders')
+      .update({ status: 'cancelled' })
+      .eq('id', cancelOrderId.value as unknown as never)
+      .eq('user_id', user.value.id as unknown as never)
+    if (error) throw error
+    toast.success('Order cancelled')
+    confirmCancelOpen.value = false
+    cancelOrderId.value = null
+    await refreshOrders()
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Cancel failed'
+    toast.error(msg)
+  } finally {
+    cancelling.value = false
+  }
 }
 
 const loggingOut = ref(false)
@@ -557,6 +600,10 @@ const logout = async () => {
                     <Icon name="lucide:eye" class="h-4 w-4" />
                     View
                   </Button>
+                  <Button v-if="canCancel(o.order)" size="sm" variant="outline" class="text-destructive border-destructive/40" @click="askCancel(o)">
+                    <Icon name="lucide:x-circle" class="h-4 w-4" />
+                    Cancel Order
+                  </Button>
                 </div>
               </div>
             </div>
@@ -609,5 +656,17 @@ const logout = async () => {
         <PhoneEditContent v-model="phoneInput" @save="afterPhoneSaved" />
       </DialogContent>
     </Dialog>
+    <AlertDialog :open="confirmCancelOpen" @update:open="(v) => confirmCancelOpen = v">
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Cancel Order?</AlertDialogTitle>
+          <AlertDialogDescription>Are you sure you want to cancel this order?</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel :disabled="cancelling">No, Keep Order</AlertDialogCancel>
+          <AlertDialogAction class="bg-destructive text-destructive-foreground" :disabled="cancelling" @click="performCancel">Yes, Cancel Order</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   </div>
 </template>

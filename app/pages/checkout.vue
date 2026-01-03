@@ -130,6 +130,13 @@ const total = computed(() => round3(subtotal.value + shipping.value + tax.value)
 const taxLabel = computed(() => `Tax (${Math.round((siteConfig.value.tax_rate || 0) * 100)}%)`)
 
 const { create, creating } = useCheckoutOrder()
+const isPlaceDisabled = computed(() => (
+  creating.value ||
+  itemsPending.value ||
+  addressesPending.value ||
+  items.value.length === 0 ||
+  !selectedAddressId.value
+))
 
 interface PayTabsCreateResponse {
   redirect_url?: string
@@ -186,10 +193,10 @@ const placeOrder = async () => {
 </script>
 
 <template>
-  <div class="container mx-auto px-4 py-6 sm:py-8">
+  <div class="container mx-auto px-4 py-6 sm:py-8 pb-24 sm:pb-8">
     <PageHeader :title="'Checkout'" :items="breadcrumbs" />
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mt-4">
       <div class="lg:col-span-2 space-y-4 sm:space-y-6">
         <Card class="bg-white rounded-xl border">
           <CardHeader>
@@ -258,20 +265,101 @@ const placeOrder = async () => {
                   <span>{{ selectedAddress?.country }}</span>
                 </div>
               </div>
-              <div v-if="selectedAddressId" class="flex items-center gap-2">
-                <Button variant="default" size="sm" @click="setSelectedAsDefault">Use selected address</Button>
-                <Button variant="outline" size="sm" @click="goToProfile">Manage addresses in Profile</Button>
+              <div v-if="selectedAddressId" class="flex flex-wrap items-center gap-2">
+                <Button variant="default" class="flex-1" size="sm" @click="setSelectedAsDefault">Use selected address</Button>
+                <Button variant="outline" class="flex-1" size="sm" @click="goToProfile">Manage addresses in Profile</Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
+        
+
+        <Card class="bg-white rounded-xl border">
+          <CardHeader>
+            <CardTitle class="text-secondary">Cart Summary</CardTitle>
+          </CardHeader>
+          <CardContent class="w-full ">
+            <Table class="max-sm:hidden w-full table-fixed">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Product</TableHead>
+                  <TableHead class="text-right w-16">Qty</TableHead>
+                  <TableHead class="text-right w-24">Price</TableHead>
+                  <TableHead class="text-right w-28">Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-if="itemsPending">
+                  <TableCell colspan="4"><Skeleton class="h-10 w-full" /></TableCell>
+                </TableRow>
+                <TableRow v-else-if="itemsError">
+                  <TableCell colspan="4">
+                    <Alert variant="destructive">
+                      <AlertTitle>Error</AlertTitle>
+                      <AlertDescription>{{ itemsError.message }}</AlertDescription>
+                    </Alert>
+                  </TableCell>
+                </TableRow>
+                <TableRow v-else-if="items.length === 0">
+                  <TableCell colspan="4">
+                    <TableEmpty>Your cart is empty</TableEmpty>
+                  </TableCell>
+                </TableRow>
+                <TableRow v-else v-for="i in items" :key="i.id">
+                  <TableCell>
+                    <div class="flex items-center gap-4 min-w-0">
+                      <Avatar class="size-10 rounded-md">
+                        <AvatarImage v-if="i.product.thumbnail_url" :src="String(i.product.thumbnail_url)" alt="product" />
+                        <AvatarFallback>IMG</AvatarFallback>
+                      </Avatar>
+                      <span class="flex-1 min-w-0 truncate">{{ i.product.name }}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell class="text-right w-16">{{ i.quantity }}</TableCell>
+                  <TableCell class="text-right w-24 whitespace-nowrap">{{ formatOMR(Number(i.product.retail_price || 0)) }}</TableCell>
+                  <TableCell class="text-right w-28 whitespace-nowrap">{{ formatOMR(Number(i.product.retail_price || 0) * Number(i.quantity || 1)) }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+            <div class="sm:hidden space-y-3">
+              <div v-if="itemsPending">
+                <Skeleton class="h-10 w-full" />
+              </div>
+              <Alert v-else-if="itemsError" variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{{ itemsError.message }}</AlertDescription>
+              </Alert>
+              <div v-else-if="items.length === 0">
+                <TableEmpty>Your cart is empty</TableEmpty>
+              </div>
+              <div v-else v-for="i in items" :key="i.id" class="flex items-center justify-between gap-3">
+                <div class="flex items-center gap-3">
+                  <Avatar class="size-10 rounded-md">
+                    <AvatarImage v-if="i.product.thumbnail_url" :src="String(i.product.thumbnail_url)" alt="product" />
+                    <AvatarFallback>IMG</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <div class="text-sm font-medium max-w-[180px] truncate">{{ i.product.name }}</div>
+                    <div class="text-xs text-muted-foreground">{{ formatOMR(Number(i.product.retail_price || 0)) }}</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="text-sm font-medium">x{{ i.quantity }}</div>
+                  <div class="text-sm">{{ formatOMR(Number(i.product.retail_price || 0) * Number(i.quantity || 1)) }}</div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div class="space-y-4 sm:space-y-6">
         <Card class="bg-white rounded-xl border">
           <CardHeader>
             <CardTitle class="text-secondary">Payment Method</CardTitle>
           </CardHeader>
           <CardContent class="space-y-3">
-              
             <RadioGroup v-model="paymentMethod" class="grid gap-3">
               <Label for="pm-cod" class="block">
                 <div class="flex items-start gap-3 rounded-lg border px-4 py-3 hover:bg-muted transition">
@@ -302,59 +390,6 @@ const placeOrder = async () => {
             </RadioGroup>
           </CardContent>
         </Card>
-
-        <Card class="bg-white rounded-xl border">
-          <CardHeader>
-            <CardTitle class="text-secondary">Cart Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead class="text-right">Qty</TableHead>
-                  <TableHead class="text-right">Price</TableHead>
-                  <TableHead class="text-right">Total</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                <TableRow v-if="itemsPending">
-                  <TableCell colspan="4"><Skeleton class="h-10 w-full" /></TableCell>
-                </TableRow>
-                <TableRow v-else-if="itemsError">
-                  <TableCell colspan="4">
-                    <Alert variant="destructive">
-                      <AlertTitle>Error</AlertTitle>
-                      <AlertDescription>{{ itemsError.message }}</AlertDescription>
-                    </Alert>
-                  </TableCell>
-                </TableRow>
-                <TableRow v-else-if="items.length === 0">
-                  <TableCell colspan="4">
-                    <TableEmpty>Your cart is empty</TableEmpty>
-                  </TableCell>
-                </TableRow>
-                <TableRow v-else v-for="i in items" :key="i.id">
-                  <TableCell>
-                    <div class="flex items-center gap-3">
-                      <Avatar class="size-10 rounded-md">
-                        <AvatarImage v-if="i.product.thumbnail_url" :src="String(i.product.thumbnail_url)" alt="product" />
-                        <AvatarFallback>IMG</AvatarFallback>
-                      </Avatar>
-                      <span class="max-w-[220px] truncate">{{ i.product.name }}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell class="text-right">{{ i.quantity }}</TableCell>
-                  <TableCell class="text-right">{{ formatOMR(Number(i.product.retail_price || 0)) }}</TableCell>
-                  <TableCell class="text-right">{{ formatOMR(Number(i.product.retail_price || 0) * Number(i.quantity || 1)) }}</TableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div class="space-y-4 sm:space-y-6">
         <Card class="bg-white rounded-xl border h-fit lg:sticky lg:top-4">
           <CardHeader>
             <CardTitle class="text-secondary">Price Breakdown</CardTitle>
@@ -365,7 +400,7 @@ const placeOrder = async () => {
               <span class="font-medium">{{ formatOMR(subtotal) }}</span>
             </div>
             <div class="flex items-center justify-between">
-              <span>Shipping</span>
+              <span>Delivery Fee</span>
               <span class="font-medium">{{ formatOMR(shipping) }}</span>
             </div>
             <div class="flex items-center justify-between">
@@ -373,13 +408,13 @@ const placeOrder = async () => {
               <span class="font-medium">{{ formatOMR(tax) }}</span>
             </div>
             <Separator />
-            <div class="flex items-center justify-between text-lg font-bold">
+            <div class="flex items-center justify-between text-lg font-semibold">
               <span>Total</span>
               <span>{{ formatOMR(total) }}</span>
             </div>
             <Button
               class="mt-4 w-full"
-              :disabled="creating || itemsPending || addressesPending || items.length === 0 || !selectedAddressId"
+              :disabled="isPlaceDisabled"
               @click="placeOrder"
             >
               <span v-if="creating">Placing order...</span>
@@ -389,5 +424,15 @@ const placeOrder = async () => {
         </Card>
       </div>
     </div>
+    <!-- <div class="fixed bottom-0 left-0 right-0 sm:hidden border-t bg-white p-3">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-sm">Total</span>
+        <span class="text-lg font-bold">{{ formatOMR(total) }}</span>
+      </div>
+      <Button class="w-full" :disabled="isPlaceDisabled" @click="placeOrder">
+        <span v-if="creating">Placing order...</span>
+        <span v-else>Confirm & Place Order</span>
+      </Button>
+    </div> -->
   </div>
 </template>

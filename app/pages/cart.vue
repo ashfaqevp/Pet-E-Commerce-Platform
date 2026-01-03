@@ -157,15 +157,26 @@ const goCheckout = () => {
             </div>
               <div v-else>
                 <template v-for="(item, idx) in items" :key="item.id">
-                  <div class="py-4 flex gap-4 items-center">
-                    <img :src="item.product.thumbnail_url || '/images/placeholder.svg'" alt="Product image" class="w-20 h-20 object-cover rounded" />
+                  <div class="relative py-2 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="absolute right-3 top-3 text-red-600 hover:text-red-700 hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                      :disabled="isItemLoading(item.id) || pending"
+                      aria-label="Remove from cart"
+                      @click="onRemove(item)"
+                    >
+                      <Icon name="lucide:trash"/>
+                    </Button>
+                    <img :src="item.product.thumbnail_url || '/images/placeholder.svg'" alt="Product image" class="w-20 h-20 object-cover rounded-lg" />
                     <div class="flex-1">
                       <h4 class="font-medium text-foreground">{{ item.product.name }}</h4>
                       <p class="text-sm text-muted-foreground">{{ formatOMR(Number(item.product.retail_price ?? 0)) }}</p>
-                      <div class="flex items-center gap-3 mt-2">
+                      <div class="flex items-center gap-2 mt-2">
                         <Button
                           variant="outline"
-                          class="w-8 h-8 rounded-full grid place-items-center disabled:opacity-60 disabled:cursor-not-allowed"
+                          size="icon"
+                          class="rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
                           :disabled="isItemLoading(item.id) || pending"
                           aria-label="Decrease quantity"
                           @click="onDec(item)"
@@ -175,6 +186,7 @@ const goCheckout = () => {
                         <Input
                           type="number"
                           min="1"
+                          inputmode="numeric"
                           class="w-16 text-center"
                           v-model.number="qtyById[item.id]"
                           :default-value="item.quantity ?? 1"
@@ -184,7 +196,8 @@ const goCheckout = () => {
                         />
                         <Button
                           variant="outline"
-                          class="w-8 h-8 rounded-full grid place-items-center disabled:opacity-60 disabled:cursor-not-allowed"
+                          size="icon"
+                          class="rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
                           :disabled="isItemLoading(item.id) || pending"
                           aria-label="Increase quantity"
                           @click="onInc(item)"
@@ -192,17 +205,6 @@ const goCheckout = () => {
                           <Icon name="lucide:plus"/>
                         </Button>
                       </div>
-                    </div>
-                    <div class="text-right">
-                      <Button
-                        variant="ghost"
-                        class="mt-2 text-gray-500 disabled:opacity-60 disabled:cursor-not-allowed"
-                        :disabled="isItemLoading(item.id) || pending"
-                        aria-label="Remove from cart"
-                        @click="onRemove(item)"
-                      >
-                        <Icon name="lucide:trash"/>
-                      </Button>
                     </div>
                   </div>
                   <Separator v-if="idx < items.length - 1" class="my-4" />

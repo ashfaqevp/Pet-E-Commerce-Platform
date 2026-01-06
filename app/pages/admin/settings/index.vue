@@ -51,6 +51,7 @@ interface SiteConfigRow {
   id: string
   shipping_fee: number
   tax_rate: number
+  free_shipping_min_amount: number
   updated_at?: string
 }
 
@@ -60,7 +61,7 @@ const { data: configData, pending: configPending, error: configError, refresh: r
     const supabase = useSupabaseClient()
     const { data, error } = await supabase
       .from('site_config')
-      .select('id, shipping_fee, tax_rate, updated_at')
+      .select('id, shipping_fee, tax_rate, free_shipping_min_amount, updated_at')
       .order('updated_at', { ascending: false })
       .limit(1)
     if (error) throw error
@@ -70,6 +71,7 @@ const { data: configData, pending: configPending, error: configError, refresh: r
       id: String(row.id),
       shipping_fee: Number(row.shipping_fee ?? 10),
       tax_rate: Number(row.tax_rate ?? 0.05),
+      free_shipping_min_amount: Number(row.free_shipping_min_amount ?? 50),
       updated_at: row.updated_at ? String(row.updated_at) : undefined,
     } as SiteConfigRow
   },
@@ -82,6 +84,7 @@ const configSchema = toTypedSchema(
   z.object({
     shipping_fee: z.coerce.number().min(0).max(10000),
     tax_rate: z.coerce.number().min(0).max(1),
+    free_shipping_min_amount: z.coerce.number().min(0).max(100000),
   })
 )
 
@@ -90,11 +93,13 @@ const { handleSubmit: handleSaveConfig, isSubmitting: savingConfig } = useForm({
   initialValues: {
     shipping_fee: siteConfig.value?.shipping_fee ?? 10,
     tax_rate: siteConfig.value?.tax_rate ?? 0.05,
+    free_shipping_min_amount: siteConfig.value?.free_shipping_min_amount ?? 50,
   },
 })
 
 const { value: shippingFee, errorMessage: shippingFeeError } = useField<number>('shipping_fee')
 const { value: taxRate, errorMessage: taxRateError } = useField<number>('tax_rate')
+const { value: freeShippingMin, errorMessage: freeShippingMinError } = useField<number>('free_shipping_min_amount')
 
 const onSaveConfig = handleSaveConfig(async (values) => {
   const supabase = useSupabaseClient()
@@ -102,13 +107,13 @@ const onSaveConfig = handleSaveConfig(async (values) => {
     if (siteConfig.value?.id) {
       const { error: e } = await supabase
         .from('site_config')
-        .update({ shipping_fee: values.shipping_fee, tax_rate: values.tax_rate } as unknown as never)
+        .update({ shipping_fee: values.shipping_fee, tax_rate: values.tax_rate, free_shipping_min_amount: values.free_shipping_min_amount } as unknown as never)
         .eq('id', siteConfig.value.id)
       if (e) throw e
     } else {
       const { error: e } = await supabase
         .from('site_config')
-        .insert([{ shipping_fee: values.shipping_fee, tax_rate: values.tax_rate }] as unknown as never)
+        .insert([{ shipping_fee: values.shipping_fee, tax_rate: values.tax_rate, free_shipping_min_amount: values.free_shipping_min_amount }] as unknown as never)
       if (e) throw e
     }
     toast.success('Checkout settings updated')
@@ -525,7 +530,7 @@ onMounted(() => {
           <form class="space-y-4" @submit.prevent="onSaveConfig">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label for="shipping-fee">Shipping Fee (OMR)</Label>
+                <Label for="shipping-fee">Delivery Fee (OMR)</Label>
                 <Input id="shipping-fee" v-model.number="shippingFee" type="number" step="0.001" min="0" />
                 <p v-if="shippingFeeError" class="text-destructive text-xs mt-1">{{ shippingFeeError }}</p>
               </div>
@@ -533,6 +538,12 @@ onMounted(() => {
                 <Label for="tax-rate">Tax Rate (0–1)</Label>
                 <Input id="tax-rate" v-model.number="taxRate" type="number" step="0.001" min="0" max="1" />
                 <p v-if="taxRateError" class="text-destructive text-xs mt-1">{{ taxRateError }}</p>
+              </div>
+              <div>
+                <Label for="free-shipping">Free Delivery Above (OMR)</Label>
+                <Input id="free-shipping" v-model.number="freeShippingMin" type="number" step="0.001" min="0" />
+                <p v-if="freeShippingMinError" class="text-destructive text-xs mt-1">{{ freeShippingMinError }}</p>
+                <p class="text-xs text-muted-foreground">Delivery fee will be waived for orders equal or above this amount</p>
               </div>
             </div>
             <div class="flex items-center justify-between">

@@ -103,14 +103,14 @@ const onAddressSaved = async () => {
 const round3 = (v: number) => Math.round(v * 1000) / 1000
 const subtotal = computed(() => items.value.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0))
 
-interface SiteConfigRow { shipping_fee: number; tax_rate: number }
+interface SiteConfigRow { shipping_fee: number; tax_rate: number; free_shipping_min_amount: number }
 const { data: configData } = await useLazyAsyncData(
   'checkout-site-config',
   async () => {
     const supabase = useSupabaseClient()
     const { data, error } = await supabase
       .from('site_config')
-      .select('shipping_fee, tax_rate')
+      .select('shipping_fee, tax_rate, free_shipping_min_amount')
       .order('updated_at', { ascending: false })
       .limit(1)
     if (error) throw error
@@ -118,13 +118,20 @@ const { data: configData } = await useLazyAsyncData(
     return {
       shipping_fee: Number(row?.shipping_fee ?? 10),
       tax_rate: Number(row?.tax_rate ?? 0.05),
+      free_shipping_min_amount: Number(row?.free_shipping_min_amount ?? 50),
     } as SiteConfigRow
   },
   { server: true }
 )
-const siteConfig = computed<SiteConfigRow>(() => (configData.value as SiteConfigRow) || { shipping_fee: 10, tax_rate: 0.05 })
-
-const shipping = computed(() => (items.value.length ? siteConfig.value.shipping_fee : 0))
+const siteConfig = computed<SiteConfigRow>(() => (configData.value as SiteConfigRow) || { shipping_fee: 10, tax_rate: 0.05, free_shipping_min_amount: 50 })
+const shipping = computed(() => {
+  if (!items.value.length) return 0
+  return subtotal.value >= siteConfig.value.free_shipping_min_amount ? 0 : siteConfig.value.shipping_fee
+})
+const freeShippingRemaining = computed(() => {
+  const diff = siteConfig.value.free_shipping_min_amount - subtotal.value
+  return diff > 0 ? diff : 0
+})
 const tax = computed(() => round3(subtotal.value * siteConfig.value.tax_rate))
 const total = computed(() => round3(subtotal.value + shipping.value + tax.value))
 const taxLabel = computed(() => `Tax (${Math.round((siteConfig.value.tax_rate || 0) * 100)}%)`)
@@ -174,7 +181,7 @@ const placeOrder = async () => {
     return
   }
   try {
-    const orderId = await create(selectedAddressId.value, { shippingFee: siteConfig.value.shipping_fee, taxRate: siteConfig.value.tax_rate }, paymentMethod.value)
+    const orderId = await create(selectedAddressId.value, { shippingFee: shipping.value, taxRate: siteConfig.value.tax_rate }, paymentMethod.value)
     if (process.client) {
       localStorage.setItem('last_order_id', orderId)
     }
@@ -403,6 +410,9 @@ const placeOrder = async () => {
               <span>Delivery Fee</span>
               <span class="font-medium">{{ formatOMR(shipping) }}</span>
             </div>
+            <p v-if="freeShippingRemaining > 0" class="text-xs text-muted-foreground">
+              Add {{ formatOMR(freeShippingRemaining) }} more to get free delivery
+            </p>
             <div class="flex items-center justify-between">
               <span>{{ taxLabel }}</span>
               <span class="font-medium">{{ formatOMR(tax) }}</span>

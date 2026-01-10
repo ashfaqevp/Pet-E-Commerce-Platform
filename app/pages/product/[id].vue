@@ -251,7 +251,7 @@ const similarVariants = computed<CardProduct[]>(() => {
   const rows = variantRows.value || [];
   const excludeId = product.value?.id || '';
   const list = rows.filter(r => String(r.id) !== excludeId);
-  return list.slice(0, 8).map(mapRowToCard);
+  return list.slice(0, 16).map(mapRowToCard);
 });
 
 const { data: relatedData, pending: relatedPending, error: relatedError, refresh: refreshRelated } = await useLazyAsyncData(
@@ -535,7 +535,8 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
           </div>
         </div>
 
-        <div v-if="sizeGroup?.options?.length" class="mt-6">
+        <!-- classification is not corrected for sizing. so currently commenting -->
+        <!-- <div v-if="sizeGroup?.options?.length" class="mt-6">
           <h3 class="font-medium mb-2 text-foreground">Size</h3>
           <div class="flex flex-wrap gap-2">
             <Button
@@ -553,7 +554,7 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
               {{ opt.label ?? opt.value }}
             </Button>
           </div>
-        </div>
+        </div> -->
 
         <div v-if="ageGroup?.options?.length" class="mt-6">
           <h3 class="font-medium mb-2 text-foreground">Age</h3>
@@ -640,7 +641,7 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
       </div>
     
 
-    <section class="container mx-auto px-4 py-6">
+    <section v-if="similarVariants.length" class="container mx-auto px-4 py-6">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-xl font-semibold">Similar Variants</h3>
       </div>
@@ -654,7 +655,7 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
       </div>
     </section>
 
-    <section class="container mx-auto px-4 py-2">
+    <section v-if="relatedProducts.length" class="container mx-auto px-4 py-2">
       <div class="flex items-center justify-between mb-4">
         <h3 class="text-xl font-semibold">Related Products</h3>
       </div>

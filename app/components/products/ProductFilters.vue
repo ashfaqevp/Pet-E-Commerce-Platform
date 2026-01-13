@@ -63,6 +63,7 @@ function selectAndOpen(key: FilterKey, id: string) {
     type: key === 'type' ? id : props.filters.type,
     age: key === 'age' ? id : props.filters.age,
     flavour: key === 'flavour' ? id : props.filters.flavour,
+    brand: key === 'brand' ? id : props.filters.brand,
   }
   const selectedKeys: FilterKey[] = []
   if (nextFilters.pet) selectedKeys.push('pet')

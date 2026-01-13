@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from "vue";
+import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute, useRouter, definePageMeta, useLazyAsyncData, useSupabaseClient, useHead, useState, useSeoMeta, useRuntimeConfig } from "#imports";
 import { Button } from "@/components/ui/button";
 import { useCart, type CartItemWithProduct } from "@/composables/useCart";
@@ -170,9 +170,9 @@ const selectedAge = ref<VariantOption | null>(null);
 function initSelections() {
   const cur = current.value;
   if (!cur) return;
-  selectedFlavour.value = flavourGroup.value?.options.find(o => o.id === cur.flavour) || flavourGroup.value?.options[0] || null;
-  selectedSize.value = sizeGroup.value?.options.find(o => o.id === cur.size) || sizeGroup.value?.options[0] || null;
-  selectedAge.value = ageGroup.value?.options.find(o => o.id === cur.age) || ageGroup.value?.options[0] || null;
+  selectedFlavour.value = cur.flavour ? (flavourGroup.value?.options.find(o => o.id === cur.flavour) || null) : null;
+  selectedSize.value = cur.size ? (sizeGroup.value?.options.find(o => o.id === cur.size) || null) : null;
+  selectedAge.value = cur.age ? (ageGroup.value?.options.find(o => o.id === cur.age) || null) : null;
 }
 
 watch([flavourGroup, sizeGroup, ageGroup], initSelections, { immediate: true });
@@ -193,19 +193,25 @@ watch(selectedAge, (v) => moveSelectedToFront(ageGroup.value, v));
 
 const selectedVariant = computed<ProductRow | undefined>(() => {
   const rows = variantRows.value;
+  const cur = current.value;
   const f = selectedFlavour.value?.id;
   const s = selectedSize.value?.id;
   const a = selectedAge.value?.id;
-  let r = rows.find(x => (!f || x.flavour === f) && (!s || x.size === s) && (!a || x.age === a));
-  if (r) return r;
-  r = rows.find(x => (!s || x.size === s) && (!f || x.flavour === f));
-  if (r) return r;
-  r = rows.find(x => (!s || x.size === s));
-  if (r) return r;
-  r = rows.find(x => (!f || x.flavour === f));
-  if (r) return r;
-  r = rows.find(x => (!a || x.age === a));
-  return r || current.value;
+  const noneSelected = !f && !s && !a;
+  if (noneSelected) return cur;
+  const matchesAll = rows.filter(x => (!f || x.flavour === f) && (!s || x.size === s) && (!a || x.age === a));
+  const preferCurrent = matchesAll.find(x => String(x.id) === String(cur?.id));
+  if (preferCurrent) return preferCurrent;
+  if (matchesAll.length) return matchesAll[0];
+  const matchesFS = rows.filter(x => (!s || x.size === s) && (!f || x.flavour === f));
+  if (matchesFS.length) return matchesFS.find(x => String(x.id) === String(cur?.id)) || matchesFS[0];
+  const matchesS = rows.filter(x => (!s || x.size === s));
+  if (matchesS.length) return matchesS.find(x => String(x.id) === String(cur?.id)) || matchesS[0];
+  const matchesF = rows.filter(x => (!f || x.flavour === f));
+  if (matchesF.length) return matchesF.find(x => String(x.id) === String(cur?.id)) || matchesF[0];
+  const matchesA = rows.filter(x => (!a || x.age === a));
+  if (matchesA.length) return matchesA.find(x => String(x.id) === String(cur?.id)) || matchesA[0];
+  return cur;
 });
 
 const images = computed(() => {
@@ -217,17 +223,16 @@ const images = computed(() => {
 });
 
 const product = computed(() => {
-  const cur = current.value;
-  const sel = selectedVariant.value || cur;
-  const price = Number(sel?.retail_price ?? cur?.retail_price ?? 0) || 0;
-  const rating = Number(sel?.default_rating ?? cur?.default_rating ?? 0) || 0;
+  const source = selectedVariant.value || current.value;
+  const price = Number(source?.retail_price || 0);
+  const rating = Number(source?.default_rating || 0);
   return {
-    id: String(sel?.id ?? productId.value),
-    name: String(cur?.name || "Product"),
-    brand: cur?.brand || undefined,
+    id: String(source?.id ?? productId.value),
+    name: String(source?.name || "Product"),
+    brand: source?.brand || undefined,
     price,
     rating,
-    thumbnail: sel?.thumbnail_url || undefined,
+    thumbnail: source?.thumbnail_url || undefined,
     images: images.value,
     compareAt: undefined as number | undefined,
     discount: 0,
@@ -366,6 +371,33 @@ watch([product, cartItems], () => {
   qty.value = Number(match?.quantity || 1)
 }, { immediate: true })
 
+watch(productId, async () => {
+  selectedFlavour.value = null
+  selectedSize.value = null
+  selectedAge.value = null
+  activeIndex.value = 0
+  await nextTick()
+  carouselApiRef.value?.scrollTo(0)
+})
+
+watch(current, async (cur) => {
+  const f = cur?.flavour || null
+  const s = cur?.size || null
+  const a = cur?.age || null
+  selectedFlavour.value = f ? (flavourGroup.value?.options.find(o => o.id === f) || null) : null
+  selectedSize.value = s ? (sizeGroup.value?.options.find(o => o.id === s) || null) : null
+  selectedAge.value = a ? (ageGroup.value?.options.find(o => o.id === a) || null) : null
+  activeIndex.value = 0
+  await nextTick()
+  carouselApiRef.value?.scrollTo(0)
+}, { immediate: true })
+
+watch(images, async () => {
+  activeIndex.value = 0
+  await nextTick()
+  carouselApiRef.value?.scrollTo(0)
+})
+
 const onInitApi = (api: UnwrapRefCarouselApi) => {
   if (!api) return;
   carouselApiRef.value = api;
@@ -385,15 +417,6 @@ onMounted(() => {
     supabase.removeChannel(channel);
   });
 });
-
-const reviews = ref([
-  { author: "Jane Doe", rating: 5, comment: "My dog loves it!" },
-  { author: "Michael Chen", rating: 4, comment: "Great quality, fair price." },
-]);
-
-const user = useSupabaseUser()
-
-const { data: _data_test } = await supabase.auth.getSession()
 
 function onSelectVariant(group: 'flavour' | 'size' | 'age' | string, opt: VariantOption) {
   if (group === 'flavour') selectedFlavour.value = opt;
@@ -434,7 +457,8 @@ const availableFlavourOptions = computed<VariantOption[]>(() => {
 watch([selectedSize, selectedAge, variantRows], () => {
   const opts = availableFlavourOptions.value;
   if (!opts.length) { selectedFlavour.value = null; return; }
-  if (!selectedFlavour.value || !opts.some(o => o.id === selectedFlavour.value!.id)) {
+  const hasSelection = !!selectedSize.value || !!selectedAge.value;
+  if (hasSelection && (!selectedFlavour.value || !opts.some(o => o.id === selectedFlavour.value!.id))) {
     selectedFlavour.value = opts[0] || null;
   }
 });
@@ -454,7 +478,6 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
     </Alert>
     <PageHeader :title="product.name" :items="productBreadcrumbs" />
 
-
     <div v-if="pending" class="grid lg:grid-cols-2 gap-8">
       <div class="rounded-2xl p-4 md:p-6">
         <Skeleton class="h-80 md:h-[70vh] w-full rounded-2xl" />
@@ -470,6 +493,7 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
     <div v-else class="grid lg:grid-cols-2 gap-8 bg-white rounded-2xl p-4 md:p-6 mt-2">
       <div class="rounded-2xl p-4 md:p-6">
         <Carousel
+          :key="product.id"
           class="w-full"
           :opts="{ loop: true }"
           @init-api="onInitApi"

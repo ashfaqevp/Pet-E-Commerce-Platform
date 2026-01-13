@@ -5,7 +5,7 @@ import { useLocalStorage } from '@vueuse/core'
 type CartItem = { id?: string; flavor?: string; size?: number; price: number; quantity?: number; [k: string]: any }
 
 export const useCartStore = defineStore('cart', () => {
-  const items = useLocalStorage<CartItem[]>('bh-cart', [])
+  const items = useLocalStorage<CartItem[]>('bh-cart-store', [])
 
   const addItem = (product: CartItem) => {
     const existing = items.value.find((i) => i.id === product.id && i.flavor === product.flavor && i.size === product.size)

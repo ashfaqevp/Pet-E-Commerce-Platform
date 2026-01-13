@@ -29,6 +29,7 @@ export const useCart = () => {
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
   const cartCount = useState<number>('cart-count', () => 0)
+  const syncing = useState<boolean>('cart-syncing', () => false)
   const cartLocks = new Set<string>()
 
   const requireAuth = () => {
@@ -103,7 +104,6 @@ const addToCart = async ({
   quantity?: number
 }) => {
   if (!user.value) {
-    // guest logic stays same
     const idx = guestItems.value.findIndex(i => i.product_id === productId)
     if (idx >= 0) {
       guestItems.value[idx]!.quantity += Math.max(1, quantity)
@@ -116,19 +116,29 @@ const addToCart = async ({
 
   const qty = Math.max(1, quantity)
 
-  const { error } = await supabase
+  const { data: rows, error: selErr } = await supabase
     .from('cart_items')
-    .upsert(
-      {
-        product_id: productId,
-        quantity: qty,
-      } as unknown as never,
-      {
-        onConflict: 'user_id,product_id',
-      }
-    )
+    .select('id,quantity')
+    .eq('product_id', productId)
+    .limit(1)
 
-  if (error) throw error
+  if (selErr) throw selErr
+
+  const existing = ((rows ?? []) as unknown as { id: string; quantity: number }[])[0]
+
+  if (existing) {
+    const nextQty = Math.max(1, Number(existing.quantity || 0) + qty)
+    const { error: updErr } = await supabase
+      .from('cart_items')
+      .update({ quantity: nextQty } as unknown as never)
+      .eq('id', existing.id)
+    if (updErr) throw updErr
+  } else {
+    const { error: insErr } = await supabase
+      .from('cart_items')
+      .insert({ product_id: productId, quantity: qty } as unknown as never)
+    if (insErr) throw insErr
+  }
 
   await refreshCart()
 }
@@ -161,28 +171,46 @@ const addToCart = async ({
 
 const syncGuestToServer = async () => {
   if (!user.value) return
+  if (syncing.value) return
 
   const items = guestItems.value || []
   if (!items.length) return
+  syncing.value = true
+
+  const ids = Array.from(new Set(items.map(i => i.product_id)))
+  const { data: existing, error: selErr } = await supabase
+    .from('cart_items')
+    .select('id,product_id,quantity')
+    .in('product_id', ids)
+
+  if (selErr) throw selErr
+
+  const map = new Map<string, { id: string; quantity: number }>()
+  for (const r of (existing ?? []) as unknown as { id: string; product_id: string; quantity: number }[]) {
+    map.set(r.product_id, { id: r.id, quantity: r.quantity })
+  }
 
   for (const i of items) {
-    const { error } = await supabase
-      .from('cart_items')
-      .upsert(
-        {
-          product_id: i.product_id,
-          quantity: i.quantity ?? 1,
-        } as unknown as never,
-        {
-          onConflict: 'user_id,product_id',
-        }
-      )
-
-    if (error) throw error
+    const cur = map.get(i.product_id)
+    const addQty = Math.max(1, i.quantity ?? 1)
+    if (cur) {
+      const nextQty = Math.max(1, Number(cur.quantity || 0) + addQty)
+      const { error: updErr } = await supabase
+        .from('cart_items')
+        .update({ quantity: nextQty } as unknown as never)
+        .eq('id', cur.id)
+      if (updErr) throw updErr
+    } else {
+      const { error: insErr } = await supabase
+        .from('cart_items')
+        .insert({ product_id: i.product_id, quantity: addQty } as unknown as never)
+      if (insErr) throw insErr
+    }
   }
 
   guestItems.value = []
   await refreshCart()
+  syncing.value = false
 }
 
 

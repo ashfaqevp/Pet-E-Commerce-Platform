@@ -53,6 +53,8 @@ const refreshCartList = async () => {
 watchEffect(() => { refreshCartList() })
 refreshCartList()
 
+// Sync is handled globally by auth plugin to avoid double merges
+
 const pending = computed(() => (supabaseUser.value ? serverPending.value : guestPending.value))
 const error = computed(() => (supabaseUser.value ? serverError.value : guestError.value))
 const items = computed(() => (supabaseUser.value ? (serverData.value as CartItemWithProduct[]) || [] : (guestData.value as CartItemWithProduct[]) || []))

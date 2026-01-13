@@ -34,6 +34,7 @@ interface ProductRow {
   name: string
   pet_type?: string | null
   product_type?: string | null
+  brand?: string | null
   age?: string | null
   unit?: string | null
   size?: string | null
@@ -237,7 +238,7 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
     const term = params.value.search
     if (term) {
       const esc = term.replace(/%/g, '\\%').replace(/_/g, '\\_')
-      query = query.or(`name.ilike.%${esc}%,label.ilike.%${esc}%,product_type.ilike.%${esc}%,flavour.ilike.%${esc}%`)
+      query = query.or(`name.ilike.%${esc}%,label.ilike.%${esc}%,product_type.ilike.%${esc}%,flavour.ilike.%${esc}%,brand.ilike.%${esc}%`)
     }
 
     const from = (params.value.page - 1) * params.value.pageSize
@@ -263,8 +264,6 @@ watch(pageData, (val) => {
   }
 })
 
-let _reset: (() => void) | undefined
-
 const loadNextPage = async () => {
   if (pending.value) return
   if (products.value.length >= totalCount.value) return
@@ -278,22 +277,23 @@ const hasMore = computed(() => {
   return products.value.length < totalCount.value
 })
 
-// Setup infinite scroll
-const { reset } = useInfiniteScroll(
-  listContainer,
-  async () => {
-    if (hasMore.value && !pending.value) {
-      await loadNextPage()
+// Setup infinite scroll on window
+if (process.client) {
+  useInfiniteScroll(
+    window,
+    async () => {
+      if (hasMore.value && !pending.value) {
+        await loadNextPage()
+      }
+    },
+    {
+      distance: 200,
+      interval: 300,
+      direction: 'bottom',
+      canLoadMore: () => products.value.length < totalCount.value && !pending.value,
     }
-  },
-  {
-    distance: 100,
-    interval: 300,
-    direction: 'bottom',
-    canLoadMore: () => products.value.length < totalCount.value && !pending.value,
-  }
-)
-_reset = reset
+  )
+}
 
 // Watch filter changes and reset
 let lastFilterSig = filterSignature.value
@@ -413,7 +413,6 @@ onMounted(() => { resetAndRefresh() })
 const resetAndRefresh = async () => {
   page.value = 1
   products.value = []
-  _reset?.()
   await refresh()
 }
 
@@ -423,67 +422,7 @@ const apiError = computed(() => {
   return error.value ?? null
 })
 
-const bodyScrollLocked = ref(false)
-let originalDocOverflow = ''
-let originalBodyOverflow = ''
-function lockBodyScroll() {
-  if (!process.client) return
-  if (bodyScrollLocked.value) return
-  originalDocOverflow = document.documentElement.style.overflow
-  originalBodyOverflow = document.body.style.overflow
-  document.documentElement.style.overflow = 'hidden'
-  document.body.style.overflow = 'hidden'
-  bodyScrollLocked.value = true
-}
-function unlockBodyScroll() {
-  if (!process.client) return
-  if (!bodyScrollLocked.value) return
-  document.documentElement.style.overflow = originalDocOverflow
-  document.body.style.overflow = originalBodyOverflow
-  bodyScrollLocked.value = false
-}
-function updateBodyScrollLock() {
-  const el = listContainer.value
-  if (!el) return
-  const atBottom = Math.ceil(el.scrollTop + el.clientHeight) >= el.scrollHeight - 1
-  if (atBottom) unlockBodyScroll()
-  else lockBodyScroll()
-}
-let onListMouseEnter: ((e: Event) => void) | undefined
-let onListMouseLeave: ((e: Event) => void) | undefined
-let onListScroll: ((e: Event) => void) | undefined
-let onListWheel: ((e: Event) => void) | undefined
-let onListTouchStart: ((e: Event) => void) | undefined
-let onListTouchMove: ((e: Event) => void) | undefined
-onMounted(() => {
-  const el = listContainer.value
-  if (!el) return
-  onListMouseEnter = (_e) => updateBodyScrollLock()
-  onListMouseLeave = (_e) => unlockBodyScroll()
-  onListScroll = (_e) => updateBodyScrollLock()
-  onListWheel = (_e) => updateBodyScrollLock()
-  onListTouchStart = (_e) => updateBodyScrollLock()
-  onListTouchMove = (_e) => updateBodyScrollLock()
-  el.addEventListener('mouseenter', onListMouseEnter)
-  el.addEventListener('mouseleave', onListMouseLeave)
-  el.addEventListener('scroll', onListScroll, { passive: true })
-  el.addEventListener('wheel', onListWheel, { passive: true })
-  el.addEventListener('touchstart', onListTouchStart, { passive: true })
-  el.addEventListener('touchmove', onListTouchMove, { passive: true })
-  updateBodyScrollLock()
-})
-onBeforeUnmount(() => {
-  const el = listContainer.value
-  if (el) {
-    if (onListMouseEnter) el.removeEventListener('mouseenter', onListMouseEnter)
-    if (onListMouseLeave) el.removeEventListener('mouseleave', onListMouseLeave)
-    if (onListScroll) el.removeEventListener('scroll', onListScroll)
-    if (onListWheel) el.removeEventListener('wheel', onListWheel)
-    if (onListTouchStart) el.removeEventListener('touchstart', onListTouchStart)
-    if (onListTouchMove) el.removeEventListener('touchmove', onListTouchMove)
-  }
-  unlockBodyScroll()
-})
+// Remove custom body scroll locking; use natural page scroll
 </script>
 
 <template>
@@ -532,6 +471,7 @@ onBeforeUnmount(() => {
   <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <!-- Desktop Filters Sidebar -->
       <Card class="hidden lg:block h-max lg:top-24">
+      <!-- <Card class="hidden lg:block lg:sticky lg:top-24 self-start"> -->
         <CardHeader>
           <CardTitle class="text-[#0f766e]">Filters</CardTitle>
         </CardHeader>
@@ -573,7 +513,7 @@ onBeforeUnmount(() => {
         </Alert>
 
         <!-- Scroll Container -->
-        <div ref="listContainer" class="overflow-y-auto h-[calc(100vh-11rem)] sm:h-[calc(100vh-12rem)]">
+        <div ref="listContainer" class="min-h-[calc(100vh-10rem)] sm:min-h-[calc(100vh-12rem)]">
           <!-- Products Grid -->
           <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Loading Skeletons -->

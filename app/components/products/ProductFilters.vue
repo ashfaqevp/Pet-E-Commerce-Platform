@@ -30,6 +30,12 @@ const containerClass = computed(() =>
     : 'flex flex-col gap-3'
 )
 
+const wrapperClass = computed(() =>
+  props.layout === 'column'
+    ? 'max-h-[calc(100vh-12rem)] overflow-y-auto pr-1'
+    : ''
+)
+
 const openKeys = ref<string[]>(['pet'])
 
 watchEffect(() => {
@@ -87,8 +93,9 @@ function selectAndOpen(key: FilterKey, id: string) {
 </script>
 
 <template>
+    <!-- <div :class="wrapperClass"></div> -->
   <div class="space-y-4">
-  <Accordion type="multiple" class="space-y-2" :default-value="['pet']" v-model:value="openKeys">
+    <Accordion type="multiple" class="space-y-2" :default-value="['pet']" v-model:value="openKeys">
       <!-- Pet Filter -->
       <AccordionItem value="pet">
         <AccordionTrigger class="text-sm font-medium">

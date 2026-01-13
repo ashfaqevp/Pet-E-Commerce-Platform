@@ -7,6 +7,7 @@ interface Props {
   initial?: {
     id?: string
     name?: string
+    brand?: string | null
     pet_type?: string
     product_type?: string
     retail_price?: number | null
@@ -34,6 +35,7 @@ const { handleSubmit, isSubmitting } = useForm({
   validationSchema: schema,
   initialValues: {
     name: props.initial?.name ?? '',
+    brand: undefined,
     pet_type: props.initial?.pet_type ?? '',
     product_type: props.initial?.product_type ?? '',
     retail_price: props.initial?.retail_price ?? undefined,
@@ -47,8 +49,34 @@ const { value: productType, errorMessage: productTypeError } = useField<string>(
 const { value: retailPrice, errorMessage: retailPriceError } = useField<number | undefined>('retail_price')
 const { value: stockQty, errorMessage: stockQtyError } = useField<number>('stock_quantity')
 
+const supabase = useSupabaseClient()
+const brand = ref<string>(props.initial?.brand ?? '')
+const brandValue = computed<string>({
+  get() { return brand.value && brand.value.length ? brand.value : '__none__' },
+  set(v: string) { brand.value = v === '__none__' ? '' : v }
+})
+const newBrand = ref('')
+const { data: brandData } = await useLazyAsyncData(
+  'admin-form-brands',
+  async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('brand')
+      .not('brand', 'is', null)
+    if (error) throw error
+    const arr = ((data || []) as Array<{ brand: string | null }>)
+      .map(r => String(r.brand || '').trim())
+      .filter(Boolean)
+    const unique = Array.from(new Set(arr)).sort()
+    return unique
+  },
+  { server: true }
+)
+const brandList = computed(() => (brandData.value || []) as string[])
+
 const emit = defineEmits<{ submit: [{
   name: string
+  brand?: string | null
   pet_type: string
   product_type: string
   retail_price?: number | null
@@ -56,7 +84,7 @@ const emit = defineEmits<{ submit: [{
 }] }>()
 
 const onSubmit = handleSubmit(async (values) => {
-  emit('submit', values)
+  emit('submit', { ...values, brand: brand.value || null })
 })
 </script>
 
@@ -67,6 +95,22 @@ const onSubmit = handleSubmit(async (values) => {
         <Label for="name">Name</Label>
         <Input id="name" v-model="name" placeholder="Product name" />
         <p v-if="nameError" class="text-destructive text-xs mt-1">{{ nameError }}</p>
+      </div>
+      <div>
+        <Label for="brand">Brand</Label>
+        <Select v-model="brandValue">
+          <SelectTrigger id="brand">
+            <SelectValue placeholder="Select brand or add new" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__none__">No Brand</SelectItem>
+            <SelectItem v-for="b in brandList" :key="b" :value="b">{{ b }}</SelectItem>
+          </SelectContent>
+        </Select>
+        <div class="flex gap-2 mt-2">
+          <Input v-model="newBrand" placeholder="Add new brand" />
+          <Button type="button" @click="() => { const b = newBrand.trim(); brandValue = b || '__none__'; const list = (brandData.value || []) as string[]; if (b && !list.includes(b)) brandData.value = Array.from(new Set([...list, b])).sort(); newBrand = '' }">Add</Button>
+        </div>
       </div>
       <div>
         <Label for="pet">Pet Type</Label>

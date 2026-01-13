@@ -27,11 +27,13 @@ interface Emits {
     galleryFiles?: File[]
     existingThumbnailUrl?: string | null
     existingGalleryUrls?: string[]
+    brand?: string | null
   }): void
 }
 
 const props = defineProps<{ open?: boolean; initial?: AdminProduct | null }>()
 const emit = defineEmits<Emits>()
+const supabase = useSupabaseClient()
 
 const { options, setCategory, clearCategory, getVisibleKeys: getVisibleKeysFromCtx, getDependents, context } = useCategories()
 const optionMap: Record<CategoryKey, ComputedRef<CategoryOption[]>> = {
@@ -107,6 +109,30 @@ const { value: baseProductId, errorMessage: baseProductIdError, meta: baseProduc
 
 const initializing = ref(false)
 
+const brand = ref<string>(props.initial?.brand ?? '')
+const newBrand = ref('')
+const brandsState = await useLazyAsyncData(
+  'admin-product-brands',
+  async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('brand')
+      .not('brand', 'is', null)
+    if (error) throw error
+    const arr = ((data || []) as Array<{ brand: string | null }>)
+      .map(r => String(r.brand || '').trim())
+      .filter(Boolean)
+    const unique = Array.from(new Set(arr)).sort()
+    return unique
+  },
+  { server: true }
+)
+const brandList = computed(() => (brandsState.data.value || []) as string[])
+const brandValue = computed<string>({
+  get() { return brand.value && brand.value.length ? brand.value : '__none__' },
+  set(v: string) { brand.value = v === '__none__' ? '' : v }
+})
+
 watch(() => props.open, async (open) => {
   if (open) {
     initializing.value = true
@@ -142,6 +168,7 @@ watch(() => props.open, async (open) => {
         : undefined,
     }, false)
     await nextTick()
+    brand.value = props.initial?.brand ?? ''
     valueMap.pet.value = initialPet || undefined
     valueMap.type.value = initialType || undefined
     valueMap.unit.value = initialUnit || undefined
@@ -160,6 +187,7 @@ watch(() => props.open, async (open) => {
         price: 0, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
       },
     })
+    brand.value = ''
     existingThumbnailUrl.value = null
     thumbnailFile.value = null
     thumbnailPreview.value = null
@@ -237,6 +265,7 @@ const onSubmit = async () => {
       galleryFiles: galleryFiles.value,
       existingThumbnailUrl: existingThumbnailUrl.value,
       existingGalleryUrls: existingGalleryUrls.value,
+      brand: brand.value || null,
     })
   })()
 }
@@ -295,7 +324,6 @@ const removeNewGalleryAt = (idx: number) => {
 const removeExistingGalleryAt = (idx: number) => {
   existingGalleryUrls.value.splice(idx, 1)
 }
-const supabase = useSupabaseClient()
 const baseProductsState = await useLazyAsyncData(
   'admin-base-products',
   async () => {
@@ -361,6 +389,20 @@ const filteredBaseProducts = computed(() => {
                   </div>
                 </div>
                 
+              </div>
+              <div class="flex flex-col gap-1.5 md:col-span-2">
+                <Label for="brand">Brand</Label>
+                <Select v-model="brandValue">
+                  <SelectTrigger id="brand" class="w-full"><SelectValue placeholder="Select brand or add new" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No Brand</SelectItem>
+                    <SelectItem v-for="b in brandList" :key="b" :value="b">{{ b }}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div class="flex gap-2 mt-2">
+                  <Input v-model="newBrand" placeholder="Add new brand" class="w-full" />
+                  <Button type="button" @click="() => { const b = newBrand.trim(); brandValue = b || '__none__'; const list = (brandsState.data.value || []); if (b && !list.includes(b)) brandsState.data.value = Array.from(new Set([...list, b])).sort(); newBrand = '' }">Add</Button>
+                </div>
               </div>
               <div class="flex flex-col gap-1.5 md:col-span-2">
                 <Label for="description">Description</Label>

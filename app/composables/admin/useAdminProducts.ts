@@ -3,6 +3,7 @@ export interface AdminProduct {
   name: string
   pet_type: string
   product_type: string
+  brand?: string | null
   age?: string | null
   unit?: string | null
   size?: string | null
@@ -23,6 +24,7 @@ export interface AdminProductInput {
   name: string
   pet_type: string
   product_type: string
+  brand?: string | null
   age?: string | null
   unit?: string | null
   size?: string | null
@@ -47,6 +49,7 @@ export const useAdminProducts = () => {
     search?: string
     petType?: string
     productType?: string
+    brand?: string
     status?: 'active' | 'inactive'
     sortBy?: keyof AdminProduct
     ascending?: boolean
@@ -60,6 +63,7 @@ export const useAdminProducts = () => {
       if (params.search) q = q.ilike('name', `%${params.search}%`)
       if (params.petType) q = q.eq('pet_type', params.petType)
       if (params.productType) q = q.eq('product_type', params.productType)
+      if (params.brand) q = q.eq('brand', params.brand)
       if (params.status === 'active') q = q.eq('is_active', true)
       if (params.status === 'inactive') q = q.eq('is_active', false)
       if (params.sortBy) q = q.order(params.sortBy as string, { ascending: params.ascending ?? true })

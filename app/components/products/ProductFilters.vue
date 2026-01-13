@@ -6,14 +6,15 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import type { CategoryKey, CategoryOption } from '@/domain/categories/category.types'
 import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
 
-type FilterKey = 'pet' | 'type' | 'age' | 'flavour'
+type FilterKey = 'pet' | 'type' | 'age' | 'flavour' | 'brand'
 
 interface Props {
   filters: Record<FilterKey, string>
   typeOpts: CategoryOption[]
   ageOpts: CategoryOption[]
   flavourOpts: CategoryOption[]
-  onSelect: (key: CategoryKey, id: string) => void
+  brandOpts: string[]
+  onSelect: (key: FilterKey, id: string) => void
   onApply: () => void
   onClear: () => void
   layout?: 'grid' | 'column'
@@ -37,6 +38,7 @@ watchEffect(() => {
   if (props.filters.type) selectedKeys.push('type')
   if (props.filters.age) selectedKeys.push('age')
   if (props.filters.flavour) selectedKeys.push('flavour')
+  if (props.filters.brand) selectedKeys.push('brand')
 
   const next = new Set<string>()
   next.add('pet')
@@ -45,6 +47,7 @@ watchEffect(() => {
     if (props.typeOpts.length > 0) next.add('type')
     if (props.ageOpts.length > 0) next.add('age')
     if (props.flavourOpts.length > 0) next.add('flavour')
+    if (props.brandOpts.length > 0) next.add('brand')
   }
   else {
     for (const k of selectedKeys) next.add(k)
@@ -66,12 +69,14 @@ function selectAndOpen(key: FilterKey, id: string) {
   if (nextFilters.type) selectedKeys.push('type')
   if (nextFilters.age) selectedKeys.push('age')
   if (nextFilters.flavour) selectedKeys.push('flavour')
+  if (nextFilters.brand) selectedKeys.push('brand')
   const next = new Set<string>()
   next.add('pet')
   if (selectedKeys.length === 0) {
     if (props.typeOpts.length > 0) next.add('type')
     if (props.ageOpts.length > 0) next.add('age')
     if (props.flavourOpts.length > 0) next.add('flavour')
+    if (props.brandOpts.length > 0) next.add('brand')
   }
   else {
     for (const k of selectedKeys) next.add(k)
@@ -82,7 +87,7 @@ function selectAndOpen(key: FilterKey, id: string) {
 
 <template>
   <div class="space-y-4">
-    <Accordion type="multiple" class="space-y-2" :default-value="['pet']" v-model:value="openKeys">
+  <Accordion type="multiple" class="space-y-2" :default-value="['pet']" v-model:value="openKeys">
       <!-- Pet Filter -->
       <AccordionItem value="pet">
         <AccordionTrigger class="text-sm font-medium">
@@ -103,6 +108,31 @@ function selectAndOpen(key: FilterKey, id: string) {
               >
                 <RadioGroupItem :id="`pet-${option.id}`" :value="option.id" />
                 <span class="text-sm">{{ option.label }}</span>
+              </Label>
+            </div>
+          </RadioGroup>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem v-if="brandOpts.length > 0" value="brand">
+        <AccordionTrigger class="text-sm font-medium">
+          Brand
+        </AccordionTrigger>
+        <AccordionContent>
+          <RadioGroup :model-value="filters.brand" @update:modelValue="v => selectAndOpen('brand', String(v))">
+            <div :class="containerClass">
+              <Label :for="'brand-all'" class="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="brand-all" value="" />
+                <span class="text-sm">All</span>
+              </Label>
+              <Label
+                v-for="b in brandOpts"
+                :key="b"
+                class="flex items-center gap-2 cursor-pointer"
+                :for="`brand-${b}`"
+              >
+                <RadioGroupItem :id="`brand-${b}`" :value="b" />
+                <span class="text-sm">{{ b }}</span>
               </Label>
             </div>
           </RadioGroup>

@@ -284,6 +284,32 @@ const { data: relatedData, pending: relatedPending, error: relatedError, refresh
   { server: true, watch: [productId] }
 )
 const relatedProducts = computed<CardProduct[]>(() => ((relatedData.value ?? []) as ProductRow[]).map(mapRowToCard))
+const { data: sameBrandData, pending: brandPending, error: brandError, refresh: refreshBrand } = await useLazyAsyncData(
+  () => `same-brand-${productId.value}-${current.value?.brand || ''}`,
+  async () => {
+    const cur = current.value
+    const b = cur?.brand || null
+    if (!b) return [] as ProductRow[]
+    let q = supabase
+      .from('products')
+      .select('id,name,retail_price,default_rating,thumbnail_url,brand,base_product_id', { count: 'exact' })
+      .eq('is_active', true)
+      .eq('brand', b)
+      .order('is_featured', { ascending: false })
+      .order('row_index', { ascending: true })
+      .order('created_at', { ascending: false })
+      .range(0, 11)
+
+    const excludeId = product.value?.id || ''
+    if (excludeId) q = q.neq('id', excludeId)
+
+    const { data: rows, error } = await q
+    if (error) throw error
+    return (rows ?? []) as ProductRow[]
+  },
+  { server: true, watch: [productId, () => current.value?.brand] }
+)
+const brandProducts = computed<CardProduct[]>(() => ((sameBrandData.value ?? []) as ProductRow[]).map(mapRowToCard))
 const runtimeConfig = useRuntimeConfig()
 const siteUrl = String(runtimeConfig.public.siteUrl || '').replace(/\/+$/, '')
 const ogUrl = computed(() => `${siteUrl}${route.fullPath.split('?')[0]}`)
@@ -427,6 +453,7 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
       <AlertDescription>{{ (error as any)?.message || 'Failed to load product' }}</AlertDescription>
     </Alert>
     <PageHeader :title="product.name" :items="productBreadcrumbs" />
+
 
     <div v-if="pending" class="grid lg:grid-cols-2 gap-8">
       <div class="rounded-2xl p-4 md:p-6">
@@ -653,6 +680,24 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
           <ProductCard v-for="p in similarVariants" :key="p.id" :product="p" />
         </template>
       </div>
+    </section>
+
+    <section v-if="brandProducts.length" class="container mx-auto px-4 py-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xl font-semibold">More from {{ product.brand }}</h3>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+        <template v-if="brandPending">
+          <Skeleton v-for="i in 8" :key="`brand-s-${i}`" class="h-64 w-full rounded-lg" />
+        </template>
+        <template v-else>
+          <ProductCard v-for="p in brandProducts" :key="p.id" :product="p" />
+        </template>
+      </div>
+      <Alert v-if="brandError" variant="destructive" class="mt-4">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{{ brandError.message || 'Failed to load brand products' }}</AlertDescription>
+      </Alert>
     </section>
 
     <section v-if="relatedProducts.length" class="container mx-auto px-4 py-2">

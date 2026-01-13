@@ -70,6 +70,7 @@ const qPet = useRouteQuery<string>('pet', '')
 const qType = useRouteQuery<string>('type', '')
 const qAge = useRouteQuery<string>('age', '')
 const qFlavour = useRouteQuery<string>('flavour', '')
+const qBrand = useRouteQuery<string>('brand', '')
 
 // State
 const products = ref<CardProduct[]>([])
@@ -87,6 +88,7 @@ const filters = computed(() => ({
   type: qType.value || '',
   age: qAge.value || '',
   flavour: qFlavour.value || '',
+  brand: qBrand.value || '',
 }))
 const filterSignature = computed(() => {
   return JSON.stringify({
@@ -94,6 +96,7 @@ const filterSignature = computed(() => {
     type: qType.value || '',
     age: qAge.value || '',
     flavour: qFlavour.value || '',
+    brand: qBrand.value || '',
   })
 })
 
@@ -113,6 +116,24 @@ const flavourOpts = computed(() => {
     ? getFilteredOptions(CATEGORY_CONFIG.flavour.rules, qType.value)
     : []
 })
+
+const { data: brandData, pending: brandPending, error: brandError, refresh: refreshBrands } = await useLazyAsyncData(
+  'public-brands',
+  async () => {
+    const { data, error } = await supabase
+      .from('products')
+      .select('brand')
+      .not('brand', 'is', null)
+    if (error) throw error
+    const arr = ((data || []) as Array<{ brand: string | null }>)
+      .map(r => String(r.brand || '').trim())
+      .filter(Boolean)
+    const unique = Array.from(new Set(arr)).sort()
+    return unique
+  },
+  { server: true }
+)
+const brandOpts = computed(() => (brandData.value || []) as string[])
 
 function getFilteredOptions(rules: readonly CategoryRule[] | undefined, selected: string | string[]): CategoryOption[] {
   if (!rules) return []
@@ -147,6 +168,7 @@ const selectedLabels = computed(() => ({
   type: getLabel('type', qType.value || ''),
   age: getLabel('age', qAge.value || ''),
   flavour: getLabel('flavour', qFlavour.value || ''),
+  brand: qBrand.value || '',
 }))
 
 const summaryParts = computed(() => {
@@ -158,6 +180,7 @@ const summaryParts = computed(() => {
   if (filters.value.type) parts.push(`Type: ${lbl.type}`)
   if (filters.value.age) parts.push(`Age: ${lbl.age}`)
   if (filters.value.flavour) parts.push(`Flavour: ${lbl.flavour}`)
+  if (filters.value.brand) parts.push(`Brand: ${lbl.brand}`)
   return parts
 })
 
@@ -169,7 +192,7 @@ function mapProductRow(row: ProductRow): CardProduct {
   return {
     id: String(row.id),
     name: row.name,
-    brand: '',
+    brand: String((row as unknown as { brand?: string | null }).brand || ''),
     price: row.retail_price ?? 0,
     rating: row.default_rating ?? 0,
     discount: 0,
@@ -186,6 +209,7 @@ const params = computed(() => ({
   type: qType.value || '',
   age: qAge.value || '',
   flavour: qFlavour.value || '',
+  brand: qBrand.value || '',
   search: (qSearch.value || '').trim(),
   featured: qFeatured.value === '1',
   page: page.value,
@@ -207,6 +231,7 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
     if (params.value.type) query = query.eq('product_type', params.value.type)
     if (params.value.age) query = query.eq('age', params.value.age)
     if (params.value.flavour) query = query.eq('flavour', params.value.flavour)
+    if (params.value.brand) query = query.eq('brand', params.value.brand)
     if (params.value.featured) query = query.eq('is_featured', true)
 
     const term = params.value.search
@@ -304,11 +329,12 @@ watch(qType, () => {
 })
 
 // Mobile filters local state
-const mobileFilters = ref<{ pet: string; type: string; age: string; flavour: string }>({
+const mobileFilters = ref<{ pet: string; type: string; age: string; flavour: string; brand: string }>({
   pet: '',
   type: '',
   age: '',
   flavour: '',
+  brand: '',
 })
 
 // Initial sync from route to mobile filters and keep in sync when sheet is closed
@@ -318,6 +344,7 @@ function syncMobileFromRoute() {
     type: qType.value || '',
     age: qAge.value || '',
     flavour: qFlavour.value || '',
+    brand: qBrand.value || '',
   }
 }
 
@@ -342,18 +369,20 @@ watch(() => mobileFilters.value.type, () => {
 })
 
 // Toggle filter
-function selectFilterDesktop(key: CategoryKey, id: string) {
+function selectFilterDesktop(key: 'pet' | 'type' | 'age' | 'flavour' | 'brand', id: string) {
   if (key === 'pet') qPet.value = id
   else if (key === 'type') qType.value = id
   else if (key === 'age') qAge.value = id
   else if (key === 'flavour') qFlavour.value = id
+  else if (key === 'brand') qBrand.value = id
 }
 
-function selectFilterMobile(key: CategoryKey, id: string) {
+function selectFilterMobile(key: 'pet' | 'type' | 'age' | 'flavour' | 'brand', id: string) {
   if (key === 'pet') mobileFilters.value.pet = id
   else if (key === 'type') mobileFilters.value.type = id
   else if (key === 'age') mobileFilters.value.age = id
   else if (key === 'flavour') mobileFilters.value.flavour = id
+  else if (key === 'brand') mobileFilters.value.brand = id
 }
 
 // Clear all filters
@@ -362,10 +391,11 @@ function clearAllFiltersDesktop() {
   qType.value = ''
   qAge.value = ''
   qFlavour.value = ''
+  qBrand.value = ''
 }
 
 function clearAllFiltersMobile() {
-  mobileFilters.value = { pet: '', type: '', age: '', flavour: '' }
+  mobileFilters.value = { pet: '', type: '', age: '', flavour: '', brand: '' }
 }
 
 // Apply filters (for mobile)
@@ -374,6 +404,7 @@ function applyFilters() {
   qType.value = mobileFilters.value.type || ''
   qAge.value = mobileFilters.value.age || ''
   qFlavour.value = mobileFilters.value.flavour || ''
+  qBrand.value = mobileFilters.value.brand || ''
   mobileFilterOpen.value = false
 }
 
@@ -486,6 +517,7 @@ onBeforeUnmount(() => {
                 :type-opts="getFilteredOptions(CATEGORY_CONFIG.type.rules, mobileFilters.pet)"
                 :age-opts="getFilteredOptions(CATEGORY_CONFIG.age.rules, mobileFilters.pet)"
                 :flavour-opts="getFilteredOptions(CATEGORY_CONFIG.flavour.rules, mobileFilters.type)"
+                :brand-opts="brandOpts"
                 :on-select="selectFilterMobile"
                 :on-apply="applyFilters"
                 :on-clear="clearAllFiltersMobile"
@@ -509,6 +541,7 @@ onBeforeUnmount(() => {
             :type-opts="typeOpts"
             :age-opts="ageOpts"
             :flavour-opts="flavourOpts"
+            :brand-opts="brandOpts"
             :on-select="selectFilterDesktop"
             :on-apply="applyFilters"
             :on-clear="clearAllFiltersDesktop"

@@ -19,6 +19,7 @@ const debouncedSearch = useDebounce(search, 400)
 const ALL = '__all__' as const
 const petType = ref<string | typeof ALL | undefined>()
 const productType = ref<string | typeof ALL | undefined>()
+const brand = ref<string | typeof ALL | undefined>()
 const status = ref<'active' | 'inactive' | typeof ALL | undefined>()
 const sortBy = ref<'name' | 'retail_price' | 'created_at'>('created_at')
 const ascending = ref(false)
@@ -33,6 +34,7 @@ const params = computed(() => ({
   search: debouncedSearch.value || undefined,
   petType: petType.value === ALL ? undefined : (petType.value || undefined),
   productType: productType.value === ALL ? undefined : (productType.value || undefined),
+  brand: brand.value === ALL ? undefined : (brand.value || undefined),
   status: status.value === ALL ? undefined : (status.value || undefined),
   sortBy: sortBy.value,
   ascending: ascending.value,
@@ -61,6 +63,7 @@ onMounted(() => {
     .channel('public:products')
     .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
       refresh()
+      refreshBrands()
     })
     .subscribe()
   onUnmounted(() => {
@@ -74,6 +77,7 @@ const columns = [
   columnHelper.accessor('name', { header: 'Product', enableSorting: true }),
   columnHelper.accessor('pet_type', { header: 'Pet Type', enableSorting: false }),
   columnHelper.accessor('product_type', { header: 'Product Type', enableSorting: false }),
+  columnHelper.accessor('brand', { header: 'Brand', enableSorting: false }),
   columnHelper.display({ id: 'price', header: 'Price', enableSorting: true }),
   columnHelper.display({ id: 'rating', header: 'Rating', enableSorting: false }),
   columnHelper.display({ id: 'status', header: 'Status', enableSorting: false }),
@@ -140,6 +144,24 @@ const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageS
 const { options, getCategoryLabel, setCategory, clearCategory } = useCategories()
 const petOptions = options('pet')
 const typeOptions = options('type')
+const { data: brandData, refresh: refreshBrands } = await useLazyAsyncData(
+  'admin-brands',
+  async () => {
+    const supabase = useSupabaseClient()
+    const { data, error } = await supabase
+      .from('products')
+      .select('brand')
+      .not('brand', 'is', null)
+    if (error) throw error
+    const arr = ((data || []) as Array<{ brand: string | null }>)
+      .map(r => String(r.brand || '').trim())
+      .filter(Boolean)
+    const unique = Array.from(new Set(arr)).sort()
+    return unique
+  },
+  { server: true }
+)
+const brandOptions = computed(() => (brandData.value || []) as string[])
 
 type OptionItem = { id: string; label: string }
 const petLabelMap = computed<Record<string, string>>(() => {
@@ -155,7 +177,7 @@ const headerAlignClass = (id: string) => {
   if (id === 'serial') return 'text-center'
   if (id === 'price') return 'text-right'
   if (id === 'rating') return 'text-center'
-  if (id === 'pet_type' || id === 'product_type') return 'text-center'
+  if (id === 'pet_type' || id === 'product_type' || id === 'brand') return 'text-center'
   if (id === 'status' || id === 'actions') return 'text-center'
   return 'text-left'
 }
@@ -249,7 +271,7 @@ watch(petType, (val) => {
   }
 })
 
-const onSubmitSheet = async (payload: { name: string; description?: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[] }) => {
+const onSubmitSheet = async (payload: { name: string; description?: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[]; brand?: string | null }) => {
   const { create, update, uploadProductImages } = useAdminProducts()
   try {
     if (editProduct.value?.id) {
@@ -263,6 +285,7 @@ const onSubmitSheet = async (payload: { name: string; description?: string; pet_
         description: payload.description ?? null,
         pet_type: payload.pet_type,
         product_type: payload.product_type,
+        brand: payload.brand ?? null,
         age: payload.age ?? null,
         unit: payload.unit ?? null,
         size: payload.size ?? null,
@@ -281,6 +304,7 @@ const onSubmitSheet = async (payload: { name: string; description?: string; pet_
         description: payload.description ?? null,
         pet_type: payload.pet_type,
         product_type: payload.product_type,
+        brand: payload.brand ?? null,
         age: payload.age ?? null,
         unit: payload.unit ?? null,
         size: payload.size ?? null,
@@ -300,6 +324,7 @@ const onSubmitSheet = async (payload: { name: string; description?: string; pet_
     }
     sheetOpen.value = false
     refresh()
+    await refreshBrands()
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Operation failed'
     toast.error(msg)
@@ -353,6 +378,18 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
           <SelectContent>
             <SelectItem value="__all__">All</SelectItem>
             <SelectItem v-for="opt in typeOptions" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select v-model="brand">
+          <SelectTrigger class="w-44 min-w-[160px] shrink-0 bg-white">
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-muted-foreground">Brand:</span>
+              <SelectValue placeholder="All" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All</SelectItem>
+            <SelectItem v-for="b in brandOptions" :key="b" :value="b">{{ b }}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -449,6 +486,9 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
               </TableCell>
               <TableCell class="py-3 text-center">
                 <Badge variant="outline">{{ typeLabelMap[row.original.product_type] ?? row.original.product_type }}</Badge>
+              </TableCell>
+              <TableCell class="py-3 text-center">
+                <Badge variant="outline">{{ row.original.brand || '—' }}</Badge>
               </TableCell>
               <TableCell class="py-3 text-right">{{ formatCurrency(row.original.retail_price) }}</TableCell>
               <TableCell class="py-3 text-center">

@@ -88,7 +88,7 @@ const configSchema = toTypedSchema(
   })
 )
 
-const { handleSubmit: handleSaveConfig, isSubmitting: savingConfig } = useForm({
+const { handleSubmit: handleSaveConfig, isSubmitting: savingConfig, setFieldValue: setConfigField } = useForm({
   validationSchema: configSchema,
   initialValues: {
     shipping_fee: siteConfig.value?.shipping_fee ?? 10,
@@ -100,6 +100,13 @@ const { handleSubmit: handleSaveConfig, isSubmitting: savingConfig } = useForm({
 const { value: shippingFee, errorMessage: shippingFeeError } = useField<number>('shipping_fee')
 const { value: taxRate, errorMessage: taxRateError } = useField<number>('tax_rate')
 const { value: freeShippingMin, errorMessage: freeShippingMinError } = useField<number>('free_shipping_min_amount')
+
+watch(siteConfig, (val) => {
+  if (!val) return
+  setConfigField('shipping_fee', val.shipping_fee)
+  setConfigField('tax_rate', val.tax_rate)
+  setConfigField('free_shipping_min_amount', val.free_shipping_min_amount)
+}, { immediate: true })
 
 const onSaveConfig = handleSaveConfig(async (values) => {
   const supabase = useSupabaseClient()
@@ -530,18 +537,18 @@ onMounted(() => {
           <form class="space-y-4" @submit.prevent="onSaveConfig">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label for="shipping-fee">Delivery Fee (OMR)</Label>
-                <Input id="shipping-fee" v-model.number="shippingFee" type="number" step="0.001" min="0" />
+                <Label for="shipping_fee">Delivery Fee (OMR)</Label>
+                <Input id="shipping_fee" v-model.number="shippingFee" type="number" step="0.001" min="0" />
                 <p v-if="shippingFeeError" class="text-destructive text-xs mt-1">{{ shippingFeeError }}</p>
               </div>
               <div>
-                <Label for="tax-rate">Tax Rate (0–1)</Label>
-                <Input id="tax-rate" v-model.number="taxRate" type="number" step="0.001" min="0" max="1" />
+                <Label for="tax_rate">Tax Rate (0–1)</Label>
+                <Input id="tax_rate" v-model.number="taxRate" type="number" step="0.001" min="0" max="1" />
                 <p v-if="taxRateError" class="text-destructive text-xs mt-1">{{ taxRateError }}</p>
               </div>
               <div>
-                <Label for="free-shipping">Free Delivery Above (OMR)</Label>
-                <Input id="free-shipping" v-model.number="freeShippingMin" type="number" step="0.001" min="0" />
+                <Label for="free_shipping_min_amount">Free Delivery Above (OMR)</Label>
+                <Input id="free_shipping_min_amount" v-model.number="freeShippingMin" type="number" step="0.001" min="0" />
                 <p v-if="freeShippingMinError" class="text-destructive text-xs mt-1">{{ freeShippingMinError }}</p>
                 <p class="text-xs text-muted-foreground">Delivery fee will be waived for orders equal or above this amount</p>
               </div>

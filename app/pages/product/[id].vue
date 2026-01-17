@@ -558,7 +558,7 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
           </div>
         </div>
 
-        <p v-if="descriptionText" class="text-sm text-muted-foreground mt-2">{{ descriptionText }}</p>
+        <p v-if="descriptionText" class="text-sm text-muted-foreground mt-2 whitespace-pre-line">{{ descriptionText }}</p>
 
 
 

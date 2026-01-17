@@ -1,4 +1,4 @@
-<script setup lang="ts">
+ <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute, useRouter, definePageMeta, useLazyAsyncData, useSupabaseClient, useHead, useState, useSeoMeta, useRuntimeConfig } from "#imports";
 import { Button } from "@/components/ui/button";
@@ -215,15 +215,15 @@ const selectedVariant = computed<ProductRow | undefined>(() => {
 });
 
 const images = computed(() => {
-  const arr = selectedVariant.value?.image_urls || current.value?.image_urls || null;
-  const thumb = selectedVariant.value?.thumbnail_url || current.value?.thumbnail_url || undefined;
+  const arr = current.value?.image_urls || null;
+  const thumb = current.value?.thumbnail_url || undefined;
   const list = Array.isArray(arr) && arr.length ? (arr.filter(Boolean) as string[]) : [];
   if (thumb && !list.length) list.push(thumb);
   return list.length ? list : ["/images/placeholder.svg"];
 });
 
 const product = computed(() => {
-  const source = selectedVariant.value || current.value;
+  const source = current.value;
   const price = Number(source?.retail_price || 0);
   const rating = Number(source?.default_rating || 0);
   return {
@@ -407,15 +407,30 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
   });
 };
 
-onMounted(() => {
-  const channel = supabase
+let productsChannel: any = null;
+
+function setupProductsChannel() {
+  if (productsChannel) {
+    supabase.removeChannel(productsChannel);
+    productsChannel = null;
+  }
+  productsChannel = supabase
     .channel("public:products-detail")
-    .on("postgres_changes", { event: "*", schema: "public", table: "products", filter: `id=eq.${data.value?.baseId}` }, () => refresh())
+    .on("postgres_changes", { event: "*", schema: "public", table: "products", filter: `id=eq.${productId.value}` }, () => refresh())
     .on("postgres_changes", { event: "*", schema: "public", table: "products", filter: `base_product_id=eq.${data.value?.baseId}` }, () => refresh())
     .subscribe();
-  onUnmounted(() => {
-    supabase.removeChannel(channel);
-  });
+}
+
+onMounted(() => {
+  setupProductsChannel();
+});
+
+watch([productId, () => data.value?.baseId], () => {
+  setupProductsChannel();
+});
+
+onUnmounted(() => {
+  if (productsChannel) supabase.removeChannel(productsChannel);
 });
 
 function onSelectVariant(group: 'flavour' | 'size' | 'age' | string, opt: VariantOption) {
@@ -424,7 +439,7 @@ function onSelectVariant(group: 'flavour' | 'size' | 'age' | string, opt: Varian
   else if (group === 'age') selectedAge.value = opt;
   const next = selectedVariant.value;
   const nextId = String(next?.id || '');
-  if (nextId && nextId !== productId.value) router.push(`/product/${nextId}`);
+  if (nextId && nextId !== productId.value) router.replace(`/product/${nextId}`);
 }
 
 

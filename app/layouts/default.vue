@@ -254,8 +254,9 @@ watch(user, () => {
       >
         <!-- Mobile: Logo + optional search input (shown on the right) -->
         <div v-if="isMobile && (isHome || (!isProductDetail && !pageTitle))" class="md:hidden flex-1 flex items-center gap-2 w-full">
-          <!-- <Logo /> -->
-           <img src="/images/logo-name.png" alt="Logo" class="h-11 w-auto" />
+          <NuxtLink to="/" aria-label="Home">
+            <img src="/images/logo-name.png" alt="Logo" class="h-11 w-auto" />
+          </NuxtLink>
         </div>
 
         <!-- Mobile: page header with back and title -->
@@ -317,7 +318,9 @@ watch(user, () => {
 
         <!-- Desktop: Logo -->
         <div v-if="!isMobile" class="hidden md:flex md:items-center w-fit">
-          <img src="/images/logo-name.png" alt="Logo" class="h-12 w-auto" />
+          <NuxtLink to="/" aria-label="Home">
+            <img src="/images/logo-name.png" alt="Logo" class="h-12 w-auto" />
+          </NuxtLink>
         </div>
 
         <!-- Desktop: Search with suggestions and action button -->
@@ -487,7 +490,9 @@ watch(user, () => {
           class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8"
         >
           <div class="max-w-sm">
-            <img src="/images/logo-name.png" alt="Logo" class="h-14 w-auto" />
+            <NuxtLink to="/" aria-label="Home">
+              <img src="/images/logo-name.png" alt="Logo" class="h-14 w-auto" />
+            </NuxtLink>
             <p class=" text-sm text-muted-foreground">
               Your one-stop shop for all pet needs. High-quality food, supplements, and
               accessories.

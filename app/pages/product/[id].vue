@@ -217,9 +217,20 @@ const selectedVariant = computed<ProductRow | undefined>(() => {
 const images = computed(() => {
   const arr = current.value?.image_urls || null;
   const thumb = current.value?.thumbnail_url || undefined;
-  const list = Array.isArray(arr) && arr.length ? (arr.filter(Boolean) as string[]) : [];
-  if (thumb && !list.length) list.push(thumb);
-  return list.length ? list : ["/images/placeholder.svg"];
+  const raw = Array.isArray(arr) ? (arr.filter(Boolean) as string[]) : [];
+  const seen = new Set<string>();
+  const result: string[] = [];
+  if (thumb && !seen.has(thumb)) {
+    result.push(thumb);
+    seen.add(thumb);
+  }
+  for (const url of raw) {
+    if (!seen.has(url)) {
+      result.push(url);
+      seen.add(url);
+    }
+  }
+  return result.length ? result : ["/images/placeholder.svg"];
 });
 
 const product = computed(() => {

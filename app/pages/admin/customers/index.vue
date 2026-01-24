@@ -4,7 +4,7 @@ import { toast } from 'vue-sonner'
 definePageMeta({
   layout: 'admin',
   middleware: 'admin',
-  title: 'Customers',
+  title: 'Retail Customers',
 })
 
 interface AdminCustomer {
@@ -161,6 +161,36 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
   const short = (id || '').slice(0, 5)
   return short ? `Customer ${short}` : 'Customer'
 }
+
+// Create Wholesale Partner (Admin)
+const createOpen = ref(false)
+const createEmail = ref('')
+const createName = ref('')
+const creating = ref(false)
+const createError = ref<string | null>(null)
+const onCreateWholesaler = async () => {
+  if (creating.value) return
+  createError.value = null
+  const email = createEmail.value.trim()
+  if (!email) { createError.value = 'Email is required'; return }
+  creating.value = true
+  try {
+    await $fetch('/api/admin/create-wholesaler', {
+      method: 'POST',
+      body: { email, full_name: createName.value.trim() || undefined },
+    })
+    toast.success('Wholesale partner created. Reset email sent.')
+    createOpen.value = false
+    createEmail.value = ''
+    createName.value = ''
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to create wholesaler'
+    createError.value = msg
+    toast.error(msg)
+  } finally {
+    creating.value = false
+  }
+}
 </script>
 
 <template>
@@ -181,6 +211,41 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
             <DropdownMenuItem as="button" @click="sortBy = 'total_orders'; ascending = false">Total Orders</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        <Dialog v-model:open="createOpen">
+          <DialogTrigger as-child>
+            <Button variant="default" class="gap-2">
+              <Icon name="lucide:user-plus" class="h-4 w-4" />
+              Add Wholesale Partner
+            </Button>
+          </DialogTrigger>
+          <DialogContent class="rounded-xl sm:max-w-[420px] p-6">
+            <DialogHeader class="items-start">
+              <DialogTitle class="text-foreground">Add Wholesale Partner</DialogTitle>
+              <DialogDescription>Creates a new wholesaler and sends password reset link.</DialogDescription>
+            </DialogHeader>
+            <div class="space-y-3">
+              <div class="grid gap-2">
+                <Label for="wh-email">Email</Label>
+                <Input id="wh-email" v-model="createEmail" type="email" placeholder="partner@example.com" class="bg-white" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="wh-name">Full Name (optional)</Label>
+                <Input id="wh-name" v-model="createName" type="text" placeholder="Name" class="bg-white" />
+              </div>
+              <Alert v-if="createError" variant="destructive">
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{{ createError }}</AlertDescription>
+              </Alert>
+              <div class="flex justify-end gap-2">
+                <Button variant="outline" @click="createOpen = false">Cancel</Button>
+                <Button :disabled="creating" @click="onCreateWholesaler">
+                  <span v-if="!creating">Create</span>
+                  <span v-else>Creating…</span>
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
 

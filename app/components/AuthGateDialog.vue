@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { navigateTo } from '#imports'
 const authStore = useAuthStore()
-const { loginWithGoogle } = useAuth()
+const { loginWithGoogle, loginWithEmailPassword } = useAuth()
+const supabase = useSupabaseClient()
 
 const signingIn = ref(false)
+const email = ref('')
+const password = ref('')
+const errorMsg = ref<string | null>(null)
 
 const onUpdateOpen = (v: boolean) => {
   authStore.showAuthDialog = v
@@ -14,6 +18,36 @@ const onGoogle = async () => {
   try {
     signingIn.value = true
     await loginWithGoogle()
+  } finally {
+    signingIn.value = false
+  }
+}
+
+const onEmailPassword = async () => {
+  if (signingIn.value) return
+  errorMsg.value = null
+  const e = email.value.trim()
+  const p = password.value
+  if (!e || !p) { errorMsg.value = 'Email and password are required'; return }
+  try {
+    signingIn.value = true
+    await loginWithEmailPassword(e, p)
+    const { data } = await supabase.auth.getSession()
+    const user = data.session?.user
+    if (!user) throw new Error('No session')
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single<{ role: string | null }>()
+    if (error) throw error
+    const role = (profile?.role || 'customer')
+    if (role === 'admin') navigateTo('/admin')
+    else if (role === 'wholesaler') navigateTo('/profile')
+    else navigateTo('/')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Sign in failed'
+    errorMsg.value = msg
   } finally {
     signingIn.value = false
   }
@@ -43,6 +77,28 @@ const onGoogle = async () => {
           <span v-if="!signingIn">Continue with Google</span>
           <span v-else>Connecting…</span>
         </Button>
+
+        <div class="space-y-3">
+          <div class="grid gap-2 text-left">
+            <Label for="email">Wholesale Partner Email</Label>
+            <Input id="email" v-model="email" type="email" placeholder="you@company.com" class="bg-white" />
+          </div>
+          <div class="grid gap-2 text-left">
+            <Label for="password">Password</Label>
+            <Input id="password" v-model="password" type="password" placeholder="••••••••" class="bg-white" />
+          </div>
+          <Alert v-if="errorMsg" variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{{ errorMsg }}</AlertDescription>
+          </Alert>
+          <Button class="w-full" :disabled="signingIn" @click="onEmailPassword">
+            <span v-if="!signingIn">Sign in as Wholesale Partner</span>
+            <span v-else>Signing in…</span>
+          </Button>
+          <p class="text-xs text-muted-foreground text-center">
+            Forgot password? <NuxtLink to="/reset-password" class="underline underline-offset-4">Reset here</NuxtLink>
+          </p>
+        </div>
 
         <p class="text-xs text-muted-foreground text-center">
           By continuing, you agree to our

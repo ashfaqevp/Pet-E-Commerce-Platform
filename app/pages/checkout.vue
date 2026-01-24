@@ -17,6 +17,7 @@ import { toast } from 'vue-sonner'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
 import { useAddresses, type AddressRow } from '@/composables/useAddresses'
 import { useCheckoutOrder } from '@/composables/useCheckoutOrder'
+import { useProfile } from '@/composables/useProfile'
 import PageHeader from '@/components/common/PageHeader.vue'
 import AddressFormContent from '@/components/profile/AddressFormContent.vue'
 
@@ -39,6 +40,7 @@ watchEffect(() => {
 
 const { loadCartWithProducts } = useCart()
 const { listAddresses, setDefault } = useAddresses()
+const { getProfile } = useProfile()
 
 const { data: itemsData, pending: itemsPending, error: itemsError, refresh: refreshItems } = await useLazyAsyncData(
   'checkout-cart',
@@ -101,7 +103,26 @@ const onAddressSaved = async () => {
 }
 
 const round3 = (v: number) => Math.round(v * 1000) / 1000
-const subtotal = computed(() => items.value.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0))
+const { data: roleData } = await useLazyAsyncData(
+  'checkout-user-role',
+  async () => {
+    if (!user.value) return 'customer'
+    const p = await getProfile()
+    return (p?.role || 'customer') as string
+  },
+  { server: true }
+)
+const userRole = computed(() => (roleData.value || 'customer') as 'customer' | 'wholesaler' | 'admin')
+const unitPriceOf = (p: CartItemWithProduct['product']) => {
+  const r = p.retail_price
+  const w = p.wholesale_price
+  if (userRole.value === 'wholesaler') {
+    if (r === null || typeof r === 'undefined') return Number(w || 0)
+    return Number(r || 0)
+  }
+  return Number(r || 0)
+}
+const subtotal = computed(() => items.value.reduce((sum, i) => sum + unitPriceOf(i.product) * Number(i.quantity || 1), 0))
 
 interface SiteConfigRow { shipping_fee: number; tax_rate: number; free_shipping_min_amount: number }
 const { data: configData } = await useLazyAsyncData(
@@ -324,8 +345,8 @@ const placeOrder = async () => {
                     </div>
                   </TableCell>
                   <TableCell class="text-right w-16">{{ i.quantity }}</TableCell>
-                  <TableCell class="text-right w-24 whitespace-nowrap">{{ formatOMR(Number(i.product.retail_price || 0)) }}</TableCell>
-                  <TableCell class="text-right w-28 whitespace-nowrap">{{ formatOMR(Number(i.product.retail_price || 0) * Number(i.quantity || 1)) }}</TableCell>
+                  <TableCell class="text-right w-24 whitespace-nowrap">{{ formatOMR(unitPriceOf(i.product)) }}</TableCell>
+                  <TableCell class="text-right w-28 whitespace-nowrap">{{ formatOMR(unitPriceOf(i.product) * Number(i.quantity || 1)) }}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -348,12 +369,12 @@ const placeOrder = async () => {
                   </Avatar>
                   <div>
                     <div class="text-sm font-medium max-w-[180px] truncate">{{ i.product.name }}</div>
-                    <div class="text-xs text-muted-foreground">{{ formatOMR(Number(i.product.retail_price || 0)) }}</div>
+                    <div class="text-xs text-muted-foreground">{{ formatOMR(unitPriceOf(i.product)) }}</div>
                   </div>
                 </div>
                 <div class="text-right">
                   <div class="text-sm font-medium">x{{ i.quantity }}</div>
-                  <div class="text-sm">{{ formatOMR(Number(i.product.retail_price || 0) * Number(i.quantity || 1)) }}</div>
+                  <div class="text-sm">{{ formatOMR(unitPriceOf(i.product) * Number(i.quantity || 1)) }}</div>
                 </div>
               </div>
             </div>

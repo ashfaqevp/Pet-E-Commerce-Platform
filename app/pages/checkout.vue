@@ -116,10 +116,7 @@ const userRole = computed(() => (roleData.value || 'customer') as 'customer' | '
 const unitPriceOf = (p: CartItemWithProduct['product']) => {
   const r = p.retail_price
   const w = p.wholesale_price
-  if (userRole.value === 'wholesaler') {
-    if (r === null || typeof r === 'undefined') return Number(w || 0)
-    return Number(r || 0)
-  }
+  if (userRole.value === 'wholesaler' && w != null) return Number(w || 0)
   return Number(r || 0)
 }
 const subtotal = computed(() => items.value.reduce((sum, i) => sum + unitPriceOf(i.product) * Number(i.quantity || 1), 0))

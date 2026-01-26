@@ -32,16 +32,7 @@ const onEmailPassword = async () => {
   try {
     signingIn.value = true
     await loginWithEmailPassword(e, p)
-    const { data } = await supabase.auth.getSession()
-    const user = data.session?.user
-    if (!user) throw new Error('No session')
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single<{ role: string | null }>()
-    if (error) throw error
-    const role = (profile?.role || 'customer')
+    const { role } = await $fetch<{ role: string | null }>(`/api/auth/get-role`)
     if (role === 'admin') navigateTo('/admin')
     else if (role === 'wholesaler') navigateTo('/profile')
     else navigateTo('/')

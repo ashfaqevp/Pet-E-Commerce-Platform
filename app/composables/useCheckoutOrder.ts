@@ -73,10 +73,7 @@ export const useCheckoutOrder = () => {
       const unitPriceOf = (p: { retail_price?: number | null; wholesale_price?: number | null }) => {
         const r = p.retail_price
         const w = p.wholesale_price
-        if (userRole === 'wholesaler') {
-          if (r === null || typeof r === 'undefined') return Number(w || 0)
-          return Number(r || 0)
-        }
+        if (userRole === 'wholesaler' && w != null) return Number(w || 0)
         return Number(r || 0)
       }
       const addresses = await listAddresses()

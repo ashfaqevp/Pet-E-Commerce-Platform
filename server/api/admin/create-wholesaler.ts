@@ -8,33 +8,39 @@ interface CreateWholesalerBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const supabase = await serverSupabaseClient(event)
+  const sessionClient = await serverSupabaseClient(event)
+  const { data: sessionData, error: sessionErr } = await sessionClient.auth.getSession()
+  if (sessionErr) throw createError({ statusCode: 401, statusMessage: sessionErr.message })
+  const accessToken = sessionData?.session?.access_token || ''
+  if (!accessToken) throw createError({ statusCode: 401, statusMessage: 'UNAUTHORIZED' })
 
-  const { data: authData, error: authErr } = await supabase.auth.getUser()
-  if (authErr) throw createError({ statusCode: 401, statusMessage: authErr.message })
-  const caller = authData?.user
+  const config = useRuntimeConfig()
+  const supabaseUrl = String(config.public.supabaseUrl || '')
+  const supabaseAnonKey = String(config.public.supabaseAnonKey || '')
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+  })
+
+  const { data: userRes, error: userErr } = await userClient.auth.getUser()
+  if (userErr) throw createError({ statusCode: 401, statusMessage: userErr.message })
+  const caller = userRes?.user
   if (!caller) throw createError({ statusCode: 401, statusMessage: 'UNAUTHORIZED' })
 
-  const { data: callerProfile, error: profileErr } = await supabase
+  const serviceKey = String(config.supabaseServiceKey || '')
+  if (!supabaseUrl || !serviceKey) throw createError({ statusCode: 500, statusMessage: 'SERVICE_CONFIG_MISSING' })
+  const supabaseAdmin = createClient(supabaseUrl, serviceKey)
+  const { data: callerProfile, error: profileErr } = await supabaseAdmin
     .from('profiles')
     .select('role')
     .eq('id', caller.id)
     .single<{ role: string | null }>()
   if (profileErr) throw createError({ statusCode: 500, statusMessage: profileErr.message })
-  if ((callerProfile?.role || '') !== 'admin') throw createError({ statusCode: 403, statusMessage: 'FORBIDDEN' })
+  if ((callerProfile?.role || '') !== 'admin') throw createError({ statusCode: 403, statusMessage: 'Admin only' })
 
   const body = (await readBody(event)) as CreateWholesalerBody
   const email = String(body.email || '').trim().toLowerCase()
   if (!email) throw createError({ statusCode: 400, statusMessage: 'EMAIL_REQUIRED' })
   const fullName = typeof body.full_name === 'string' ? body.full_name : undefined
-
-  const config = useRuntimeConfig()
-  const supabaseUrl = String(config.public.supabaseUrl || '')
-  const serviceKey = String(config.supabaseServiceKey || '')
-  if (!supabaseUrl || !serviceKey) throw createError({ statusCode: 500, statusMessage: 'SERVICE_CONFIG_MISSING' })
-
-  const supabaseAdmin = createClient(supabaseUrl, serviceKey)
-
   const tempPassword = (typeof body.password === 'string' && body.password.length >= 8)
     ? body.password
     : `${Math.random().toString(36)}A1!${Date.now()}`
@@ -63,4 +69,3 @@ export default defineEventHandler(async (event) => {
 
   return { success: true, user_id: newUserId }
 })
-

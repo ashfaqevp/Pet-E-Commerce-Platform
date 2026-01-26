@@ -34,21 +34,8 @@ const onSubmit = handleSubmit(async (values) => {
   try {
     await loginWithEmailPassword(values.email, values.password)
 
-    const { data } = await supabase.auth.getSession()
-    const user = data.session?.user
-
-    if (!user) {
-      throw new Error('No session')
-    }
-
-    // ✅ CHECK ROLE FROM profiles TABLE
-    const { data: profile, error } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single<{ role: string | null }>()
-
-    if (error || profile?.role !== 'admin') {
+    const { role } = await $fetch<{ role: string | null }>('/api/auth/get-role')
+    if (role !== 'admin') {
       toast.error('Admin access required')
       await supabase.auth.signOut()
       navigateTo('/')

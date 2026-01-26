@@ -89,10 +89,7 @@ const formatOMR = (v: number) => new Intl.NumberFormat('en-OM', { style: 'curren
 const unitPriceOf = (p: CartItemWithProduct['product']) => {
   const r = p.retail_price
   const w = p.wholesale_price
-  if (userRole.value === 'wholesaler') {
-    if (r === null || typeof r === 'undefined') return Number(w || 0)
-    return Number(r || 0)
-  }
+  if (userRole.value === 'wholesaler' && w != null) return Number(w || 0)
   return Number(r || 0)
 }
 const subtotal = computed(() => items.value.reduce((sum, i) => sum + unitPriceOf(i.product) * Number(qtyById.value[i.id] ?? i.quantity ?? 1), 0))

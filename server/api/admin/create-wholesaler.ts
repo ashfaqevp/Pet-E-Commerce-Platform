@@ -1,4 +1,4 @@
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseUser } from '#supabase/server'
 import { createClient } from '@supabase/supabase-js'
 
 interface CreateWholesalerBody {
@@ -8,23 +8,11 @@ interface CreateWholesalerBody {
 }
 
 export default defineEventHandler(async (event) => {
-  const sessionClient = await serverSupabaseClient(event)
-  const { data: sessionData, error: sessionErr } = await sessionClient.auth.getSession()
-  if (sessionErr) throw createError({ statusCode: 401, statusMessage: sessionErr.message })
-  const accessToken = sessionData?.session?.access_token || ''
-  if (!accessToken) throw createError({ statusCode: 401, statusMessage: 'UNAUTHORIZED' })
+  const caller = await serverSupabaseUser(event)
+  if (!caller) throw createError({ statusCode: 401, statusMessage: 'Auth session missing!' })
 
   const config = useRuntimeConfig()
   const supabaseUrl = String(config.public.supabaseUrl || '')
-  const supabaseAnonKey = String(config.public.supabaseAnonKey || '')
-  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: `Bearer ${accessToken}` } },
-  })
-
-  const { data: userRes, error: userErr } = await userClient.auth.getUser()
-  if (userErr) throw createError({ statusCode: 401, statusMessage: userErr.message })
-  const caller = userRes?.user
-  if (!caller) throw createError({ statusCode: 401, statusMessage: 'UNAUTHORIZED' })
 
   const serviceKey = String(config.supabaseServiceKey || '')
   if (!supabaseUrl || !serviceKey) throw createError({ statusCode: 500, statusMessage: 'SERVICE_CONFIG_MISSING' })
@@ -33,7 +21,7 @@ export default defineEventHandler(async (event) => {
     .from('profiles')
     .select('role')
     .eq('id', caller.id)
-    .single<{ role: string | null }>()
+    .maybeSingle()
   if (profileErr) throw createError({ statusCode: 500, statusMessage: profileErr.message })
   if ((callerProfile?.role || '') !== 'admin') throw createError({ statusCode: 403, statusMessage: 'Admin only' })
 

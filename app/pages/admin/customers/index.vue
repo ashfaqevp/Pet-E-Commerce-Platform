@@ -4,7 +4,7 @@ import { toast } from 'vue-sonner'
 definePageMeta({
   layout: 'admin',
   middleware: 'admin',
-  title: 'Retail Customers',
+  title: 'Customers',
 })
 
 interface AdminCustomer {
@@ -22,6 +22,7 @@ interface AdminCustomer {
 const search = ref('')
 const debouncedSearch = useDebounce(search, 400)
 const sortBy = ref<'joined_at' | 'total_spent' | 'total_orders'>('joined_at')
+const roleFilter = ref<'all' | 'customer' | 'wholesaler'>('all')
 const ascending = ref(false)
 const page = ref(1)
 const pageSize = ref(10)
@@ -32,6 +33,7 @@ const params = computed(() => ({
   ascending: ascending.value,
   page: page.value,
   pageSize: pageSize.value,
+  role: roleFilter.value,
 }))
 
 const { data, pending, error, refresh } = await useLazyAsyncData(
@@ -39,7 +41,13 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   async () => {
     const supabase = useSupabaseClient()
     let q = supabase.from('profiles').select('id,phone,role,created_at,full_name,avatar_url', { count: 'exact' })
-    q = q.eq('role', 'customer')
+    if (params.value.role === 'customer') {
+      q = q.eq('role', 'customer')
+    } else if (params.value.role === 'wholesaler') {
+      q = q.eq('role', 'wholesaler')
+    } else {
+      q = q.in('role', ['customer', 'wholesaler'])
+    }
     if (params.value.search) {
       const term = params.value.search
       const digits = term.replace(/[^0-9]/g, '')
@@ -166,6 +174,8 @@ const getDisplayName = (name?: string | null, id?: string | null) => {
 const createOpen = ref(false)
 const createEmail = ref('')
 const createName = ref('')
+const createPassword = ref('')
+const createConfirm = ref('')
 const creating = ref(false)
 const createError = ref<string | null>(null)
 const onCreateWholesaler = async () => {
@@ -173,16 +183,24 @@ const onCreateWholesaler = async () => {
   createError.value = null
   const email = createEmail.value.trim()
   if (!email) { createError.value = 'Email is required'; return }
+  const name = createName.value.trim()
+  if (!name) { createError.value = 'Full name is required'; return }
+  const password = createPassword.value
+  if (password.length < 8) { createError.value = 'Password must be at least 8 characters'; return }
+  const confirm = createConfirm.value
+  if (password !== confirm) { createError.value = 'Passwords do not match'; return }
   creating.value = true
   try {
     await $fetch('/api/admin/create-wholesaler', {
       method: 'POST',
-      body: { email, full_name: createName.value.trim() || undefined },
+      body: { email, full_name: name, password },
     })
-    toast.success('Wholesale partner created. Reset email sent.')
+    toast.success('Wholesale partner created')
     createOpen.value = false
     createEmail.value = ''
     createName.value = ''
+    createPassword.value = ''
+    createConfirm.value = ''
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Failed to create wholesaler'
     createError.value = msg
@@ -198,6 +216,19 @@ const onCreateWholesaler = async () => {
     <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
       <div class="flex items-center gap-2">
         <Input v-model="search" placeholder="Search phone or user ID" class="w-64 bg-white" />
+        <Select v-model="roleFilter">
+          <SelectTrigger class="w-40 min-w-[140px] shrink-0 bg-white">
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-muted-foreground">Type:</span>
+              <SelectValue placeholder="All" />
+            </div>
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All</SelectItem>
+            <SelectItem value="customer">Retail</SelectItem>
+            <SelectItem value="wholesaler">Wholesale</SelectItem>
+          </SelectContent>
+        </Select>
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
             <Button variant="outline" class="gap-2">
@@ -221,7 +252,7 @@ const onCreateWholesaler = async () => {
           <DialogContent class="rounded-xl sm:max-w-[420px] p-6">
             <DialogHeader class="items-start">
               <DialogTitle class="text-foreground">Add Wholesale Partner</DialogTitle>
-              <DialogDescription>Creates a new wholesaler and sends password reset link.</DialogDescription>
+              <DialogDescription>Creates a new wholesaler with an initial admin-set password.</DialogDescription>
             </DialogHeader>
             <div class="space-y-3">
               <div class="grid gap-2">
@@ -229,8 +260,16 @@ const onCreateWholesaler = async () => {
                 <Input id="wh-email" v-model="createEmail" type="email" placeholder="partner@example.com" class="bg-white" />
               </div>
               <div class="grid gap-2">
-                <Label for="wh-name">Full Name (optional)</Label>
+                <Label for="wh-name">Full Name</Label>
                 <Input id="wh-name" v-model="createName" type="text" placeholder="Name" class="bg-white" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="wh-pass">Password</Label>
+                <Input id="wh-pass" v-model="createPassword" type="password" placeholder="At least 8 characters" class="bg-white" />
+              </div>
+              <div class="grid gap-2">
+                <Label for="wh-confirm">Confirm Password</Label>
+                <Input id="wh-confirm" v-model="createConfirm" type="password" placeholder="Re-enter password" class="bg-white" />
               </div>
               <Alert v-if="createError" variant="destructive">
                 <AlertTitle>Error</AlertTitle>

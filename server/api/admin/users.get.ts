@@ -62,7 +62,11 @@ export default defineEventHandler(async (event) => {
     .select('id, full_name, phone, role, created_at')
     .in('id', ids)
 
-  if (query.role && query.role !== 'all') profQ = profQ.eq('role', query.role)
+  if (query.role && query.role !== 'all') {
+    profQ = profQ.eq('role', query.role)
+  } else {
+    profQ = profQ.in('role', ['customer', 'wholesaler'])
+  }
 
   const { data: profiles, error: pErr } = await profQ
   if (pErr) throw createError({ statusCode: 500, statusMessage: pErr.message })
@@ -77,7 +81,7 @@ export default defineEventHandler(async (event) => {
       id: String(u.id),
       email: u.email ?? null,
       full_name: p?.full_name ?? null,
-      role: (p?.role ?? 'customer'),
+      role: (p?.role ?? null),
       phone: p?.phone ?? null,
       created_at: created,
     } as AdminUserRow
@@ -85,6 +89,8 @@ export default defineEventHandler(async (event) => {
 
   if (query.role && query.role !== 'all') {
     merged = merged.filter(r => (r.role === query.role))
+  } else {
+    merged = merged.filter(r => (r.role === 'customer' || r.role === 'wholesaler'))
   }
 
   if (query.search && query.search.length) {

@@ -28,16 +28,19 @@ export default defineEventHandler(async (event) => {
   const body = (await readBody(event)) as CreateWholesalerBody
   const email = String(body.email || '').trim().toLowerCase()
   if (!email) throw createError({ statusCode: 400, statusMessage: 'EMAIL_REQUIRED' })
-  const fullName = typeof body.full_name === 'string' ? body.full_name : undefined
-  const tempPassword = (typeof body.password === 'string' && body.password.length >= 8)
-    ? body.password
+  const fullName = String(body.full_name || '').trim()
+  if (!fullName) throw createError({ statusCode: 400, statusMessage: 'NAME_REQUIRED' })
+  const providedPassword = typeof body.password === 'string' ? body.password : ''
+  const passwordValid = providedPassword.length >= 8
+  const tempPassword = passwordValid
+    ? providedPassword
     : `${Math.random().toString(36)}A1!${Date.now()}`
 
   const { data: createRes, error: createErr } = await supabaseAdmin.auth.admin.createUser({
     email,
     password: tempPassword,
     email_confirm: true,
-    user_metadata: fullName ? { full_name: fullName } : undefined,
+    user_metadata: { full_name: fullName },
   })
   if (createErr) throw createError({ statusCode: 500, statusMessage: createErr.message })
   const newUserId = createRes?.user?.id
@@ -45,15 +48,17 @@ export default defineEventHandler(async (event) => {
 
   const { error: updErr } = await supabaseAdmin
     .from('profiles')
-    .update({ role: 'wholesaler', full_name: fullName || null } as unknown as never)
+    .update({ role: 'wholesaler', full_name: fullName } as unknown as never)
     .eq('id', newUserId)
   if (updErr) throw createError({ statusCode: 500, statusMessage: updErr.message })
 
   const siteUrl = String(config.public.siteUrl || '').replace(/\/+$/, '') || 'http://localhost:3000'
   const redirectTo = `${siteUrl}/reset-password`
-  try {
-    await supabaseAdmin.auth.resetPasswordForEmail(email, { redirectTo })
-  } catch {}
+  if (!passwordValid) {
+    try {
+      await supabaseAdmin.auth.resetPasswordForEmail(email, { redirectTo })
+    } catch {}
+  }
 
   return { success: true, user_id: newUserId }
 })

@@ -8,6 +8,7 @@ const signingIn = ref(false)
 const email = ref('')
 const password = ref('')
 const errorMsg = ref<string | null>(null)
+const wholesaleMode = ref(false)
 
 const onUpdateOpen = (v: boolean) => {
   authStore.showAuthDialog = v
@@ -18,6 +19,15 @@ const onGoogle = async () => {
   try {
     signingIn.value = true
     await loginWithGoogle()
+    try {
+      const { role } = await $fetch<{ role: string | null }>(`/api/auth/get-role`)
+      authStore.showAuthDialog = false
+      if (role === 'admin') navigateTo('/admin')
+      else if (role === 'wholesaler') navigateTo('/profile')
+      else navigateTo('/')
+    } catch {
+      authStore.showAuthDialog = false
+    }
   } finally {
     signingIn.value = false
   }
@@ -33,6 +43,7 @@ const onEmailPassword = async () => {
     signingIn.value = true
     await loginWithEmailPassword(e, p)
     const { role } = await $fetch<{ role: string | null }>(`/api/auth/get-role`)
+    authStore.showAuthDialog = false
     if (role === 'admin') navigateTo('/admin')
     else if (role === 'wholesaler') navigateTo('/profile')
     else navigateTo('/')
@@ -56,11 +67,11 @@ const onEmailPassword = async () => {
       </DialogHeader>
 
       <div class="space-y-6">
-        <div class="flex items-center justify-center gap-2">
+        <div v-if="!wholesaleMode" class="flex items-center justify-center gap-2">
           <Badge variant="outline" class="border-accent text-accent">Secure by Google</Badge>
         </div>
 
-        <Button variant="outline" class="w-full justify-center" :disabled="signingIn" @click="onGoogle">
+        <Button v-if="!wholesaleMode" variant="outline" class="w-full justify-center" :disabled="signingIn" @click="onGoogle">
           <Avatar class="size-5 mr-2">
             <AvatarImage src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
             <AvatarFallback>G</AvatarFallback>
@@ -69,9 +80,9 @@ const onEmailPassword = async () => {
           <span v-else>Connecting…</span>
         </Button>
 
-        <div class="space-y-3">
+        <div v-if="wholesaleMode" class="space-y-3">
           <div class="grid gap-2 text-left">
-            <Label for="email">Wholesale Partner Email</Label>
+            <Label for="email">Email</Label>
             <Input id="email" v-model="email" type="email" placeholder="you@company.com" class="bg-white" />
           </div>
           <div class="grid gap-2 text-left">
@@ -99,7 +110,11 @@ const onEmailPassword = async () => {
         </p>
 
         <div class="flex justify-center">
-          <Button variant="ghost" size="sm" class="text-muted-foreground" @click="onUpdateOpen(false)">Not now</Button>
+          <div class="flex items-center gap-3">
+            <Button v-if="!wholesaleMode" variant="ghost" size="sm" class="text-muted-foreground" @click="() => { wholesaleMode = true }">Login as Wholesale Partner</Button>
+            <Button v-else variant="ghost" size="sm" class="text-muted-foreground" @click="() => { wholesaleMode = false }">Back to Google login</Button>
+            <!-- <Button variant="ghost" size="sm" class="text-muted-foreground" @click="onUpdateOpen(false)">Not now</Button> -->
+          </div>
         </div>
       </div>
     </DialogContent>

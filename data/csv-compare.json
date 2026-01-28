@@ -1,0 +1,377 @@
+{
+  "files": {
+    "a": "/Users/Iocod/Documents/blackhorse/data/products.csv",
+    "b": "/Users/Iocod/Documents/blackhorse/data/full_products.csv"
+  },
+  "headers": {
+    "a": [
+      "legacy_id",
+      "legacy_base_id",
+      "name",
+      "description",
+      "retail_price",
+      "pet_type",
+      "product_type",
+      "age",
+      "unit",
+      "size",
+      "flavour",
+      "image_urls",
+      "is_active",
+      "created_at",
+      "updated_at",
+      "stock_quantity",
+      "thumbnail_url",
+      "default_rating",
+      "is_featured",
+      "label",
+      "row_index"
+    ],
+    "b": [
+      "id",
+      "base_product_id",
+      "name",
+      "description",
+      "retail_price",
+      "wholesale_price",
+      "brand",
+      "pet_type",
+      "product_type",
+      "age",
+      "unit",
+      "size",
+      "flavour",
+      "image_urls",
+      "is_active",
+      "created_at",
+      "updated_at",
+      "stock_quantity",
+      "thumbnail_url",
+      "default_rating",
+      "is_featured",
+      "label",
+      "row_index"
+    ]
+  },
+  "header_diff": {
+    "only_in_a": [
+      "legacy_id",
+      "legacy_base_id"
+    ],
+    "only_in_b": [
+      "id",
+      "base_product_id",
+      "wholesale_price",
+      "brand"
+    ],
+    "common": [
+      "name",
+      "description",
+      "retail_price",
+      "pet_type",
+      "product_type",
+      "age",
+      "unit",
+      "size",
+      "flavour",
+      "image_urls",
+      "is_active",
+      "created_at",
+      "updated_at",
+      "stock_quantity",
+      "thumbnail_url",
+      "default_rating",
+      "is_featured",
+      "label",
+      "row_index"
+    ]
+  },
+  "type_summary": {
+    "a": {
+      "legacy_id": {
+        "dominant": "int",
+        "distribution": {
+          "int": 819
+        }
+      },
+      "legacy_base_id": {
+        "dominant": "int",
+        "distribution": {
+          "int": 819
+        }
+      },
+      "name": {
+        "dominant": "string",
+        "distribution": {
+          "string": 817,
+          "int": 2
+        }
+      },
+      "description": {
+        "dominant": "string",
+        "distribution": {
+          "string": 819
+        }
+      },
+      "retail_price": {
+        "dominant": "float",
+        "distribution": {
+          "float": 819
+        }
+      },
+      "pet_type": {
+        "dominant": "string",
+        "distribution": {
+          "string": 819
+        }
+      },
+      "product_type": {
+        "dominant": "string",
+        "distribution": {
+          "string": 819
+        }
+      },
+      "age": {
+        "dominant": "string",
+        "distribution": {
+          "string": 149,
+          "empty": 670
+        }
+      },
+      "unit": {
+        "dominant": "string",
+        "distribution": {
+          "string": 775,
+          "empty": 44
+        }
+      },
+      "size": {
+        "dominant": "int",
+        "distribution": {
+          "int": 616,
+          "float": 40,
+          "empty": 163
+        }
+      },
+      "flavour": {
+        "dominant": "string",
+        "distribution": {
+          "string": 179,
+          "empty": 640
+        }
+      },
+      "image_urls": {
+        "dominant": "empty",
+        "distribution": {
+          "empty": 819
+        }
+      },
+      "is_active": {
+        "dominant": "boolean",
+        "distribution": {
+          "boolean": 819
+        }
+      },
+      "created_at": {
+        "dominant": "datetime",
+        "distribution": {
+          "datetime": 819
+        }
+      },
+      "updated_at": {
+        "dominant": "datetime",
+        "distribution": {
+          "datetime": 819
+        }
+      },
+      "stock_quantity": {
+        "dominant": "int",
+        "distribution": {
+          "int": 819
+        }
+      },
+      "thumbnail_url": {
+        "dominant": "url",
+        "distribution": {
+          "url": 819
+        }
+      },
+      "default_rating": {
+        "dominant": "float",
+        "distribution": {
+          "float": 819
+        }
+      },
+      "is_featured": {
+        "dominant": "boolean",
+        "distribution": {
+          "boolean": 819
+        }
+      },
+      "label": {
+        "dominant": "string",
+        "distribution": {
+          "string": 819
+        }
+      },
+      "row_index": {
+        "dominant": "int",
+        "distribution": {
+          "int": 819
+        }
+      }
+    },
+    "b": {
+      "id": {
+        "dominant": "int",
+        "distribution": {
+          "int": 782
+        }
+      },
+      "base_product_id": {
+        "dominant": "int",
+        "distribution": {
+          "int": 782
+        }
+      },
+      "name": {
+        "dominant": "string",
+        "distribution": {
+          "string": 781,
+          "int": 1
+        }
+      },
+      "description": {
+        "dominant": "string",
+        "distribution": {
+          "string": 782
+        }
+      },
+      "retail_price": {
+        "dominant": "float",
+        "distribution": {
+          "float": 454,
+          "int": 328
+        }
+      },
+      "wholesale_price": {
+        "dominant": "float",
+        "distribution": {
+          "float": 504,
+          "int": 213,
+          "string": 65
+        }
+      },
+      "brand": {
+        "dominant": "string",
+        "distribution": {
+          "string": 679,
+          "empty": 103
+        }
+      },
+      "pet_type": {
+        "dominant": "string",
+        "distribution": {
+          "string": 782
+        }
+      },
+      "product_type": {
+        "dominant": "string",
+        "distribution": {
+          "string": 782
+        }
+      },
+      "age": {
+        "dominant": "string",
+        "distribution": {
+          "string": 203,
+          "empty": 579
+        }
+      },
+      "unit": {
+        "dominant": "string",
+        "distribution": {
+          "string": 749,
+          "empty": 33
+        }
+      },
+      "size": {
+        "dominant": "int",
+        "distribution": {
+          "int": 560,
+          "float": 39,
+          "empty": 183
+        }
+      },
+      "flavour": {
+        "dominant": "string",
+        "distribution": {
+          "string": 173,
+          "empty": 609
+        }
+      },
+      "image_urls": {
+        "dominant": "empty",
+        "distribution": {
+          "empty": 782
+        }
+      },
+      "is_active": {
+        "dominant": "boolean",
+        "distribution": {
+          "boolean": 782
+        }
+      },
+      "created_at": {
+        "dominant": "datetime",
+        "distribution": {
+          "datetime": 782
+        }
+      },
+      "updated_at": {
+        "dominant": "datetime",
+        "distribution": {
+          "datetime": 782
+        }
+      },
+      "stock_quantity": {
+        "dominant": "int",
+        "distribution": {
+          "int": 782
+        }
+      },
+      "thumbnail_url": {
+        "dominant": "url",
+        "distribution": {
+          "url": 782
+        }
+      },
+      "default_rating": {
+        "dominant": "float",
+        "distribution": {
+          "float": 734,
+          "int": 48
+        }
+      },
+      "is_featured": {
+        "dominant": "boolean",
+        "distribution": {
+          "boolean": 782
+        }
+      },
+      "label": {
+        "dominant": "string",
+        "distribution": {
+          "string": 782
+        }
+      },
+      "row_index": {
+        "dominant": "int",
+        "distribution": {
+          "int": 782
+        }
+      }
+    }
+  },
+  "type_diff": []
+}

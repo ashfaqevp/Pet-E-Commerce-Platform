@@ -15,20 +15,14 @@ export const CATEGORY_CONFIG: CategoryConfig = {
 
   type: {
     label: 'Product Type',
-    dependsOn: 'pet',
-    rules: [
-      {
-        when: { category: 'pet', values: ['cat', 'dog', 'bird', 'fish', 'other'] },
-        options: [
-          { id: 'food', label: 'Food & Nutrition' },
-          { id: 'treats', label: 'Treats & Supplements' },
-          { id: 'health', label: 'Health & Wellness' },
-          { id: 'grooming', label: 'Grooming & Hygiene' },
-          { id: 'accessories', label: 'Accessories & Essentials' },
-          { id: 'aquarium_equipment', label: 'Aquarium & Water Equipment' },
-          { id: 'habitat', label: 'Tanks, Cages & Habitat' },
-        ],
-      },
+    options: [
+      { id: 'food', label: 'Food & Nutrition' },
+      { id: 'treats', label: 'Treats & Supplements' },
+      { id: 'health', label: 'Health & Wellness' },
+      { id: 'grooming', label: 'Grooming & Hygiene' },
+      { id: 'accessories', label: 'Accessories & Essentials' },
+      { id: 'aquarium_equipment', label: 'Aquarium & Water Equipment' },
+      { id: 'habitat', label: 'Tanks, Cages & Habitat' },
     ],
   },
 

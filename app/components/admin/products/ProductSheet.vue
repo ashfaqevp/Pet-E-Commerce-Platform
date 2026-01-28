@@ -422,30 +422,10 @@ const filteredBaseProducts = computed(() => {
                 <Textarea id="description" v-model="description" placeholder="Product description" class="w-full min-h-24" />
                 <p v-if="descriptionError && descriptionMeta.touched" class="text-destructive text-xs">{{ descriptionError }}</p>
               </div>
-          <div class="flex flex-col gap-1.5 md:col-span-2">
-            <Label for="pet">{{ getCategoryLabel('pet') }}</Label>
-            <TagsInput v-model="pet">
-              <TagsInputItem v-for="p in (pet || [])" :key="p" :text="(optsFor('pet')?.find(o => o.id === p)?.label ?? p)" />
-              <TagsInputInput placeholder="Select pet types" />
-            </TagsInput>
-            <div class="flex flex-wrap gap-2 mt-2">
-              <Button
-                v-for="opt in (optsFor('pet') ?? [])"
-                :key="opt.id"
-                type="button"
-                :variant="(pet || []).includes(opt.id) ? 'default' : 'outline'"
-                class="h-8 px-2"
-                @click="() => { const set = new Set(pet || []); if (set.has(opt.id)) set.delete(opt.id); else set.add(opt.id); pet = Array.from(set); }"
-              >
-                {{ opt.label }}
-              </Button>
-            </div>
-            <p v-if="petError && petMeta.touched" class="text-destructive text-xs">{{ petError }}</p>
-          </div>
 
           <div v-for="k in visibleKeys" :key="k" v-if="k !== 'pet'" class="flex flex-col gap-1.5">
             <Label :for="k">{{ getCategoryLabel(k) }}</Label>
-            <Select v-model="valueMap[k].value">
+            <Select v-model="valueMap[k].value" multiple>
               <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>

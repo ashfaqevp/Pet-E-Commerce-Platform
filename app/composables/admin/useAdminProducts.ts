@@ -68,6 +68,7 @@ export const useAdminProducts = () => {
       if (params.brand) q = q.eq('brand', params.brand)
       if (params.status === 'active') q = q.eq('is_active', true)
       if (params.status === 'inactive') q = q.eq('is_active', false)
+      q = q.order('is_featured', { ascending: false, nullsFirst: false })
       if (params.sortBy) q = q.order(params.sortBy as string, { ascending: params.ascending ?? true })
       const page = params.page ?? 1
       const pageSize = params.pageSize ?? 10

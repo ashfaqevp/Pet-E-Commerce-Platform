@@ -151,6 +151,14 @@ const formatDate = (iso: string | null | undefined) => {
   return isNaN(d.getTime()) ? '—' : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(d)
 }
 const formatPhone = (v: string | null | undefined) => formatOmanPhone(v || '')
+const formatRole = (role: string | null | undefined) => {
+  if (role === 'wholesaler') return 'Wholesale'
+  if (role === 'customer') return 'Retail'
+  return '—'
+}
+const roleBadgeVariant = (role: string | null | undefined): 'secondary' | 'outline' => {
+  return role === 'wholesaler' ? 'secondary' : 'outline'
+}
 const getInitials = (name?: string | null, fallback?: string | null) => {
   const n = (name || '').trim()
   if (n) {
@@ -298,6 +306,7 @@ const onCreateWholesaler = async () => {
           <TableHeader>
             <TableRow>
               <TableHead>Customer</TableHead>
+              <TableHead>Type</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Orders</TableHead>
               <TableHead class="">Total Spent</TableHead>
@@ -307,10 +316,10 @@ const onCreateWholesaler = async () => {
           </TableHeader>
           <TableBody>
             <TableRow v-if="pending">
-              <TableCell colspan="6"><Skeleton class="h-10 w-full" /></TableCell>
+              <TableCell colspan="7"><Skeleton class="h-10 w-full" /></TableCell>
             </TableRow>
             <TableRow v-else-if="error">
-              <TableCell colspan="6">
+              <TableCell colspan="7">
                 <Alert variant="destructive">
                   <AlertTitle>Error</AlertTitle>
                   <AlertDescription>{{ error.message }}</AlertDescription>
@@ -318,7 +327,7 @@ const onCreateWholesaler = async () => {
               </TableCell>
             </TableRow>
             <TableRow v-else-if="rows.length === 0">
-              <TableCell colspan="6">
+              <TableCell colspan="7">
                 <TableEmpty>No customers found</TableEmpty>
               </TableCell>
             </TableRow>
@@ -334,6 +343,9 @@ const onCreateWholesaler = async () => {
                     <span class="text-xs text-muted-foreground">#{{ c.id }}</span>
                   </div>
                 </div>
+              </TableCell>
+              <TableCell>
+                <Badge :variant="roleBadgeVariant(c.role)">{{ formatRole(c.role) }}</Badge>
               </TableCell>
               <TableCell>{{ formatPhone(c.phone) }}</TableCell>
               <TableCell>{{ c.total_orders }}</TableCell>

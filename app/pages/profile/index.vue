@@ -373,6 +373,33 @@ const logout = async () => {
     loggingOut.value = false
   }
 }
+
+const newPassword = ref('')
+const confirmPassword = ref('')
+const changingPassword = ref(false)
+const changePasswordError = ref<string | null>(null)
+const onChangePassword = async () => {
+  if (changingPassword.value) return
+  changePasswordError.value = null
+  const p = newPassword.value
+  const c = confirmPassword.value
+  if (p.length < 8) { changePasswordError.value = 'Password must be at least 8 characters'; return }
+  if (p !== c) { changePasswordError.value = 'Passwords do not match'; return }
+  changingPassword.value = true
+  try {
+    const { error } = await supabase.auth.updateUser({ password: p })
+    if (error) throw error
+    newPassword.value = ''
+    confirmPassword.value = ''
+    toast.success('Password updated successfully')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Failed to update password'
+    changePasswordError.value = msg
+    toast.error(msg)
+  } finally {
+    changingPassword.value = false
+  }
+}
 </script>
 
 <template>
@@ -431,8 +458,39 @@ const logout = async () => {
               </div>
             </div>
           </div>
-        </CardContent>
+      </CardContent>
   </Card>
+
+      <Card v-if="profile?.role === 'wholesaler'" class="border-none rounded-2xl overflow-hidden shadow-sm bg-white">
+        <CardHeader>
+          <div class="flex items-center gap-2 ">
+            <Icon name="lucide:lock" class="h-5 w-5 " />
+            <CardTitle>Security</CardTitle>
+          </div>
+          <CardDescription>Manage your password securely.</CardDescription>
+        </CardHeader>
+        <CardContent class="space-y-3">
+          <div class="grid gap-2">
+            <Label for="wh-new-pass">New Password</Label>
+            <Input id="wh-new-pass" v-model="newPassword" type="password" placeholder="At least 8 characters" class="bg-white" />
+          </div>
+          <div class="grid gap-2">
+            <Label for="wh-confirm-pass">Confirm Password</Label>
+            <Input id="wh-confirm-pass" v-model="confirmPassword" type="password" placeholder="Re-enter password" class="bg-white" />
+          </div>
+          <Alert v-if="changePasswordError" variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{{ changePasswordError }}</AlertDescription>
+          </Alert>
+        </CardContent>
+        <CardFooter class="flex items-center justify-between">
+          <NuxtLink to="/forgot-password" class="text-xs underline underline-offset-4 text-muted-foreground">Forgot password?</NuxtLink>
+          <Button :disabled="changingPassword" @click="onChangePassword">
+            <span v-if="!changingPassword">Update Password</span>
+            <span v-else>Updating…</span>
+          </Button>
+        </CardFooter>
+      </Card>
 
     <Dialog :open="detailsOpen" @update:open="detailsOpen = $event">
       <DialogContent class="rounded-xl max-w-lg">

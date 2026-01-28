@@ -10,9 +10,11 @@ const password = ref('')
 const errorMsg = ref<string | null>(null)
 const wholesaleMode = ref(false)
 
+const router = useRouter()
+
 const onUpdateOpen = (v: boolean) => {
   authStore.showAuthDialog = v
-  if (!v) navigateTo('/')
+  if (!v && !router.currentRoute.value.path.startsWith('/reset-password')) navigateTo('/')
 }
 
 const onGoogle = async () => {
@@ -59,6 +61,11 @@ const onEmailPassword = async () => {
 <template>
   <Dialog :open="authStore.showAuthDialog" @update:open="onUpdateOpen">
     <DialogContent class="rounded-xl sm:max-w-[420px] p-6">
+      <!-- <DialogClose as-child>
+        <Button variant="ghost" size="icon" class="absolute right-3 top-3" aria-label="Close">
+          <Icon name="lucide:x" class="h-4 w-4" />
+        </Button>
+      </DialogClose> -->
       <DialogHeader class="items-center text-center">
         <DialogTitle class="text-foreground">Sign in to continue</DialogTitle>
         <DialogDescription class="text-center">
@@ -98,7 +105,7 @@ const onEmailPassword = async () => {
             <span v-else>Signing in…</span>
           </Button>
           <p class="text-xs text-muted-foreground text-center">
-            Forgot password? <NuxtLink to="/reset-password" class="underline underline-offset-4">Reset here</NuxtLink>
+            Forgot password? <NuxtLink @click="() => authStore.showAuthDialog = false" to="/forgot-password" class="underline underline-offset-4">Reset here</NuxtLink>
           </p>
         </div>
 
@@ -113,7 +120,7 @@ const onEmailPassword = async () => {
           <div class="flex items-center gap-3">
             <Button v-if="!wholesaleMode" variant="ghost" size="sm" class="text-muted-foreground" @click="() => { wholesaleMode = true }">Login as Wholesale Partner</Button>
             <Button v-else variant="ghost" size="sm" class="text-muted-foreground" @click="() => { wholesaleMode = false }">Back to Google login</Button>
-            <!-- <Button variant="ghost" size="sm" class="text-muted-foreground" @click="onUpdateOpen(false)">Not now</Button> -->
+            <Button variant="ghost" size="sm" class="text-muted-foreground" @click="onUpdateOpen(false)">Not now</Button>
           </div>
         </div>
       </div>

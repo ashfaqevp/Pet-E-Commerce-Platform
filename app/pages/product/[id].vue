@@ -163,12 +163,9 @@ function buildGroups() {
     }
   }
   const groups: VariantGroup[] = [];
-  const type = cur.product_type || undefined;
   if (flavourSet.size > 0) groups.push({ name: "Flavour", key: "flavour", options: Array.from(flavourSet.values()) });
   if (sizeSet.size > 0) groups.push({ name: "Size", key: "size", options: Array.from(sizeSet.values()) });
-  const pet = cur.pet_type || undefined;
-  const showAge = !!pet && CATEGORY_CONFIG.age.requiredWhen?.some(x => x.values.includes(pet));
-  if (showAge && ageSet.size > 0) groups.push({ name: "Age", key: "age", options: Array.from(ageSet.values()) });
+  if (ageSet.size > 0) groups.push({ name: "Age", key: "age", options: Array.from(ageSet.values()) });
   variantGroups.value = groups;
 }
 
@@ -281,11 +278,30 @@ const product = computed(() => {
 const descriptionText = computed(() => selectedVariant.value?.description || current.value?.description || "");
 
 const similarVariants = computed<CardProduct[]>(() => {
-  const rows = variantRows.value || [];
-  const excludeId = product.value?.id || '';
-  const list = rows.filter(r => String(r.id) !== excludeId);
-  return list.slice(0, 16).map(mapRowToCard);
-});
+  const rows = variantRows.value || []
+  const excludeId = product.value?.id || ''
+  const f = selectedFlavour.value?.id || null
+  const s = selectedSize.value?.id || null
+  const a = selectedAge.value?.id || null
+  const selCount = [f, s, a].filter(Boolean).length
+  const list = rows.filter(r => String(r.id) !== excludeId)
+
+  if (selCount > 0) {
+    const exact = list.filter(r => (!f || r.flavour === f) && (!s || r.size === s) && (!a || r.age === a))
+    if (exact.length) return exact.slice(0, 16).map(mapRowToCard)
+
+    const twoMatch = list.filter(r => {
+      const mF = !f || r.flavour === f
+      const mS = !s || r.size === s
+      const mA = !a || r.age === a
+      const matches = [mF, mS, mA].filter(Boolean).length
+      return matches >= Math.max(1, selCount - 1)
+    })
+    if (twoMatch.length) return twoMatch.slice(0, 16).map(mapRowToCard)
+  }
+
+  return list.slice(0, 16).map(mapRowToCard)
+})
 
 const { data: relatedData, pending: relatedPending, error: relatedError, refresh: refreshRelated } = await useLazyAsyncData(
   () => `related-${productId.value}`,
@@ -508,9 +524,83 @@ watch([selectedSize, selectedAge, variantRows], () => {
 
 const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.value;
 
-// function getAvailableFlavours(): VariantOption[] {
-//   return availableFlavourOptions.value
-// }
+const availableSizeOptions = computed<VariantOption[]>(() => {
+  const rows = variantRows.value;
+  const f = selectedFlavour.value?.id || null;
+  const a = selectedAge.value?.id || null;
+  const map = new Map<string, VariantOption>();
+  const cur = current.value;
+  for (const r of rows) {
+    if (f && r.flavour !== f) continue;
+    if (a && r.age !== a) continue;
+    const id = r.size || null;
+    if (!id) continue;
+    const raw = String(id);
+    const numeric = raw.match(/\d+(?:\.\d+)?/)?.[0] || raw;
+    const unit = r.unit || cur?.unit || '';
+    const label = unit ? `${numeric} ${unit}` : numeric;
+    map.set(id, { id, label, value: id });
+  }
+  const arr = Array.from(map.values());
+  const sel = selectedSize.value;
+  if (sel) {
+    const idx = arr.findIndex(o => o.id === sel.id);
+    if (idx > 0) {
+      const opt = arr[idx]!;
+      arr.splice(idx, 1);
+      arr.unshift(opt);
+    }
+  }
+  return arr;
+});
+
+watch([selectedFlavour, selectedAge, variantRows], () => {
+  const opts = availableSizeOptions.value;
+  if (!opts.length) { selectedSize.value = null; return; }
+  const hasSelection = !!selectedFlavour.value || !!selectedAge.value;
+  if (hasSelection && (!selectedSize.value || !opts.some(o => o.id === selectedSize.value!.id))) {
+    selectedSize.value = opts[0] || null;
+  }
+});
+
+const availableAgeOptions = computed<VariantOption[]>(() => {
+  const rows = variantRows.value;
+  const f = selectedFlavour.value?.id || null;
+  const s = selectedSize.value?.id || null;
+  const map = new Map<string, VariantOption>();
+  const cur = current.value;
+  const pet = cur?.pet_type || null;
+  const ageRules = CATEGORY_CONFIG.age.rules || [];
+  const matchedRule = pet ? ageRules.find(x => x.when.values.includes(pet)) : undefined;
+  for (const r of rows) {
+    if (f && r.flavour !== f) continue;
+    if (s && r.size !== s) continue;
+    const id = r.age || null;
+    if (!id) continue;
+    const label = matchedRule?.options.find(o => o.id === id)?.label || id;
+    map.set(id, { id, label, value: id });
+  }
+  const arr = Array.from(map.values());
+  const sel = selectedAge.value;
+  if (sel) {
+    const idx = arr.findIndex(o => o.id === sel.id);
+    if (idx > 0) {
+      const opt = arr[idx]!;
+      arr.splice(idx, 1);
+      arr.unshift(opt);
+    }
+  }
+  return arr;
+});
+
+watch([selectedFlavour, selectedSize, variantRows], () => {
+  const opts = availableAgeOptions.value;
+  if (!opts.length) { selectedAge.value = null; return; }
+  const hasSelection = !!selectedFlavour.value || !!selectedSize.value;
+  if (hasSelection && (!selectedAge.value || !opts.some(o => o.id === selectedAge.value!.id))) {
+    selectedAge.value = opts[0] || null;
+  }
+});
 </script>
 
 <template>
@@ -630,11 +720,11 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
         </div>
 
         <!-- classification is not corrected for sizing. so currently commenting -->
-        <!-- <div v-if="sizeGroup?.options?.length" class="mt-6">
+        <div v-if="availableSizeOptions.length" class="mt-6">
           <h3 class="font-medium mb-2 text-foreground">Size</h3>
           <div class="flex flex-wrap gap-2">
             <Button
-              v-for="opt in sizeGroup!.options"
+              v-for="opt in availableSizeOptions"
               :key="opt.id"
               variant="outline"
               :class="
@@ -648,13 +738,13 @@ const getAvailableFlavours = (): VariantOption[] => availableFlavourOptions.valu
               {{ opt.label ?? opt.value }}
             </Button>
           </div>
-        </div> -->
+        </div>
 
-        <div v-if="ageGroup?.options?.length" class="mt-6">
+        <div v-if="availableAgeOptions.length" class="mt-6">
           <h3 class="font-medium mb-2 text-foreground">Age</h3>
           <div class="flex flex-wrap gap-2">
             <Button
-              v-for="opt in ageGroup!.options"
+              v-for="opt in availableAgeOptions"
               :key="opt.id"
               variant="outline"
               :class="

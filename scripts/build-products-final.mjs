@@ -48,7 +48,8 @@ function parseCSV(text) {
 
 function csvEscape(field) {
   const s = String(field ?? '')
-  if (s === '') return ''
+  if (s === '') return "''"
+  if (s === "''") return "''"
   return '"' + s.replaceAll('"', '""') + '"'
 }
 
@@ -79,17 +80,40 @@ const run = async () => {
   const idxFullRowIndex = fullHeaders.indexOf('row_index')
   const idxFullPetType = fullHeaders.indexOf('pet_type')
 
-  const headersOut = fullHeaders.slice()
-  if (idxFullId >= 0) headersOut[idxFullId] = 'legacy_id'
-  if (idxFullBaseId >= 0) headersOut[idxFullBaseId] = 'legacy_base_id'
+  const ORDER = [
+    'id',
+    'base_product_id',
+    'name',
+    'description',
+    'retail_price',
+    'pet_type',
+    'product_type',
+    'age',
+    'unit',
+    'size',
+    'flavour',
+    'image_urls',
+    'is_active',
+    'created_at',
+    'updated_at',
+    'stock_quantity',
+    'thumbnail_url',
+    'default_rating',
+    'is_featured',
+    'label',
+    'row_index',
+    'legacy_id',
+    'legacy_base_id',
+    'brand',
+    'wholesale_price',
+  ]
+  const headersOut = ORDER.slice()
   const out = [headersOut]
 
   const n = Math.min(productsRows.length - 1, fullRows.length - 1)
-  const nameByIndex = new Map(fullHeaders.map((h, idx) => [idx, h]))
-
   function formatValue(colName, value) {
     const s = String(value ?? '').trim()
-    if (s === '') return ''
+    if (s === '') return "''"
     switch (colName) {
       case 'is_active':
       case 'is_featured': {
@@ -128,8 +152,18 @@ const run = async () => {
       full[idxFullPetType] = p.toLowerCase()
     }
 
-    const formatted = full.map((v, idx) => csvEscape(formatValue(nameByIndex.get(idx), v)))
-    out.push(formatted)
+    const valByName = {}
+    for (let c = 0; c < fullHeaders.length; c++) {
+      valByName[fullHeaders[c]] = full[c]
+    }
+    valByName.id = legacyId
+    valByName.base_product_id = legacyBaseId
+    valByName.row_index = String(i)
+    valByName.legacy_id = legacyId
+    valByName.legacy_base_id = legacyBaseId
+
+    const formattedOrdered = ORDER.map(col => csvEscape(formatValue(col, valByName[col] ?? '')))
+    out.push(formattedOrdered)
   }
 
   const csv = out.map(r => r.join(',')).join('\n') + '\n'

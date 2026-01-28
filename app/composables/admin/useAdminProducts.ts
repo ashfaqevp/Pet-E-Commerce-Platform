@@ -1,7 +1,7 @@
 export interface AdminProduct {
   id: string
   name: string
-  pet_type: string
+  pet_type: string[]
   product_type: string
   brand?: string | null
   age?: string | null
@@ -9,6 +9,7 @@ export interface AdminProduct {
   size?: string | null
   flavour?: string | null
   retail_price: number | null
+  wholesale_price?: number | null
   stock_quantity: number
   created_at: string
   is_active: boolean
@@ -22,7 +23,7 @@ export interface AdminProduct {
 
 export interface AdminProductInput {
   name: string
-  pet_type: string
+  pet_type: string[]
   product_type: string
   brand?: string | null
   age?: string | null
@@ -30,6 +31,7 @@ export interface AdminProductInput {
   size?: string | null
   flavour?: string | null
   retail_price?: number | null
+  wholesale_price?: number | null
   stock_quantity?: number
   is_active?: boolean
   thumbnail_url?: string | null
@@ -61,11 +63,12 @@ export const useAdminProducts = () => {
     try {
       let q = supabase.from('products').select('*', { count: 'exact' })
       if (params.search) q = q.ilike('name', `%${params.search}%`)
-      if (params.petType) q = q.eq('pet_type', params.petType)
+      if (params.petType) q = q.contains('pet_type', [params.petType])
       if (params.productType) q = q.eq('product_type', params.productType)
       if (params.brand) q = q.eq('brand', params.brand)
       if (params.status === 'active') q = q.eq('is_active', true)
       if (params.status === 'inactive') q = q.eq('is_active', false)
+      q = q.order('is_featured', { ascending: false, nullsFirst: false })
       if (params.sortBy) q = q.order(params.sortBy as string, { ascending: params.ascending ?? true })
       const page = params.page ?? 1
       const pageSize = params.pageSize ?? 10

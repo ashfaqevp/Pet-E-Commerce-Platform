@@ -1,19 +1,57 @@
 <script setup lang="ts">
 import { navigateTo } from '#imports'
 const authStore = useAuthStore()
-const { loginWithGoogle } = useAuth()
+const { loginWithGoogle, loginWithEmailPassword } = useAuth()
+const supabase = useSupabaseClient()
 
 const signingIn = ref(false)
+const email = ref('')
+const password = ref('')
+const errorMsg = ref<string | null>(null)
+const wholesaleMode = ref(false)
+
+const router = useRouter()
 
 const onUpdateOpen = (v: boolean) => {
   authStore.showAuthDialog = v
-  if (!v) navigateTo('/')
+  if (!v && !router.currentRoute.value.path.startsWith('/reset-password')) navigateTo('/')
 }
 
 const onGoogle = async () => {
   try {
     signingIn.value = true
     await loginWithGoogle()
+    try {
+      const { role } = await $fetch<{ role: string | null }>(`/api/auth/get-role`)
+      authStore.showAuthDialog = false
+      if (role === 'admin') navigateTo('/admin')
+      else if (role === 'wholesaler') navigateTo('/profile')
+      else navigateTo('/')
+    } catch {
+      authStore.showAuthDialog = false
+    }
+  } finally {
+    signingIn.value = false
+  }
+}
+
+const onEmailPassword = async () => {
+  if (signingIn.value) return
+  errorMsg.value = null
+  const e = email.value.trim()
+  const p = password.value
+  if (!e || !p) { errorMsg.value = 'Email and password are required'; return }
+  try {
+    signingIn.value = true
+    await loginWithEmailPassword(e, p)
+    const { role } = await $fetch<{ role: string | null }>(`/api/auth/get-role`)
+    authStore.showAuthDialog = false
+    if (role === 'admin') navigateTo('/admin')
+    else if (role === 'wholesaler') navigateTo('/profile')
+    else navigateTo('/')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Sign in failed'
+    errorMsg.value = msg
   } finally {
     signingIn.value = false
   }
@@ -23,6 +61,11 @@ const onGoogle = async () => {
 <template>
   <Dialog :open="authStore.showAuthDialog" @update:open="onUpdateOpen">
     <DialogContent class="rounded-xl sm:max-w-[420px] p-6">
+      <!-- <DialogClose as-child>
+        <Button variant="ghost" size="icon" class="absolute right-3 top-3" aria-label="Close">
+          <Icon name="lucide:x" class="h-4 w-4" />
+        </Button>
+      </DialogClose> -->
       <DialogHeader class="items-center text-center">
         <DialogTitle class="text-foreground">Sign in to continue</DialogTitle>
         <DialogDescription class="text-center">
@@ -31,11 +74,11 @@ const onGoogle = async () => {
       </DialogHeader>
 
       <div class="space-y-6">
-        <div class="flex items-center justify-center gap-2">
+        <div v-if="!wholesaleMode" class="flex items-center justify-center gap-2">
           <Badge variant="outline" class="border-accent text-accent">Secure by Google</Badge>
         </div>
 
-        <Button variant="outline" class="w-full justify-center" :disabled="signingIn" @click="onGoogle">
+        <Button v-if="!wholesaleMode" variant="outline" class="w-full justify-center" :disabled="signingIn" @click="onGoogle">
           <Avatar class="size-5 mr-2">
             <AvatarImage src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
             <AvatarFallback>G</AvatarFallback>
@@ -43,6 +86,28 @@ const onGoogle = async () => {
           <span v-if="!signingIn">Continue with Google</span>
           <span v-else>Connecting…</span>
         </Button>
+
+        <div v-if="wholesaleMode" class="space-y-3">
+          <div class="grid gap-2 text-left">
+            <Label for="email">Email</Label>
+            <Input id="email" v-model="email" type="email" placeholder="you@company.com" class="bg-white" />
+          </div>
+          <div class="grid gap-2 text-left">
+            <Label for="password">Password</Label>
+            <Input id="password" v-model="password" type="password" placeholder="••••••••" class="bg-white" />
+          </div>
+          <Alert v-if="errorMsg" variant="destructive">
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{{ errorMsg }}</AlertDescription>
+          </Alert>
+          <Button class="w-full" :disabled="signingIn" @click="onEmailPassword">
+            <span v-if="!signingIn">Sign in as Wholesale Partner</span>
+            <span v-else>Signing in…</span>
+          </Button>
+          <p class="text-xs text-muted-foreground text-center">
+            Forgot password? <NuxtLink @click="() => authStore.showAuthDialog = false" to="/forgot-password" class="underline underline-offset-4">Reset here</NuxtLink>
+          </p>
+        </div>
 
         <p class="text-xs text-muted-foreground text-center">
           By continuing, you agree to our
@@ -52,7 +117,11 @@ const onGoogle = async () => {
         </p>
 
         <div class="flex justify-center">
-          <Button variant="ghost" size="sm" class="text-muted-foreground" @click="onUpdateOpen(false)">Not now</Button>
+          <div class="flex items-center gap-3">
+            <Button v-if="!wholesaleMode" variant="ghost" size="sm" class="text-muted-foreground" @click="() => { wholesaleMode = true }">Login as Wholesale Partner</Button>
+            <Button v-else variant="ghost" size="sm" class="text-muted-foreground" @click="() => { wholesaleMode = false }">Back to Google login</Button>
+            <Button variant="ghost" size="sm" class="text-muted-foreground" @click="onUpdateOpen(false)">Not now</Button>
+          </div>
         </div>
       </div>
     </DialogContent>

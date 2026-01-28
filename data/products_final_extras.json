@@ -1,0 +1,100 @@
+{
+  "files": {
+    "csv": "/Users/Iocod/Documents/blackhorse/data/products_final.csv",
+    "config": "/Users/Iocod/Documents/blackhorse/app/domain/categories/category.config.ts"
+  },
+  "allowed": {
+    "product_type": [
+      "food",
+      "treats",
+      "health",
+      "grooming",
+      "accessories",
+      "aquarium_equipment",
+      "habitat"
+    ],
+    "unit": [
+      "cm",
+      "g",
+      "inch",
+      "kg",
+      "liter",
+      "meter",
+      "ml",
+      "mm",
+      "model",
+      "pcs",
+      "piece",
+      "watt"
+    ],
+    "flavour": [
+      "chicken",
+      "beef",
+      "lamb",
+      "duck",
+      "turkey",
+      "game",
+      "meat_mix",
+      "tuna",
+      "salmon",
+      "chicken salmon",
+      "sardine",
+      "mackerel",
+      "anchovy",
+      "shrimp",
+      "krill",
+      "mussels",
+      "trout",
+      "ocean_fish",
+      "fish_mix",
+      "rice",
+      "vegetable",
+      "spinach",
+      "pumpkin",
+      "carrot",
+      "tomato",
+      "cheese",
+      "algae",
+      "fruit",
+      "milk",
+      "egg",
+      "insect",
+      "gourmet",
+      "mix"
+    ]
+  },
+  "extras": {
+    "product_type": [
+      {
+        "value": "fish net",
+        "count": 14,
+        "rows": [
+          "567",
+          "568",
+          "569",
+          "570",
+          "571",
+          "572",
+          "573",
+          "574",
+          "575",
+          "576",
+          "577",
+          "578",
+          "579",
+          "581"
+        ]
+      }
+    ],
+    "unit": [],
+    "flavour": [
+      {
+        "value": "chicken_salmon",
+        "count": 1,
+        "rows": [
+          "285"
+        ]
+      }
+    ]
+  }
+}

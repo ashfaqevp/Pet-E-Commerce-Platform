@@ -1,6 +1,6 @@
  <script setup lang="ts">
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
-import { useRoute, useRouter, definePageMeta, useLazyAsyncData, useSupabaseClient, useHead, useState, useSeoMeta, useRuntimeConfig } from "#imports";
+import { useRoute, useRouter, definePageMeta, useLazyAsyncData, useSupabaseClient, useSupabaseUser, useHead, useState, useSeoMeta, useRuntimeConfig } from "#imports";
 import { Button } from "@/components/ui/button";
 import { useCart, type CartItemWithProduct } from "@/composables/useCart";
 import AddToCartButton from "@/components/AddToCartButton.vue";
@@ -12,6 +12,7 @@ import PageHeader from "@/components/common/PageHeader.vue";
 import { formatOMR } from "@/utils";
 import { CATEGORY_CONFIG } from "~/domain/categories/category.config";
 import ProductCard from "@/components/product/ProductCard.vue";
+import { useProfile } from "@/composables/useProfile";
 
 definePageMeta({ layout: "default" });
 const pageTitle = useState<string>("pageTitle", () => "")
@@ -42,6 +43,7 @@ interface ProductRow {
   size?: string | null;
   flavour?: string | null;
   retail_price?: number | null;
+  wholesale_price?: number | null;
   default_rating?: number | null;
   thumbnail_url?: string | null;
   image_urls?: string[] | null;
@@ -59,11 +61,24 @@ interface CardProduct {
   image?: string;
 }
 
+const supabaseUser = useSupabaseUser()
+const { getProfile } = useProfile()
+const { data: roleData } = await useLazyAsyncData(
+  'product-user-role',
+  async () => {
+    if (!supabaseUser.value) return 'customer'
+    const p = await getProfile()
+    return (p?.role || 'customer') as string
+  },
+  { server: true }
+)
+const userRole = computed(() => (roleData.value || 'customer') as 'customer' | 'wholesaler' | 'admin')
+
 const mapRowToCard = (row: ProductRow): CardProduct => ({
   id: String(row.id),
   name: row.name,
   brand: String(row.brand || ''),
-  price: Number(row.retail_price || 0),
+  price: userRole.value === 'wholesaler' && row.wholesale_price != null ? Number(row.wholesale_price || 0) : Number(row.retail_price || 0),
   rating: Number(row.default_rating || 0),
   discount: 0,
   image: row.thumbnail_url || undefined,
@@ -235,7 +250,9 @@ const images = computed(() => {
 
 const product = computed(() => {
   const source = current.value;
-  const price = Number(source?.retail_price || 0);
+  const price = (userRole.value === 'wholesaler' && source?.wholesale_price != null)
+    ? Number(source.wholesale_price || 0)
+    : Number(source?.retail_price || 0);
   const rating = Number(source?.default_rating || 0);
   return {
     id: String(source?.id ?? productId.value),
@@ -279,7 +296,7 @@ const { data: relatedData, pending: relatedPending, error: relatedError, refresh
     if (!pet || !type) return [] as ProductRow[];
     let q = supabase
       .from('products')
-      .select('id,name,retail_price,default_rating,thumbnail_url,pet_type,product_type,base_product_id', { count: 'exact' })
+      .select('id,name,retail_price,wholesale_price,default_rating,thumbnail_url,pet_type,product_type,base_product_id', { count: 'exact' })
       .eq('is_active', true)
       .eq('pet_type', pet)
       .eq('product_type', type)
@@ -308,7 +325,7 @@ const { data: sameBrandData, pending: brandPending, error: brandError, refresh: 
     if (!b) return [] as ProductRow[]
     let q = supabase
       .from('products')
-      .select('id,name,retail_price,default_rating,thumbnail_url,brand,base_product_id', { count: 'exact' })
+      .select('id,name,retail_price,wholesale_price,default_rating,thumbnail_url,brand,base_product_id', { count: 'exact' })
       .eq('is_active', true)
       .eq('brand', b)
       .order('is_featured', { ascending: false })

@@ -5,13 +5,8 @@ export default defineNuxtRouteMiddleware(async (to) => {
   if (!user) {
     return navigateTo(`/admin/login?redirect=${encodeURIComponent(to.fullPath)}`)
   }
-  const { data: profile, error } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single<{ role: string | null }>()
-
-  const isAdmin = !error && profile?.role === 'admin'
+  const { role } = await $fetch<{ role: string | null }>(`/api/auth/get-role`)
+  const isAdmin = role === 'admin'
   if (!isAdmin) {
     return navigateTo(`/admin/login?redirect=${encodeURIComponent(to.fullPath)}`)
   }

@@ -63,10 +63,23 @@ export const useCheckoutOrder = () => {
     try {
       const items = await loadCartWithProducts()
       if (!items.length) throw new Error('CART_EMPTY')
+      const { data: roleRow, error: roleErr } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.value!.id)
+        .single<{ role: string | null }>()
+      if (roleErr) throw roleErr
+      const userRole = (roleRow?.role || 'customer') as 'customer' | 'wholesaler' | 'admin'
+      const unitPriceOf = (p: { retail_price?: number | null; wholesale_price?: number | null }) => {
+        const r = p.retail_price
+        const w = p.wholesale_price
+        if (userRole === 'wholesaler' && w != null) return Number(w || 0)
+        return Number(r || 0)
+      }
       const addresses = await listAddresses()
       const addr = addresses.find(a => a.id === addressId) || addresses.find(a => a.is_default) || addresses[0]
       if (!addr) throw new Error('NO_ADDRESS')
-      const subtotal = items.reduce((sum, i) => sum + Number(i.product.retail_price || 0) * Number(i.quantity || 1), 0)
+      const subtotal = items.reduce((sum, i) => sum + unitPriceOf(i.product) * Number(i.quantity || 1), 0)
       const cfgShipping = typeof opts?.shippingFee === 'number' ? Number(opts!.shippingFee) : 10
       const cfgTaxRate = typeof opts?.taxRate === 'number' ? Number(opts!.taxRate) : 0.05
       const shipping = items.length ? Number(cfgShipping || 0) : 0
@@ -103,9 +116,9 @@ export const useCheckoutOrder = () => {
         order_id: orderId,
         product_id: i.product_id,
         product_name: i.product.name,
-        unit_price: Number(i.product.retail_price || 0),
+        unit_price: unitPriceOf(i.product),
         quantity: Number(i.quantity || 1),
-        total_price: round3(Number(i.product.retail_price || 0) * Number(i.quantity || 1)),
+        total_price: round3(unitPriceOf(i.product) * Number(i.quantity || 1)),
       }))
       if (orderItems.length) {
         const { error: itemsErr } = await supabase.from('order_items').insert(orderItems as unknown as never)

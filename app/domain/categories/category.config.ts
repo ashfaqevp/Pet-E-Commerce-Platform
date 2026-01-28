@@ -15,20 +15,14 @@ export const CATEGORY_CONFIG: CategoryConfig = {
 
   type: {
     label: 'Product Type',
-    dependsOn: 'pet',
-    rules: [
-      {
-        when: { category: 'pet', values: ['cat', 'dog', 'bird', 'fish', 'other'] },
-        options: [
-          { id: 'food', label: 'Food & Nutrition' },
-          { id: 'treats', label: 'Treats & Supplements' },
-          { id: 'health', label: 'Health & Wellness' },
-          { id: 'grooming', label: 'Grooming & Hygiene' },
-          { id: 'accessories', label: 'Accessories & Essentials' },
-          { id: 'equipment', label: 'Equipment & Hardware' },
-          { id: 'habitat', label: 'Tanks, Cages & Habitat' },
-        ],
-      },
+    options: [
+      { id: 'food', label: 'Food & Nutrition' },
+      { id: 'treats', label: 'Treats & Supplements' },
+      { id: 'health', label: 'Health & Wellness' },
+      { id: 'grooming', label: 'Grooming & Hygiene' },
+      { id: 'accessories', label: 'Accessories & Essentials' },
+      { id: 'aquarium_equipment', label: 'Aquarium & Water Equipment' },
+      { id: 'habitat', label: 'Tanks, Cages & Habitat' },
     ],
   },
 
@@ -66,12 +60,17 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   unit: {
     label: 'Unit',
     options: [
-      { id: 'g', label: 'Gram (g)' },
-      { id: 'kg', label: 'Kilogram (kg)' },
-      { id: 'ml', label: 'Millilitre (ml)' },
-      { id: 'l', label: 'Litre (L)' },
       { id: 'cm', label: 'Centimetre (cm)' },
+      { id: 'g', label: 'Gram (g)' },
+      { id: 'inch', label: 'Inch (in)' },
+      { id: 'kg', label: 'Kilogram (kg)' },
+      { id: 'liter', label: 'Litre (L)' },
+      { id: 'meter', label: 'Metre (m)' },
+      { id: 'ml', label: 'Millilitre (ml)' },
+      { id: 'mm', label: 'Millimetre (mm)' },
+      { id: 'model', label: 'Model' },
       { id: 'pcs', label: 'Pieces (pcs)' },
+      { id: 'piece', label: 'Piece' },
       { id: 'watt', label: 'Watt (W)' },
     ],
   },
@@ -99,12 +98,14 @@ flavour: {
         { id: 'turkey', label: 'Turkey' },
         { id: 'game', label: 'Game Meat' },
         { id: 'meat_mix', label: 'Meat Mix' },
+        { id: 'chicken_salmon', label: 'Chicken Salmon' },
 
         // =====================
         // Fish & Seafood
         // =====================
         { id: 'tuna', label: 'Tuna' },
         { id: 'salmon', label: 'Salmon' },
+        { id: 'chicken salmon', label: 'Chicken Salmon' },
         { id: 'sardine', label: 'Sardine' },
         { id: 'mackerel', label: 'Mackerel' },
         { id: 'anchovy', label: 'Anchovy' },
@@ -135,6 +136,7 @@ flavour: {
         { id: 'egg', label: 'Egg' },
         { id: 'insect', label: 'Insect / Worms' },
         { id: 'gourmet', label: 'Gourmet' },
+        { id: 'mix', label: 'Mix' },
       ],
     },
   ],

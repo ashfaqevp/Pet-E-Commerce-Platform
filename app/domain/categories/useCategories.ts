@@ -5,7 +5,7 @@ import type { CategoryContext, CategoryKey } from './category.types'
 export const useCategories = () => {
   const context = reactive<CategoryContext>({})
 
-  const setCategory = (key: CategoryKey, value: string) => {
+  const setCategory = (key: CategoryKey, value: string | string[]) => {
     context[key] = value
   }
 

@@ -30,4 +30,4 @@ export interface CategoryConfigItem {
 
 export type CategoryConfig = Record<CategoryKey, CategoryConfigItem>
 
-export type CategoryContext = Partial<Record<CategoryKey, string>>
+export type CategoryContext = Partial<Record<CategoryKey, string | string[]>>

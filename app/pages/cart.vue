@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
+import { useProfile } from '@/composables/useProfile'
 import { toast } from 'vue-sonner'
 import PageHeader from '@/components/common/PageHeader.vue'
 
@@ -25,6 +26,7 @@ useSeoMeta({
 
 const { loadCartWithProducts, updateQty, removeFromCart, refreshCart } = useCart()
 const supabaseUser = useSupabaseUser()
+const { getProfile } = useProfile()
 
 const { data: serverData, pending: serverPending, error: serverError, refresh: refreshServer } = await useLazyAsyncData(
   'cart-items',
@@ -44,6 +46,16 @@ const { data: guestData, pending: guestPending, error: guestError, refresh: refr
   { server: false }
 )
 
+const { data: roleData } = await useLazyAsyncData(
+  'cart-user-role',
+  async () => {
+    if (!supabaseUser.value) return 'customer'
+    const p = await getProfile()
+    return (p?.role || 'customer') as string
+  },
+  { server: true }
+)
+
 const refreshCartList = async () => {
   if (supabaseUser.value) await refreshServer()
   else await refreshGuest()
@@ -59,6 +71,8 @@ const pending = computed(() => (supabaseUser.value ? serverPending.value : guest
 const error = computed(() => (supabaseUser.value ? serverError.value : guestError.value))
 const items = computed(() => (supabaseUser.value ? (serverData.value as CartItemWithProduct[]) || [] : (guestData.value as CartItemWithProduct[]) || []))
 
+const userRole = computed(() => (roleData.value || 'customer') as 'customer' | 'wholesaler' | 'admin')
+
 const qtyById = ref<Record<string, number>>({})
 watchEffect(() => {
   const map: Record<string, number> = {}
@@ -72,7 +86,13 @@ const setItemLoading = (id: string, v: boolean) => { loadingById.value[id] = v }
 
 const formatOMR = (v: number) => new Intl.NumberFormat('en-OM', { style: 'currency', currency: 'OMR', minimumFractionDigits: 2 }).format(v)
 
-const subtotal = computed(() => items.value.reduce((sum, i) => sum + (Number(i.product.retail_price ?? 0) * Number(qtyById.value[i.id] ?? i.quantity ?? 1)), 0))
+const unitPriceOf = (p: CartItemWithProduct['product']) => {
+  const r = p.retail_price
+  const w = p.wholesale_price
+  if (userRole.value === 'wholesaler' && w != null) return Number(w || 0)
+  return Number(r || 0)
+}
+const subtotal = computed(() => items.value.reduce((sum, i) => sum + unitPriceOf(i.product) * Number(qtyById.value[i.id] ?? i.quantity ?? 1), 0))
 
 const applyQty = async (item: CartItemWithProduct, next: number) => {
   const id = item.id
@@ -173,7 +193,7 @@ const goCheckout = () => {
                     <img :src="item.product.thumbnail_url || '/images/placeholder.svg'" alt="Product image" class="w-20 h-20 object-cover rounded-lg" />
                     <div class="flex-1">
                       <h4 class="font-medium text-foreground">{{ item.product.name }}</h4>
-                      <p class="text-sm text-muted-foreground">{{ formatOMR(Number(item.product.retail_price ?? 0)) }}</p>
+                      <p class="text-sm text-muted-foreground">{{ formatOMR(unitPriceOf(item.product)) }}</p>
                       <div class="flex items-center gap-2 mt-2">
                         <Button
                           variant="outline"

@@ -9,6 +9,7 @@ export interface AdminProduct {
   size?: string | null
   flavour?: string | null
   retail_price: number | null
+  wholesale_price?: number | null
   stock_quantity: number
   created_at: string
   is_active: boolean
@@ -30,6 +31,7 @@ export interface AdminProductInput {
   size?: string | null
   flavour?: string | null
   retail_price?: number | null
+  wholesale_price?: number | null
   stock_quantity?: number
   is_active?: boolean
   thumbnail_url?: string | null

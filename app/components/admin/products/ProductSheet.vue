@@ -18,6 +18,7 @@ interface Emits {
     size?: string
     flavour?: string
     retail_price: number
+    wholesale_price?: number | null
     stock_quantity: number
     description?: string
     default_rating: number | null
@@ -58,6 +59,7 @@ const schema = toTypedSchema(
       size: z.number().min(0).optional(),
       flavour: z.string().optional(),
       price: z.number().min(0),
+      wholesale_price: z.number().min(0).optional(),
       offer_percentage: z.number().min(0).max(90).optional(),
       stock_quantity: z.number().min(0).default(1000),
       default_rating: z.number().min(0).max(5).default(4.5),
@@ -88,7 +90,7 @@ const { handleSubmit, isSubmitting, setValues, submitCount, resetForm } = useFor
   validationSchema: schema,
   initialValues: {
     name: '', description: '', pet: '', type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
-    price: 0, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
+    price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
   },
 })
 
@@ -101,6 +103,7 @@ const { value: unit, errorMessage: unitError, meta: unitMeta } = useField<string
 const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<number | undefined>('size')
 const { value: flavour, errorMessage: flavourError, meta: flavourMeta } = useField<string | undefined>('flavour')
 const { value: price, errorMessage: priceError, meta: priceMeta } = useField<number>('price')
+const { value: wholesalePrice, errorMessage: wholesalePriceError, meta: wholesalePriceMeta } = useField<number | undefined>('wholesale_price')
 const { value: offerPct, errorMessage: offerPctError, meta: offerPctMeta } = useField<number | undefined>('offer_percentage')
 const { value: stockQty, errorMessage: stockQtyError, meta: stockQtyMeta } = useField<number>('stock_quantity')
 const { value: defaultRating, errorMessage: defaultRatingError, meta: defaultRatingMeta } = useField<number>('default_rating')
@@ -159,6 +162,7 @@ watch(() => props.open, async (open) => {
       size: parseSizeToNumber(initialSize) ?? undefined,
       flavour: initialFlavour ?? undefined,
       price: Number(props.initial?.retail_price ?? 0),
+      wholesale_price: props.initial?.wholesale_price != null ? Number(props.initial.wholesale_price) : undefined,
       offer_percentage: undefined,
       stock_quantity: 1000,
       default_rating: 4.5,
@@ -184,7 +188,7 @@ watch(() => props.open, async (open) => {
     resetForm({
       values: {
         name: '', description: '', pet: '', type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
-        price: 0, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
+        price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
       },
     })
     brand.value = ''
@@ -257,15 +261,16 @@ const onSubmit = async () => {
       size: formatSizeToString(values.size),
       flavour: values.flavour,
       retail_price: values.price,
+      wholesale_price: values.wholesale_price ?? null,
       stock_quantity: 1000,
-      default_rating: 4.5,
+      default_rating: values.default_rating,
       is_base_product: values.product_kind === 'base',
-      base_product_id: values.product_kind === 'variant' ? (values.base_product_id ?? null) : null,
+      base_product_id: values.product_kind === 'base' ? undefined : (values.base_product_id || undefined),
       thumbnailFile: thumbnailFile.value,
       galleryFiles: galleryFiles.value,
       existingThumbnailUrl: existingThumbnailUrl.value,
       existingGalleryUrls: existingGalleryUrls.value,
-      brand: brand.value || null,
+      brand: brand.value.trim() || undefined,
     })
   })()
 }
@@ -431,6 +436,11 @@ const filteredBaseProducts = computed(() => {
                 <Label for="price">Price</Label>
                 <Input id="price" type="number" step="0.01" v-model.number="price" class="w-full" />
                 <p v-if="priceError && priceMeta.touched" class="text-destructive text-xs">{{ priceError }}</p>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <Label for="wholesale-price">Wholesale Price</Label>
+                <Input id="wholesale-price" type="number" step="0.01" v-model.number="wholesalePrice" class="w-full" />
+                <p v-if="wholesalePriceError && wholesalePriceMeta.touched" class="text-destructive text-xs">{{ wholesalePriceError }}</p>
               </div>
               <!-- <div class="flex flex-col gap-1.5">
                 <Label for="offer">Offer %</Label>

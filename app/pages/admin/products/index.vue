@@ -271,7 +271,7 @@ watch(petType, (val) => {
   }
 })
 
-const onSubmitSheet = async (payload: { name: string; description?: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[]; brand?: string | null }) => {
+const onSubmitSheet = async (payload: { name: string; description?: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; wholesale_price?: number | null; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[]; brand?: string | null }) => {
   const { create, update, uploadProductImages } = useAdminProducts()
   try {
     if (editProduct.value?.id) {
@@ -291,6 +291,7 @@ const onSubmitSheet = async (payload: { name: string; description?: string; pet_
         size: payload.size ?? null,
         flavour: payload.flavour ?? null,
         retail_price: payload.retail_price,
+        wholesale_price: payload.wholesale_price ?? null,
         stock_quantity: payload.stock_quantity ?? 0,
         default_rating: payload.default_rating ?? null,
         base_product_id: payload.is_base_product ? productId : (payload.base_product_id ?? null),
@@ -310,6 +311,7 @@ const onSubmitSheet = async (payload: { name: string; description?: string; pet_
         size: payload.size ?? null,
         flavour: payload.flavour ?? null,
         retail_price: payload.retail_price,
+        wholesale_price: payload.wholesale_price ?? null,
         stock_quantity: payload.stock_quantity ?? 0,
         default_rating: payload.default_rating ?? null,
         base_product_id: payload.is_base_product ? null : (payload.base_product_id ?? null),
@@ -490,7 +492,12 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
               <TableCell class="py-3 text-center">
                 <Badge variant="outline">{{ row.original.brand || '—' }}</Badge>
               </TableCell>
-              <TableCell class="py-3 text-right">{{ formatCurrency(row.original.retail_price) }}</TableCell>
+              <TableCell class="py-3 text-right">
+                <div class="flex flex-col items-end">
+                  <span>{{ formatCurrency(row.original.retail_price) }}</span>
+                  <span class="text-xs text-muted-foreground">w/s: {{ row.original.wholesale_price != null ? formatCurrency(row.original.wholesale_price) : '—' }}</span>
+                </div>
+              </TableCell>
               <TableCell class="py-3 text-center">
                 <div class="flex items-center justify-center gap-1">
                   <Icon v-for="i in getRatingParts(row.original.default_rating).full" :key="`f-${i}`" name="lucide:star" class="h-3.5 w-3.5 text-[#FF9500]" />

@@ -23,7 +23,7 @@
 
       <div class="flex items-center justify-between">
         <div class="flex items-baseline gap-1">
-          <span class="font-medium text-sm sm:text-xl text-secondary">{{ formatOMR(product.price) }}</span>
+          <span class="font-medium text-sm sm:text-xl text-secondary">{{ formatOMR(displayPrice) }}</span>
           <span v-if="product.discount && product.discount > 0" class="text-muted-foreground line-through text-[10px]">{{ formatOMR(originalPrice) }}</span>
         </div>
         <Button class="size-7 md:size-8 p-0 rounded-full bg-accent text-accent-foreground hover:bg-accent/90" @click.stop="onAdd">
@@ -40,6 +40,8 @@ import { Button } from '@/components/ui/button'
 import { formatOMR } from '@/utils'
 import { useCart } from '@/composables/useCart'
 import { toast } from 'vue-sonner'
+import { useLazyAsyncData, useSupabaseUser } from '#imports'
+import { useProfile } from '@/composables/useProfile'
 
 interface Product {
   id: string
@@ -49,16 +51,38 @@ interface Product {
   rating: number
   discount?: number
   image?: string
+  retail_price?: number | null
+  wholesale_price?: number | null
 }
 
 const props = defineProps<{ product: Product }>()
 const placeholder = '/images/placeholder.svg'
 
+const supabaseUser = useSupabaseUser()
+const { getProfile } = useProfile()
+const { data: roleData } = await useLazyAsyncData(
+  'card-user-role',
+  async () => {
+    if (!supabaseUser.value) return 'customer'
+    const p = await getProfile()
+    return (p?.role || 'customer') as string
+  },
+  { server: true }
+)
+const userRole = computed(() => (roleData.value || 'customer') as 'customer' | 'wholesaler' | 'admin')
+
+const displayPrice = computed(() => {
+  const w = props.product.wholesale_price
+  const r = props.product.retail_price ?? props.product.price
+  if (userRole.value === 'wholesaler' && w != null) return Number(w || 0)
+  return Number(r || 0)
+})
+
 const originalPrice = computed(() => {
   const discount = props.product.discount || 0
-  if (discount <= 0) return props.product.price
+  if (discount <= 0) return displayPrice.value
   const factor = 1 - discount / 100
-  return factor > 0 ? props.product.price / factor : props.product.price
+  return factor > 0 ? displayPrice.value / factor : displayPrice.value
 })
 
 const router = useRouter()

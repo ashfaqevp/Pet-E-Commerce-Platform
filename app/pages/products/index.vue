@@ -32,7 +32,7 @@ useSeoMeta({
 interface ProductRow {
   id: string
   name: string
-  pet_type?: string | null
+  pet_type?: string[] | null
   product_type?: string | null
   brand?: string | null
   age?: string | null
@@ -228,7 +228,7 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
       .order('row_index', { ascending: true })
       .order('id', { ascending: false })
 
-    if (params.value.pet) query = query.eq('pet_type', params.value.pet)
+    if (params.value.pet) query = query.contains('pet_type', [params.value.pet])
     if (params.value.type) query = query.eq('product_type', params.value.type)
     if (params.value.age) query = query.eq('age', params.value.age)
     if (params.value.flavour) query = query.eq('flavour', params.value.flavour)

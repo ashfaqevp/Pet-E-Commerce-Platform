@@ -271,7 +271,7 @@ watch(petType, (val) => {
   }
 })
 
-const onSubmitSheet = async (payload: { name: string; description?: string; pet_type: string; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; wholesale_price?: number | null; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[]; brand?: string | null }) => {
+const onSubmitSheet = async (payload: { name: string; description?: string; pet_type: string[]; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; retail_price: number; wholesale_price?: number | null; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[]; brand?: string | null }) => {
   const { create, update, uploadProductImages } = useAdminProducts()
   try {
     if (editProduct.value?.id) {
@@ -484,7 +484,14 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
                 </div>
               </TableCell>
               <TableCell class="py-3 text-center">
-                <Badge variant="outline">{{ petLabelMap[row.original.pet_type] ?? row.original.pet_type }}</Badge>
+                <div class="flex flex-wrap items-center justify-center gap-1">
+                  <template v-if="Array.isArray(row.original.pet_type)">
+                    <Badge v-for="p in row.original.pet_type" :key="p" variant="outline">{{ petLabelMap[p] ?? p }}</Badge>
+                  </template>
+                  <template v-else>
+                    <Badge variant="outline">{{ petLabelMap[String(row.original.pet_type || '')] ?? String(row.original.pet_type || '') }}</Badge>
+                  </template>
+                </div>
               </TableCell>
               <TableCell class="py-3 text-center">
                 <Badge variant="outline">{{ typeLabelMap[row.original.product_type] ?? row.original.product_type }}</Badge>

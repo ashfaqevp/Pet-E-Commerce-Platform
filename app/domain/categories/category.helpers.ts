@@ -19,16 +19,19 @@ export const getCategoryOptions = (
 
   const dependsValue = context[config.dependsOn]
   if (!config.rules) return []
-  if (!dependsValue) {
+  const dependsArr = Array.isArray(dependsValue)
+    ? dependsValue
+    : (dependsValue ? [dependsValue] : [])
+  if (dependsArr.length === 0) {
     const all = config.rules.flatMap(rule => rule.options)
     return all.filter((o, i, arr) => arr.findIndex(x => x.id === o.id) === i)
   }
 
-  const matchedRule = config.rules.find(rule =>
-    rule.when.values.includes(dependsValue),
+  const matchedRules = config.rules.filter(rule =>
+    rule.when.values.some(v => dependsArr.includes(v)),
   )
-
-  return matchedRule?.options ?? []
+  const opts = matchedRules.flatMap(rule => rule.options)
+  return opts.filter((o, i, arr) => arr.findIndex(x => x.id === o.id) === i)
 }
 
 export const getCategoryLabel = (key: CategoryKey): string =>
@@ -39,7 +42,8 @@ export const isCategoryVisible = (key: CategoryKey, context: CategoryContext = {
   if (!config) return false
   if (!config.dependsOn) return true
   const dependsValue = context[config.dependsOn]
-  if (!dependsValue) return false
+  const hasDep = Array.isArray(dependsValue) ? dependsValue.length > 0 : !!dependsValue
+  if (!hasDep) return false
   return getCategoryOptions(key, context).length > 0
 }
 
@@ -50,7 +54,10 @@ export const isCategoryRequired = (key: CategoryKey, context: CategoryContext = 
   if (!config.requiredWhen) return false
   return config.requiredWhen.some(rule => {
     const v = context[rule.category]
-    return !!v && rule.values.includes(v)
+    if (Array.isArray(v)) {
+      return v.length > 0 && v.some(x => rule.values.includes(x))
+    }
+    return !!v && rule.values.includes(v as string)
   })
 }
 
@@ -67,7 +74,8 @@ export const collectCategoryIssues = (context: CategoryContext = {}): { key: Cat
   for (const k of Object.keys(CATEGORY_CONFIG) as CategoryKey[]) {
     if (isCategoryRequired(k, context)) {
       const v = context[k]
-      if (!v) {
+      const has = Array.isArray(v) ? v.length > 0 : !!v
+      if (!has) {
         issues.push({ key: k, message: `${getCategoryLabel(k)} is required` })
       }
     }

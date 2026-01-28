@@ -1,7 +1,7 @@
 export interface AdminProduct {
   id: string
   name: string
-  pet_type: string
+  pet_type: string[]
   product_type: string
   brand?: string | null
   age?: string | null
@@ -23,7 +23,7 @@ export interface AdminProduct {
 
 export interface AdminProductInput {
   name: string
-  pet_type: string
+  pet_type: string[]
   product_type: string
   brand?: string | null
   age?: string | null
@@ -63,7 +63,7 @@ export const useAdminProducts = () => {
     try {
       let q = supabase.from('products').select('*', { count: 'exact' })
       if (params.search) q = q.ilike('name', `%${params.search}%`)
-      if (params.petType) q = q.eq('pet_type', params.petType)
+      if (params.petType) q = q.contains('pet_type', [params.petType])
       if (params.productType) q = q.eq('product_type', params.productType)
       if (params.brand) q = q.eq('brand', params.brand)
       if (params.status === 'active') q = q.eq('is_active', true)

@@ -11,7 +11,7 @@ interface Emits {
   (e: 'update:open', v: boolean): void
   (e: 'submit', payload: {
     name: string
-    pet_type: string
+    pet_type: string[]
     product_type: string
     age?: string
     unit?: string
@@ -52,7 +52,7 @@ const schema = toTypedSchema(
     .object({
       name: z.string().min(1),
       description: z.string().optional(),
-      pet: z.string().min(1),
+      pet: z.array(z.string()).min(1),
       type: z.string().min(1),
       age: z.string().optional(),
       unit: z.string().optional(),
@@ -89,14 +89,14 @@ const schema = toTypedSchema(
 const { handleSubmit, isSubmitting, setValues, submitCount, resetForm } = useForm({
   validationSchema: schema,
   initialValues: {
-    name: '', description: '', pet: '', type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
+    name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
     price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
   },
 })
 
 const { value: name, errorMessage: nameError, meta: nameMeta } = useField<string>('name')
 const { value: description, errorMessage: descriptionError, meta: descriptionMeta } = useField<string | undefined>('description')
-const { value: pet, errorMessage: petError, meta: petMeta } = useField<string>('pet')
+const { value: pet, errorMessage: petError, meta: petMeta } = useField<string[]>('pet')
 const { value: type, errorMessage: typeError, meta: typeMeta } = useField<string>('type')
 const { value: age, errorMessage: ageError, meta: ageMeta } = useField<string | undefined>('age')
 const { value: unit, errorMessage: unitError, meta: unitMeta } = useField<string | undefined>('unit')
@@ -139,13 +139,13 @@ const brandValue = computed<string>({
 watch(() => props.open, async (open) => {
   if (open) {
     initializing.value = true
-    const initialPet = props.initial?.pet_type ?? ''
+    const initialPetArray = Array.isArray(props.initial?.pet_type) ? (props.initial!.pet_type as string[]) : ([])
     const initialType = props.initial?.product_type ?? ''
     const initialUnit = props.initial?.unit ?? undefined
     const initialSize = props.initial?.size ?? undefined
     const initialFlavour = props.initial?.flavour ?? undefined
     const initialAge = props.initial?.age ?? undefined
-    if (initialPet) setCategory('pet', initialPet); else clearCategory('pet')
+    if (initialPetArray && initialPetArray.length) setCategory('pet', initialPetArray); else clearCategory('pet')
     await nextTick()
     if (initialType) setCategory('type', initialType); else clearCategory('type')
     if (initialUnit) setCategory('unit', initialUnit); else clearCategory('unit')
@@ -155,7 +155,7 @@ watch(() => props.open, async (open) => {
     setValues({
       name: props.initial?.name ?? '',
       description: props.initial?.description ?? '',
-      pet: initialPet,
+      pet: initialPetArray,
       type: initialType,
       age: initialAge ?? undefined,
       unit: initialUnit ?? undefined,
@@ -173,7 +173,7 @@ watch(() => props.open, async (open) => {
     }, false)
     await nextTick()
     brand.value = props.initial?.brand ?? ''
-    valueMap.pet.value = initialPet || undefined
+    valueMap.pet.value = initialPetArray || undefined
     valueMap.type.value = initialType || undefined
     valueMap.unit.value = initialUnit || undefined
     valueMap.age.value = initialAge || undefined
@@ -187,7 +187,7 @@ watch(() => props.open, async (open) => {
     initializing.value = true
     resetForm({
       values: {
-        name: '', description: '', pet: '', type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
+        name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
         price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
       },
     })
@@ -211,8 +211,8 @@ watch(() => props.open, async (open) => {
 
 const categoryKeys = ['pet','type','age','unit','flavour'] as const
 const sizeStr = ref<string | undefined>(undefined)
-const valueMap: Record<CategoryKey, Ref<string | undefined>> = {
-  pet: pet as unknown as Ref<string | undefined>,
+const valueMap: Record<CategoryKey, Ref<string[] | string | undefined>> = {
+  pet: pet as unknown as Ref<string[] | undefined>,
   type: type as unknown as Ref<string | undefined>,
   age, unit, size: sizeStr, flavour,
 }
@@ -236,7 +236,15 @@ const attachWatcher = (k: CategoryKey) => {
   })
 }
 
-attachWatcher('pet')
+watch(pet, (v) => {
+  if (v && v.length) setCategory('pet', v)
+  if (!initializing.value) {
+    for (const dep of getDependents('pet')) {
+      clearCategory(dep)
+      clearField(dep)
+    }
+  }
+})
 attachWatcher('type')
 attachWatcher('unit')
 attachWatcher('age')
@@ -371,10 +379,10 @@ const filteredBaseProducts = computed(() => {
         </div>
         <SheetDescription />
       </SheetHeader>
-      <div class="flex-1 overflow-y-auto px-6 py-6 pb-0">
-        <form class="flex flex-col space-y-4 h-full" @submit.prevent="onSubmit">
-          <div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 flex-1 justify-start">
+  <div class="flex-1 overflow-y-auto px-6 py-6 pb-0">
+    <form class="flex flex-col space-y-4 h-full" @submit.prevent="onSubmit">
+      <div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 flex-1 justify-start">
               <div class="flex flex-col gap-1.5 md:col-span-2">
                 <Label for="name">Name</Label>
                 <Input id="name" v-model="name" placeholder="Product name" class="w-full" />
@@ -414,16 +422,37 @@ const filteredBaseProducts = computed(() => {
                 <Textarea id="description" v-model="description" placeholder="Product description" class="w-full min-h-24" />
                 <p v-if="descriptionError && descriptionMeta.touched" class="text-destructive text-xs">{{ descriptionError }}</p>
               </div>
-              <div v-for="k in visibleKeys" :key="k" class="flex flex-col gap-1.5">
-                <Label :for="k">{{ getCategoryLabel(k) }}</Label>
-                <Select v-model="valueMap[k].value">
-                  <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p v-if="errorMap[k]?.value && (k === 'pet' ? petMeta.touched : k === 'type' ? typeMeta.touched : k === 'age' ? ageMeta.touched : k === 'unit' ? unitMeta.touched : flavourMeta.touched)" class="text-destructive text-xs">{{ errorMap[k]?.value }}</p>
-              </div>
+          <div class="flex flex-col gap-1.5 md:col-span-2">
+            <Label for="pet">{{ getCategoryLabel('pet') }}</Label>
+            <TagsInput v-model="pet">
+              <TagsInputItem v-for="p in (pet || [])" :key="p" :text="(optsFor('pet')?.find(o => o.id === p)?.label ?? p)" />
+              <TagsInputInput placeholder="Select pet types" />
+            </TagsInput>
+            <div class="flex flex-wrap gap-2 mt-2">
+              <Button
+                v-for="opt in (optsFor('pet') ?? [])"
+                :key="opt.id"
+                type="button"
+                :variant="(pet || []).includes(opt.id) ? 'default' : 'outline'"
+                class="h-8 px-2"
+                @click="() => { const set = new Set(pet || []); if (set.has(opt.id)) set.delete(opt.id); else set.add(opt.id); pet = Array.from(set); }"
+              >
+                {{ opt.label }}
+              </Button>
+            </div>
+            <p v-if="petError && petMeta.touched" class="text-destructive text-xs">{{ petError }}</p>
+          </div>
+
+          <div v-for="k in visibleKeys" :key="k" v-if="k !== 'pet'" class="flex flex-col gap-1.5">
+            <Label :for="k">{{ getCategoryLabel(k) }}</Label>
+            <Select v-model="valueMap[k].value">
+              <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p v-if="errorMap[k]?.value && (k === 'type' ? typeMeta.touched : k === 'age' ? ageMeta.touched : k === 'unit' ? unitMeta.touched : flavourMeta.touched)" class="text-destructive text-xs">{{ errorMap[k]?.value }}</p>
+          </div>
               <div class="flex flex-col gap-1.5">
                 <Label for="size">Size</Label>
                 <div class="flex items-center gap-2">

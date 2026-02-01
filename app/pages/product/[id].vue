@@ -59,6 +59,8 @@ interface CardProduct {
   rating: number;
   discount?: number;
   image?: string;
+  retail_price?: number | null;
+  wholesale_price?: number | null;
 }
 
 const supabaseUser = useSupabaseUser()
@@ -82,6 +84,8 @@ const mapRowToCard = (row: ProductRow): CardProduct => ({
   rating: Number(row.default_rating || 0),
   discount: 0,
   image: row.thumbnail_url || undefined,
+  retail_price: row.retail_price ?? null,
+  wholesale_price: row.wholesale_price ?? null,
 })
 
 const route = useRoute();

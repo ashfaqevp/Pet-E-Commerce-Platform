@@ -49,6 +49,7 @@ interface ProductRow {
   id: string
   name: string
   retail_price?: number | null
+  wholesale_price?: number | null
   default_rating?: number | null
   thumbnail_url?: string | null
 }
@@ -61,6 +62,8 @@ interface CardProduct {
   rating: number
   discount?: number
   image?: string
+  retail_price?: number | null
+  wholesale_price?: number | null
 }
 
 const mapRow = (row: ProductRow): CardProduct => ({
@@ -71,6 +74,8 @@ const mapRow = (row: ProductRow): CardProduct => ({
   rating: Number(row.default_rating || 0),
   discount: 0,
   image: row.thumbnail_url || undefined,
+  retail_price: row.retail_price ?? null,
+  wholesale_price: row.wholesale_price ?? null,
 })
 
 const { data: featuredData, pending: featuredPending, error: featuredError, refresh: refreshFeatured } = await useLazyAsyncData(
@@ -78,7 +83,7 @@ const { data: featuredData, pending: featuredPending, error: featuredError, refr
   async () => {
     let q = supabase
       .from('products')
-      .select('id,name,retail_price,default_rating,thumbnail_url', { count: 'exact' })
+      .select('id,name,retail_price,wholesale_price,default_rating,thumbnail_url', { count: 'exact' })
       .eq('is_active', true)
       .eq('is_featured', true)
       .order('created_at', { ascending: false })

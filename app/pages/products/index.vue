@@ -40,6 +40,7 @@ interface ProductRow {
   size?: string | null
   flavour?: string | null
   retail_price?: number | null
+  wholesale_price?: number | null
   default_rating?: number | null
   thumbnail_url?: string | null
   is_active?: boolean | null
@@ -55,6 +56,8 @@ interface CardProduct {
   rating: number
   discount?: number
   image?: string
+  retail_price?: number | null
+  wholesale_price?: number | null
 }
 
 const supabase = useSupabaseClient()
@@ -198,6 +201,8 @@ function mapProductRow(row: ProductRow): CardProduct {
     rating: row.default_rating ?? 0,
     discount: 0,
     image: row.thumbnail_url || undefined,
+    retail_price: row.retail_price ?? null,
+    wholesale_price: row.wholesale_price ?? null,
   }
 }
 

@@ -466,11 +466,12 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
 
                   </div>
                   <div class="flex flex-col text-start ">
-                    <span class="font-medium">{{ row.original.name }}
+                    <div class="flex items-center gap-1">
+                      <span class="font-medium block max-w-[250px] truncate">{{ row.original.name }}</span>
                       <span v-if="row.original.is_featured" class="text-[#FF9500]">
-                        <Icon name="material-symbols:star" class="h-4 w-4 inline" />
+                        <Icon name="material-symbols:star" class="h-4 w-4" />
                       </span>
-                    </span>
+                    </div>
                     <span class="text-xs text-muted-foreground">
                       <template v-if="row.original.base_product_id && row.original.base_product_id !== row.original.id">
                          {{ baseNameById[row.original.base_product_id] ?? '—' }}

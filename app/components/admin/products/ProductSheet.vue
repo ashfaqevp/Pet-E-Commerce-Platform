@@ -252,6 +252,7 @@ attachWatcher('age')
 attachWatcher('flavour')
 
 const visibleKeys = computed(() => getVisibleKeysFromCtx())
+const otherCategoryKeys = computed(() => visibleKeys.value.filter(k => k !== 'pet'))
 
 watch(productKind, (v) => {
   if (v === 'base') baseProductId.value = undefined
@@ -423,9 +424,22 @@ const filteredBaseProducts = computed(() => {
                 <p v-if="descriptionError && descriptionMeta.touched" class="text-destructive text-xs">{{ descriptionError }}</p>
               </div>
 
-          <div v-for="k in visibleKeys" :key="k" v-if="k !== 'pet'" class="flex flex-col gap-1.5">
+          <!-- Pet Type (multi-select) -->
+          <div v-if="visibleKeys.includes('pet')" class="flex flex-col gap-1.5 md:col-span-2">
+            <Label for="pet">{{ getCategoryLabel('pet') }}</Label>
+            <Select v-model="valueMap.pet.value" multiple>
+              <SelectTrigger id="pet" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem v-for="opt in (optsFor('pet') ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
+              </SelectContent>
+            </Select>
+            <p v-if="petError && petMeta.touched" class="text-destructive text-xs">{{ petError }}</p>
+          </div>
+
+          <!-- Other categories (single-select) -->
+          <div v-for="k in otherCategoryKeys" :key="k" class="flex flex-col gap-1.5">
             <Label :for="k">{{ getCategoryLabel(k) }}</Label>
-            <Select v-model="valueMap[k].value" multiple>
+            <Select v-model="valueMap[k].value">
               <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>

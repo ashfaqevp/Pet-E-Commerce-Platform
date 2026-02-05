@@ -122,59 +122,55 @@ function selectAndOpen(key: FilterKey, id: string) {
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem v-if="brandOpts.length > 0" value="brand">
+      <!-- Type Filter -->
+      <AccordionItem value="type">
         <AccordionTrigger class="text-sm font-medium">
-          Brand
+          Product Type
         </AccordionTrigger>
         <AccordionContent>
-          <RadioGroup :model-value="filters.brand" @update:modelValue="v => selectAndOpen('brand', String(v))">
+          <RadioGroup :model-value="filters.type" @update:modelValue="v => selectAndOpen('type', String(v))">
             <div :class="containerClass">
-              <Label :for="'brand-all'" class="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem id="brand-all" value="" />
+              <Label :for="'type-all'" class="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="type-all" value="" />
                 <span class="text-sm">All</span>
               </Label>
               <Label
-                v-for="b in brandOpts"
-                :key="b"
+                v-for="option in typeOpts"
+                :key="option.id"
                 class="flex items-center gap-2 cursor-pointer"
-                :for="`brand-${b}`"
+                :for="`type-${option.id}`"
               >
-                <RadioGroupItem :id="`brand-${b}`" :value="b" />
-                <span class="text-sm">{{ b }}</span>
+                <RadioGroupItem :id="`type-${option.id}`" :value="option.id" />
+                <span class="text-sm">{{ option.label }}</span>
               </Label>
             </div>
           </RadioGroup>
         </AccordionContent>
       </AccordionItem>
 
-      <!-- Type Filter -->
-      <AccordionItem value="type" :disabled="typeOpts.length === 0">
+      <!-- Flavour Filter -->
+      <AccordionItem v-if="flavourOpts.length > 0" value="flavour">
         <AccordionTrigger class="text-sm font-medium">
-          Product Type
+          Flavour
         </AccordionTrigger>
         <AccordionContent>
-          <div v-if="typeOpts.length === 0" class="text-sm text-muted-foreground py-2">
-            Select a pet type first
-          </div>
-          <div v-else>
-            <RadioGroup :model-value="filters.type" @update:modelValue="v => selectAndOpen('type', String(v))">
-              <div :class="containerClass">
-                <Label :for="'type-all'" class="flex items-center gap-2 cursor-pointer">
-                  <RadioGroupItem id="type-all" value="" />
-                  <span class="text-sm">All</span>
-                </Label>
-                <Label
-                  v-for="option in typeOpts"
-                  :key="option.id"
-                  class="flex items-center gap-2 cursor-pointer"
-                  :for="`type-${option.id}`"
-                >
-                  <RadioGroupItem :id="`type-${option.id}`" :value="option.id" />
-                  <span class="text-sm">{{ option.label }}</span>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
+          <RadioGroup :model-value="filters.flavour" @update:modelValue="v => selectAndOpen('flavour', String(v))">
+            <div :class="containerClass">
+              <Label :for="'flavour-all'" class="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="flavour-all" value="" />
+                <span class="text-sm">All</span>
+              </Label>
+              <Label
+                v-for="option in flavourOpts"
+                :key="option.id"
+                class="flex items-center gap-2 cursor-pointer"
+                :for="`flavour-${option.id}`"
+              >
+                <RadioGroupItem :id="`flavour-${option.id}`" :value="option.id" />
+                <span class="text-sm">{{ option.label }}</span>
+              </Label>
+            </div>
+          </RadioGroup>
         </AccordionContent>
       </AccordionItem>
 
@@ -204,26 +200,26 @@ function selectAndOpen(key: FilterKey, id: string) {
         </AccordionContent>
       </AccordionItem>
 
-      <!-- Flavour Filter -->
-      <AccordionItem v-if="flavourOpts.length > 0" value="flavour">
+      <!-- Brand Filter (last) -->
+      <AccordionItem v-if="brandOpts.length > 0" value="brand">
         <AccordionTrigger class="text-sm font-medium">
-          Flavour
+          Brand
         </AccordionTrigger>
         <AccordionContent>
-          <RadioGroup :model-value="filters.flavour" @update:modelValue="v => selectAndOpen('flavour', String(v))">
+          <RadioGroup :model-value="filters.brand" @update:modelValue="v => selectAndOpen('brand', String(v))">
             <div :class="containerClass">
-              <Label :for="'flavour-all'" class="flex items-center gap-2 cursor-pointer">
-                <RadioGroupItem id="flavour-all" value="" />
+              <Label :for="'brand-all'" class="flex items-center gap-2 cursor-pointer">
+                <RadioGroupItem id="brand-all" value="" />
                 <span class="text-sm">All</span>
               </Label>
               <Label
-                v-for="option in flavourOpts"
-                :key="option.id"
+                v-for="b in brandOpts"
+                :key="b"
                 class="flex items-center gap-2 cursor-pointer"
-                :for="`flavour-${option.id}`"
+                :for="`brand-${b}`"
               >
-                <RadioGroupItem :id="`flavour-${option.id}`" :value="option.id" />
-                <span class="text-sm">{{ option.label }}</span>
+                <RadioGroupItem :id="`brand-${b}`" :value="b" />
+                <span class="text-sm">{{ b }}</span>
               </Label>
             </div>
           </RadioGroup>

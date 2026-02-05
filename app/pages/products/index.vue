@@ -106,7 +106,7 @@ const filterSignature = computed(() => {
 
 // Computed filter options based on dependencies
 const typeOpts = computed(() => {
-  return getFilteredOptions(CATEGORY_CONFIG.type.rules, qPet.value)
+  return (CATEGORY_CONFIG.type.options ?? []) as CategoryOption[]
 })
 
 const ageOpts = computed(() => {
@@ -161,7 +161,7 @@ function getLabelFromRules(rules: readonly CategoryRule[] | undefined, id: strin
 function getLabel(category: CategoryKey, id: string): string {
   if (!id) return ''
   if (category === 'pet') return CATEGORY_CONFIG.pet.options?.find(o => o.id === id)?.label ?? ''
-  if (category === 'type') return getLabelFromRules(CATEGORY_CONFIG.type.rules, id)
+  if (category === 'type') return CATEGORY_CONFIG.type.options?.find(o => o.id === id)?.label ?? ''
   if (category === 'age') return getLabelFromRules(CATEGORY_CONFIG.age.rules, id)
   if (category === 'flavour') return getLabelFromRules(CATEGORY_CONFIG.flavour.rules, id)
   return ''
@@ -458,7 +458,7 @@ const apiError = computed(() => {
             <div class="space-y-4 py-4">
               <ProductFilters
                 :filters="mobileFilters"
-                :type-opts="getFilteredOptions(CATEGORY_CONFIG.type.rules, mobileFilters.pet)"
+                :type-opts="CATEGORY_CONFIG.type.options ?? []"
                 :age-opts="getFilteredOptions(CATEGORY_CONFIG.age.rules, mobileFilters.pet)"
                 :flavour-opts="getFilteredOptions(CATEGORY_CONFIG.flavour.rules, mobileFilters.type)"
                 :brand-opts="brandOpts"

@@ -56,7 +56,7 @@ const brandValue = computed<string>({
   set(v: string) { brand.value = v === '__none__' ? '' : v }
 })
 const newBrand = ref('')
-const { data: brandData } = await useLazyAsyncData(
+const { data: brandData } = await useLazyAsyncData<string[]>(
   'admin-form-brands',
   async () => {
     const { data, error } = await supabase

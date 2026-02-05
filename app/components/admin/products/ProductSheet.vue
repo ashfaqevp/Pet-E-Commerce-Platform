@@ -246,8 +246,9 @@ watch(pet, async (v) => {
   }
   await nextTick()
   const ageOptions = optionMap.age.value
-  if (ageOptions.length === 1 && !valueMap.age.value) {
-    valueMap.age.value = ageOptions[0].id
+  const single = ageOptions[0]
+  if (ageOptions.length === 1 && single && !valueMap.age.value) {
+    valueMap.age.value = single.id
   }
 })
 attachWatcher('type')
@@ -271,7 +272,8 @@ watch(() => optionMap.age.value, (opts) => {
       if (initialAgeVal && list.some(o => o.id === initialAgeVal)) {
         valueMap.age.value = initialAgeVal
       } else if (list.length === 1) {
-        valueMap.age.value = list[0].id
+        const only = list[0]
+        if (only) valueMap.age.value = only.id
       }
     }
   }

@@ -87,7 +87,7 @@ const { data: featuredData, pending: featuredPending, error: featuredError, refr
       .eq('is_active', true)
       .eq('is_featured', true)
       .order('created_at', { ascending: false })
-      .range(0, 11)
+      .range(0, 23)
     const { data, error } = await q
     if (error) throw error
     return (data ?? []) as ProductRow[]

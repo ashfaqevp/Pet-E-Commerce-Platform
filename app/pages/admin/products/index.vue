@@ -236,8 +236,8 @@ const markFeatured = async (id: string) => {
   const { update, countFeatured } = useAdminProducts()
   try {
     const count = await countFeatured()
-    if (count >= 8) {
-      toast.error('Maximum 8 featured products allowed')
+    if (count >= 24) {
+      toast.error('Maximum 24 featured products allowed')
       return
     }
     await update(id, { is_featured: true })

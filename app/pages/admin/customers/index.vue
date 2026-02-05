@@ -133,13 +133,15 @@ const rows = computed(() => data.value?.rows || [])
 const deletingId = ref<string | null>(null)
 const confirmDelete = async () => {
   if (!deletingId.value) return
-  const supabase = useSupabaseClient()
-  const { error: e } = await supabase.from('profiles').delete().eq('id', deletingId.value)
-  if (e) {
-    toast.error(e.message)
-  } else {
+  try {
+    await $fetch('/api/admin/delete-user', {
+      method: 'POST',
+      body: { userId: deletingId.value },
+    })
     toast.success('Customer deleted')
     refresh()
+  } catch (e: any) {
+    toast.error(e?.message || 'Delete failed')
   }
   deletingId.value = null
 }

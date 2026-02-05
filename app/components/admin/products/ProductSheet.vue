@@ -236,13 +236,18 @@ const attachWatcher = (k: CategoryKey) => {
   })
 }
 
-watch(pet, (v) => {
+watch(pet, async (v) => {
   if (v && v.length) setCategory('pet', v)
   if (!initializing.value) {
     for (const dep of getDependents('pet')) {
       clearCategory(dep)
       clearField(dep)
     }
+  }
+  await nextTick()
+  const ageOptions = optionMap.age.value
+  if (ageOptions.length === 1 && !valueMap.age.value) {
+    valueMap.age.value = ageOptions[0].id
   }
 })
 attachWatcher('type')
@@ -253,6 +258,24 @@ attachWatcher('flavour')
 
 const visibleKeys = computed(() => getVisibleKeysFromCtx())
 const otherCategoryKeys = computed(() => visibleKeys.value.filter(k => k !== 'pet'))
+
+watch(() => optionMap.age.value, (opts) => {
+  const list = opts || []
+  if (!initializing.value) {
+    const current = valueMap.age.value as string | undefined
+    if (current && !list.some(o => o.id === current)) {
+      valueMap.age.value = undefined
+    }
+    if (!valueMap.age.value) {
+      const initialAgeVal = props.initial?.age
+      if (initialAgeVal && list.some(o => o.id === initialAgeVal)) {
+        valueMap.age.value = initialAgeVal
+      } else if (list.length === 1) {
+        valueMap.age.value = list[0].id
+      }
+    }
+  }
+})
 
 watch(productKind, (v) => {
   if (v === 'base') baseProductId.value = undefined

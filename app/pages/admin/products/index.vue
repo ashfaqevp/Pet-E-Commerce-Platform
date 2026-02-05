@@ -472,7 +472,7 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
                         <Icon name="material-symbols:star" class="h-4 w-4" />
                       </span>
                     </div>
-                    <span class="text-xs text-muted-foreground">
+                    <span class="text-xs text-muted-foreground max-w-[250px] truncate">
                       <template v-if="row.original.base_product_id && row.original.base_product_id !== row.original.id">
                          {{ baseNameById[row.original.base_product_id] ?? '—' }}
                       </template>

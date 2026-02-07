@@ -79,7 +79,7 @@ const qBrand = useRouteQuery<string>('brand', '')
 // State
 const products = ref<CardProduct[]>([])
 const page = ref(1)
-const pageSize = 12
+const pageSize = 48
 const totalCount = ref(0)
 const initialLoading = computed(() => pending.value && products.value.length === 0)
 const loading = computed(() => pending.value && products.value.length > 0)

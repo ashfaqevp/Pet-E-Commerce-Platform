@@ -377,7 +377,19 @@ const clearField = (k: CategoryKey) => { valueMap[k].value = undefined }
 
 const attachWatcher = (k: CategoryKey) => {
   watch(valueMap[k], (v) => {
-    if (v) setCategory(k, v)
+    const isArr = Array.isArray(v)
+    if (isArr) {
+      const arr = v as string[]
+      if (arr && arr.length) setCategory(k, arr)
+      else clearCategory(k)
+    } else {
+      const s = v as string | undefined
+      if (!s || s === '__none__') {
+        clearCategory(k)
+      } else {
+        setCategory(k, s)
+      }
+    }
     if (!initializing.value) {
       for (const dep of getDependents(k)) {
         clearCategory(dep)
@@ -630,8 +642,8 @@ const filteredBaseProducts = computed(() => {
           <div v-for="k in otherCategoryKeys" :key="k" class="flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <Label :for="k">{{ getCategoryLabel(k) }}</Label>
-              <!-- <div class="flex items-center gap-2" v-if="k === 'unit'">
-                <Button variant="ghost" size="sm" class="h-7 px-2" @click="() => { valueMap.unit.value = undefined; clearCategory('unit') }">Clear</Button>
+              <!-- <div class="flex items-center gap-2" v-if="k === 'unit' || k === 'age' || k === 'flavour'">
+                <Button variant="ghost" size="sm" class="h-7 px-2" @click="() => { valueMap[k].value = undefined; clearCategory(k) }">Clear</Button>
               </div> -->
               <Dialog v-if="k === 'flavour'" v-model:open="flavourEditOpen">
                 <DialogTrigger as-child>
@@ -705,6 +717,8 @@ const filteredBaseProducts = computed(() => {
               <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
                 <SelectItem v-if="k === 'unit'" value="__none__">No Unit</SelectItem>
+                <SelectItem v-else-if="k === 'age'" value="__none__">No Age</SelectItem>
+                <SelectItem v-else-if="k === 'flavour'" value="__none__">No Flavour</SelectItem>
                 <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
               </SelectContent>
             </Select>

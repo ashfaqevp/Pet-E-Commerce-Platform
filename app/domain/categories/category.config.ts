@@ -23,6 +23,7 @@ export const CATEGORY_CONFIG: CategoryConfig = {
       { id: 'accessories', label: 'Accessories & Essentials' },
       { id: 'aquarium_equipment', label: 'Aquarium & Water Equipment' },
       { id: 'habitat', label: 'Tanks, Cages & Habitat' },
+      { id: 'others', label: 'Others' },
     ],
   },
 

@@ -432,6 +432,9 @@ function applyFilters() {
 onMounted(() => { resetAndRefresh() })
 
 const resetAndRefresh = async () => {
+  if (process.client) {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
   page.value = 1
   products.value = []
   await refresh()

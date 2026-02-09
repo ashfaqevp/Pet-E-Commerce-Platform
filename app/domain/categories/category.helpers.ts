@@ -18,6 +18,12 @@ export const getCategoryOptions = (
   }
 
   const dependsValue = context[config.dependsOn]
+  // Special-case: size labels appear when unit is 'size_label'
+  if (key === 'size' && config.dependsOn === 'unit' && config.options && config.options.length) {
+    const v = context['unit']
+    const units = Array.isArray(v) ? v : (v ? [v] : [])
+    if (units.includes('size_label')) return config.options
+  }
   if (!config.rules) return []
   const dependsArr = Array.isArray(dependsValue)
     ? dependsValue

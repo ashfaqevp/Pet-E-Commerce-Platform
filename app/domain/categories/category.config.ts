@@ -60,6 +60,7 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   unit: {
     label: 'Unit',
     options: [
+      { id: 'size_label', label: 'Size Label' },
       { id: 'cm', label: 'Centimetre (cm)' },
       { id: 'g', label: 'Gram (g)' },
       { id: 'inch', label: 'Inch (in)' },
@@ -78,6 +79,13 @@ export const CATEGORY_CONFIG: CategoryConfig = {
   size: {
     label: 'Size',
     dependsOn: 'unit',
+    options: [
+      { id: 'extra_small', label: 'Extra Small' },
+      { id: 'small', label: 'Small' },
+      { id: 'medium', label: 'Medium' },
+      { id: 'large', label: 'Large' },
+      { id: 'extra_large', label: 'Extra Large' },
+    ],
     rules: [],
   },
 

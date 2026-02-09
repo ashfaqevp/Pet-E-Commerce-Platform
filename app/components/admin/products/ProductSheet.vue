@@ -7,6 +7,7 @@ import type { AdminProduct } from '@/composables/admin/useAdminProducts'
 import type { Ref, ComputedRef } from 'vue'
 import type { CategoryKey, CategoryContext, CategoryOption } from '@/domain/categories'
 import { useCategories, isCategoryRequired, getCategoryLabel } from '@/domain/categories'
+import { CATEGORY_CONFIG } from '@/domain/categories/category.config'
 
 interface Emits {
   (e: 'update:open', v: boolean): void
@@ -201,7 +202,7 @@ const schema = toTypedSchema(
       type: z.string().min(1),
       age: z.string().optional(),
       unit: z.string().optional(),
-      size: z.number().min(0).optional(),
+      size: z.union([z.number().min(0), z.string()]).optional(),
       flavour: z.string().optional(),
       price: z.number().min(0),
       wholesale_price: z.number().min(0).optional(),
@@ -245,7 +246,7 @@ const { value: pet, errorMessage: petError, meta: petMeta } = useField<string[]>
 const { value: type, errorMessage: typeError, meta: typeMeta } = useField<string>('type')
 const { value: age, errorMessage: ageError, meta: ageMeta } = useField<string | undefined>('age')
 const { value: unit, errorMessage: unitError, meta: unitMeta } = useField<string | undefined>('unit')
-const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<number | undefined>('size')
+const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<number | string | undefined>('size')
 const { value: flavour, errorMessage: flavourError, meta: flavourMeta } = useField<string | undefined>('flavour')
 const { value: price, errorMessage: priceError, meta: priceMeta } = useField<number>('price')
 const { value: wholesalePrice, errorMessage: wholesalePriceError, meta: wholesalePriceMeta } = useField<number | undefined>('wholesale_price')
@@ -287,7 +288,7 @@ watch(() => props.open, async (open) => {
     const initialPetArray = Array.isArray(props.initial?.pet_type) ? (props.initial!.pet_type as string[]) : ([])
     const initialType = props.initial?.product_type ?? ''
     const initialUnit = props.initial?.unit ?? undefined
-    const initialSize = props.initial?.size ?? undefined
+    
     const initialFlavour = props.initial?.flavour ?? undefined
     const initialAge = props.initial?.age ?? undefined
     if (initialPetArray && initialPetArray.length) setCategory('pet', initialPetArray); else clearCategory('pet')
@@ -297,6 +298,8 @@ watch(() => props.open, async (open) => {
     if (initialAge) setCategory('age', initialAge); else clearCategory('age')
     if (initialFlavour) setCategory('flavour', initialFlavour); else clearCategory('flavour')
 
+    const initialSizeRaw = props.initial?.size ?? undefined
+    const initialSizeMatch = initialSizeRaw ? String(initialSizeRaw).match(/^\d+(?:\.\d+)?$/) : null
     setValues({
       name: props.initial?.name ?? '',
       description: props.initial?.description ?? '',
@@ -304,7 +307,7 @@ watch(() => props.open, async (open) => {
       type: initialType,
       age: initialAge ?? undefined,
       unit: initialUnit ?? undefined,
-      size: parseSizeToNumber(initialSize) ?? undefined,
+      size: initialSizeMatch ? Number(initialSizeMatch[0]) : undefined,
       flavour: initialFlavour ?? undefined,
       price: Number(props.initial?.retail_price ?? 0),
       wholesale_price: props.initial?.wholesale_price != null ? Number(props.initial.wholesale_price) : undefined,
@@ -317,6 +320,9 @@ watch(() => props.open, async (open) => {
         : undefined,
     }, false)
     await nextTick()
+    if (!initialSizeMatch && initialSizeRaw) {
+      size.value = initialSizeRaw
+    }
     brand.value = props.initial?.brand ?? ''
     valueMap.pet.value = initialPetArray || undefined
     valueMap.type.value = initialType || undefined
@@ -437,7 +443,7 @@ const onSubmit = async () => {
       product_type: values.type,
       age: values.age,
       unit: values.unit,
-      size: formatSizeToString(values.size),
+      size: typeof values.size === 'number' ? formatSizeToString(values.size) : (typeof values.size === 'string' ? values.size : undefined),
       flavour: values.flavour,
       retail_price: values.price,
       wholesale_price: values.wholesale_price ?? null,
@@ -462,6 +468,20 @@ const parseSizeToNumber = (s?: string | null) => {
 const formatSizeToString = (n?: number) => {
   return typeof n === 'number' ? n.toFixed(2) : undefined
 }
+watch(() => unit.value, (v) => {
+  if (v === '__none__') {
+    valueMap.unit.value = undefined
+    clearCategory('unit')
+  }
+})
+watch(size, (v) => {
+  if (typeof v === 'number') sizeStr.value = formatSizeToString(v)
+  else if (typeof v === 'string') sizeStr.value = v
+  else sizeStr.value = undefined
+})
+watch(sizeStr, (v) => {
+  if (unit.value === 'size_label') size.value = v as unknown as string
+})
 
 const thumbnailFile = ref<File | null>(null)
 const thumbnailPreview = ref<string | null>(null)
@@ -610,6 +630,9 @@ const filteredBaseProducts = computed(() => {
           <div v-for="k in otherCategoryKeys" :key="k" class="flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <Label :for="k">{{ getCategoryLabel(k) }}</Label>
+              <!-- <div class="flex items-center gap-2" v-if="k === 'unit'">
+                <Button variant="ghost" size="sm" class="h-7 px-2" @click="() => { valueMap.unit.value = undefined; clearCategory('unit') }">Clear</Button>
+              </div> -->
               <Dialog v-if="k === 'flavour'" v-model:open="flavourEditOpen">
                 <DialogTrigger as-child>
                   <Button variant="outline" size="sm" class="h-7 px-2 gap-1">
@@ -681,6 +704,7 @@ const filteredBaseProducts = computed(() => {
             <Select v-model="valueMap[k].value">
               <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>
+                <SelectItem v-if="k === 'unit'" value="__none__">No Unit</SelectItem>
                 <SelectItem v-for="opt in (optsFor(k) ?? [])" :key="opt.id" :value="opt.id">{{ opt.label }}</SelectItem>
               </SelectContent>
             </Select>
@@ -688,9 +712,17 @@ const filteredBaseProducts = computed(() => {
           </div>
               <div class="flex flex-col gap-1.5">
                 <Label for="size">Size</Label>
-                <div class="flex items-center gap-2">
+                <div v-if="unit !== 'size_label'" class="flex items-center gap-2">
                   <Input id="size" type="number" step="0.01" min="0" v-model.number="size" placeholder="0.00" class="w-full" />
                   <span class="text-xs text-muted-foreground">{{ unit || 'unit' }}</span>
+                </div>
+                <div v-else>
+                  <Select v-model="sizeStr">
+                    <SelectTrigger id="sizeLabel" class="w-full"><SelectValue placeholder="Select size" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="o in CATEGORY_CONFIG.size.options" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <p v-if="sizeError && sizeMeta.touched" class="text-destructive text-xs">{{ sizeError }}</p>
               </div>

@@ -110,6 +110,10 @@ const flavourLabelMap = computed<Record<string, string>>(() => {
   const rows = (flavourData.value || []) as Array<{ flavour: string; is_active: boolean }>
   return Object.fromEntries(rows.map(r => [r.flavour, r.flavour]))
 })
+const sizeLabelMap = computed<Record<string, string>>(() => {
+  const opts = CATEGORY_CONFIG.size.options || []
+  return Object.fromEntries(opts.map(o => [o.id, o.label]))
+})
 
 const qty = ref(1);
 const activeIndex = ref(0);
@@ -169,11 +173,19 @@ function buildGroups() {
       flavourSet.set(r.flavour, { id: r.flavour, label, value: r.flavour });
     }
     if (r.size) {
-      const raw = String(r.size);
-      const numeric = raw.match(/\d+(?:\.\d+)?/)?.[0] || raw;
-      const unit = r.unit || cur.unit || '';
-      const label = unit ? `${numeric} ${unit}` : numeric;
-      sizeSet.set(r.size, { id: r.size, label, value: r.size });
+      const unit = r.unit || cur.unit || ''
+      if (unit === 'size_label') {
+        const id = String(r.size)
+        if (id === 'small' || id === 'medium') {
+          const label = sizeLabelMap.value[id] || (id.charAt(0).toUpperCase() + id.slice(1))
+          sizeSet.set(id, { id, label, value: id })
+        }
+      } else {
+        const raw = String(r.size)
+        const numeric = raw.match(/\d+(?:\.\d+)?/)?.[0] || raw
+        const label = unit ? `${numeric} ${unit}` : numeric
+        sizeSet.set(raw, { id: raw, label, value: raw })
+      }
     }
     if (r.age) {
       const pet = cur.pet_type ?? r.pet_type ?? undefined;
@@ -553,13 +565,21 @@ const availableSizeOptions = computed<VariantOption[]>(() => {
   for (const r of rows) {
     if (f && r.flavour !== f) continue;
     if (a && r.age !== a) continue;
-    const id = r.size || null;
-    if (!id) continue;
-    const raw = String(id);
-    const numeric = raw.match(/\d+(?:\.\d+)?/)?.[0] || raw;
-    const unit = r.unit || cur?.unit || '';
-    const label = unit ? `${numeric} ${unit}` : numeric;
-    map.set(id, { id, label, value: id });
+    const id = r.size || null
+    if (!id) continue
+    const unit = r.unit || cur?.unit || ''
+    if (unit === 'size_label') {
+      const key = String(id)
+      if (key === 'small' || key === 'medium') {
+        const label = sizeLabelMap.value[key] || (key.charAt(0).toUpperCase() + key.slice(1))
+        map.set(key, { id: key, label, value: key })
+      }
+      continue
+    }
+    const raw = String(id)
+    const numeric = raw.match(/\d+(?:\.\d+)?/)?.[0] || raw
+    const label = unit ? `${numeric} ${unit}` : numeric
+    map.set(raw, { id: raw, label, value: raw })
   }
   const arr = Array.from(map.values());
   const sel = selectedSize.value;

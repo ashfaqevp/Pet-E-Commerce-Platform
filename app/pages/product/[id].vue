@@ -93,6 +93,24 @@ const router = useRouter();
 const productId = computed(() => String(route.params.id));
 const supabase = useSupabaseClient();
 
+const { data: flavourData } = await useLazyAsyncData(
+  'product-detail-flavour-options',
+  async () => {
+    const { data, error } = await supabase
+      .from('product_flavour_options')
+      .select('flavour,is_active')
+      .eq('is_active', true)
+      .order('flavour')
+    if (error) throw error
+    return (data || []) as Array<{ flavour: string; is_active: boolean }>
+  },
+  { server: true }
+)
+const flavourLabelMap = computed<Record<string, string>>(() => {
+  const rows = (flavourData.value || []) as Array<{ flavour: string; is_active: boolean }>
+  return Object.fromEntries(rows.map(r => [r.flavour, r.flavour]))
+})
+
 const qty = ref(1);
 const activeIndex = ref(0);
 const carouselApiRef = ref<UnwrapRefCarouselApi | null>(null);
@@ -147,8 +165,7 @@ function buildGroups() {
   const ageSet = new Map<string, VariantOption>();
   for (const r of rows) {
     if (r.flavour) {
-      const opts = CATEGORY_CONFIG.flavour.rules?.flatMap(x => x.options) || [];
-      const label = opts.find(o => o.id === r.flavour)?.label || r.flavour;
+      const label = flavourLabelMap.value[r.flavour] || r.flavour;
       flavourSet.set(r.flavour, { id: r.flavour, label, value: r.flavour });
     }
     if (r.size) {
@@ -500,8 +517,7 @@ const availableFlavourOptions = computed<VariantOption[]>(() => {
     if (s && r.size !== s) continue;
     if (a && r.age !== a) continue;
     if (!r.flavour) continue;
-    const opts = CATEGORY_CONFIG.flavour.rules?.flatMap(x => x.options) || [];
-    const label = opts.find(o => o.id === r.flavour)?.label || r.flavour;
+    const label = flavourLabelMap.value[r.flavour] || r.flavour;
     map.set(r.flavour, { id: r.flavour, label, value: r.flavour });
   }
   const arr = Array.from(map.values());

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toTypedSchema } from '@vee-validate/zod'
+import { toast } from 'vue-sonner'
 import { useForm, useField } from 'vee-validate'
 import { z } from 'zod'
 import type { AdminProduct } from '@/composables/admin/useAdminProducts'
@@ -36,6 +37,150 @@ const props = defineProps<{ open?: boolean; initial?: AdminProduct | null }>()
 const emit = defineEmits<Emits>()
 const supabase = useSupabaseClient()
 
+const flavourState = await useLazyAsyncData(
+  'admin-product-flavour-options',
+  async () => {
+    const { data, error } = await supabase
+      .from('product_flavour_options')
+      .select('flavour')
+      .eq('is_active', true)
+      .order('flavour')
+    if (error) throw error
+    return (data || []) as Array<{ flavour: string }>
+  },
+  { server: true }
+)
+const flavourOptions = computed<CategoryOption[]>(() => {
+  const rows = (flavourState.data.value || []) as Array<{ flavour: string }>
+  return rows.map(f => ({ id: f.flavour, label: f.flavour }))
+})
+
+const flavourEditOpen = ref(false)
+const newFlavour = ref('')
+const flavourOpBusy = ref(false)
+const flavourBlock = ref<{ label: string; count: number; names: string[] } | null>(null)
+const flavoursAdminState = await useLazyAsyncData(
+  'admin-product-flavours-all',
+  async () => {
+    const { data, error } = await supabase
+      .from('product_flavour_options')
+      .select('flavour,is_active')
+      .order('flavour')
+    if (error) throw error
+    return (data || []) as Array<{ flavour: string; is_active: boolean }>
+  },
+  { server: true }
+)
+const flavoursAdminList = computed(() => (flavoursAdminState.data.value || []) as Array<{ flavour: string; is_active: boolean }>)
+const flavourExistsActive = (label: string) => flavoursAdminList.value.some(r => r.flavour.toLowerCase() === label.toLowerCase() && !!r.is_active)
+const flavourExistsInactive = (label: string) => flavoursAdminList.value.some(r => r.flavour.toLowerCase() === label.toLowerCase() && !r.is_active)
+const addFlavour = async () => {
+  const label = newFlavour.value.trim()
+  if (!label) { toast.error('Enter a flavour'); return }
+  if (flavourExistsActive(label)) { toast.error('Flavour already exists'); return }
+  flavourOpBusy.value = true
+  try {
+    if (flavourExistsInactive(label)) {
+      const { error } = await supabase
+        .from('product_flavour_options')
+        .update({ is_active: true } as unknown as never)
+        .eq('flavour', label)
+      if (error) throw error
+    } else {
+      const { error } = await supabase
+        .from('product_flavour_options')
+        .insert({ flavour: label, is_active: true } as unknown as never)
+      if (error) throw error
+    }
+    await Promise.all([flavoursAdminState.refresh(), flavourState.refresh()])
+    newFlavour.value = ''
+    toast.success('Flavour added')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Add failed'
+    toast.error(msg)
+  } finally {
+    flavourOpBusy.value = false
+  }
+}
+const deactivateFlavour = async (label: string) => {
+  flavourOpBusy.value = true
+  try {
+    const { data: usedRows, count, error: usedErr } = await supabase
+      .from('products')
+      .select('id,name', { count: 'exact' })
+      .eq('flavour', label)
+      .order('created_at', { ascending: false })
+      .limit(10)
+    if (usedErr) throw usedErr
+    const used = Number(count || 0)
+    if (used > 0) {
+      flavourBlock.value = { label, count: used, names: (usedRows || []).map(r => String((r as { name: string }).name)) }
+      toast.error('Flavour in use')
+    } else {
+      const { error } = await supabase
+        .from('product_flavour_options')
+        .update({ is_active: false } as unknown as never)
+        .eq('flavour', label)
+      if (error) throw error
+      await Promise.all([flavoursAdminState.refresh(), flavourState.refresh()])
+      toast.success('Flavour removed')
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Remove failed'
+    toast.error(msg)
+  } finally {
+    flavourOpBusy.value = false
+  }
+}
+const activateFlavour = async (label: string) => {
+  flavourOpBusy.value = true
+  try {
+    const { error } = await supabase
+      .from('product_flavour_options')
+      .update({ is_active: true } as unknown as never)
+      .eq('flavour', label)
+    if (error) throw error
+    await Promise.all([flavoursAdminState.refresh(), flavourState.refresh()])
+    toast.success('Flavour activated')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Activate failed'
+    toast.error(msg)
+  } finally {
+    flavourOpBusy.value = false
+  }
+}
+
+const deleteFlavour = async (label: string) => {
+  flavourOpBusy.value = true
+  try {
+    const { data: usedRows, count, error: usedErr } = await supabase
+      .from('products')
+      .select('id,name', { count: 'exact' })
+      .eq('flavour', label)
+      .order('created_at', { ascending: false })
+      .limit(10)
+    if (usedErr) throw usedErr
+    const used = Number(count || 0)
+    if (used > 0) {
+      flavourBlock.value = { label, count: used, names: (usedRows || []).map(r => String((r as { name: string }).name)) }
+      toast.error('Flavour in use')
+      return
+    }
+    const { error } = await supabase
+      .from('product_flavour_options')
+      .delete()
+      .eq('flavour', label)
+    if (error) throw error
+    await Promise.all([flavoursAdminState.refresh(), flavourState.refresh()])
+    toast.success('Flavour deleted')
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'Delete failed'
+    toast.error(msg)
+  } finally {
+    flavourOpBusy.value = false
+  }
+}
+
 const { options, setCategory, clearCategory, getVisibleKeys: getVisibleKeysFromCtx, getDependents, context } = useCategories()
 const optionMap: Record<CategoryKey, ComputedRef<CategoryOption[]>> = {
   pet: options('pet'),
@@ -43,7 +188,7 @@ const optionMap: Record<CategoryKey, ComputedRef<CategoryOption[]>> = {
   age: options('age'),
   unit: options('unit'),
   size: options('size'),
-  flavour: options('flavour'),
+  flavour: flavourOptions,
 }
 const optsFor = (key: CategoryKey) => optionMap[key].value
 
@@ -463,7 +608,76 @@ const filteredBaseProducts = computed(() => {
 
           <!-- Other categories (single-select) -->
           <div v-for="k in otherCategoryKeys" :key="k" class="flex flex-col gap-1.5">
-            <Label :for="k">{{ getCategoryLabel(k) }}</Label>
+            <div class="flex items-center justify-between">
+              <Label :for="k">{{ getCategoryLabel(k) }}</Label>
+              <Dialog v-if="k === 'flavour'" v-model:open="flavourEditOpen">
+                <DialogTrigger as-child>
+                  <Button variant="outline" size="sm" class="h-7 px-2 gap-1">
+                    <Icon name="lucide:pencil" class="h-3.5 w-3.5" />
+                    <span class="hidden md:inline">Edit</span>
+                  </Button>
+                </DialogTrigger>
+                <DialogContent class="sm:max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle>Manage Flavours</DialogTitle>
+                    <DialogDescription>Add or remove labels</DialogDescription>
+                  </DialogHeader>
+                  <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                      <Input v-model="newFlavour" placeholder="New flavour" class="flex-1" />
+                      <Button :disabled="flavourOpBusy" @click="addFlavour">Add</Button>
+                    </div>
+                    <div class="space-y-2 max-h-64 overflow-y-auto">
+                      <div v-for="row in flavoursAdminList" :key="row.flavour" class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                          <!-- <Badge :variant="row.is_active ? undefined : 'outline'">{{ row.is_active ? 'Active' : 'Inactive' }}</Badge> -->
+                          <span class="text-sm">{{ row.flavour }}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <template v-if="row.is_active">
+                            <AlertDialog>
+                              <AlertDialogTrigger as-child>
+                                <Button variant="destructive" size="sm" :disabled="flavourOpBusy">Delete</Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete flavour?</AlertDialogTitle>
+                                  <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction class="bg-destructive text-white" @click="deleteFlavour(row.flavour)">Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </template>
+                          <Button v-else variant="default" size="sm" :disabled="flavourOpBusy" @click="activateFlavour(row.flavour)">Activate</Button>
+                        </div>
+                      </div>
+                    </div>
+                    <Alert v-if="flavourBlock" variant="destructive">
+                      <AlertTitle>Cannot remove</AlertTitle>
+                      <AlertDescription>
+                        <p>{{ flavourBlock.label }} is used by {{ flavourBlock.count }} products.</p>
+                        <div class="mt-2 max-h-32 overflow-y-auto">
+                          <p class="text-xs text-muted-foreground mb-1">Example products:</p>
+                          <ul class="list-disc pl-4 text-sm">
+                            <li v-for="n in flavourBlock.names" :key="n">{{ n }}</li>
+                          </ul>
+                          <p class="text-xs text-muted-foreground mt-1">Showing first 10</p>
+                        </div>
+                        <p class="mt-2">Remove the label from those products first.</p>
+                      </AlertDescription>
+                    </Alert>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose as-child>
+                      <Button variant="outline">Close</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
             <Select v-model="valueMap[k].value">
               <SelectTrigger :id="k" class="w-full"><SelectValue placeholder="Select" /></SelectTrigger>
               <SelectContent>

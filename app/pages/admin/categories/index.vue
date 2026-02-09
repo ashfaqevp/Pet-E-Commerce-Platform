@@ -41,9 +41,23 @@ const ageOptions = computed(() => {
   if (!selectedPet.value) return [] as readonly { id: string; label: string }[]
   return getRuleOptions(CATEGORY_CONFIG.age.rules, { pet: selectedPet.value })
 })
+const supabase = useSupabaseClient()
+const { data: flavourData } = await useLazyAsyncData(
+  'admin-flavour-options',
+  async () => {
+    const { data, error } = await supabase
+      .from('product_flavour_options')
+      .select('flavour,is_active')
+      .eq('is_active', true)
+      .order('flavour')
+    if (error) throw error
+    return (data || []) as Array<{ flavour: string; is_active: boolean }>
+  },
+  { server: true }
+)
 const flavourOptions = computed(() => {
-  if (!selectedType.value) return [] as readonly { id: string; label: string }[]
-  return getRuleOptions(CATEGORY_CONFIG.flavour.rules, { type: selectedType.value })
+  const rows = (flavourData.value || []) as Array<{ flavour: string; is_active: boolean }>
+  return rows.map(r => ({ id: r.flavour, label: r.flavour })) as readonly { id: string; label: string }[]
 })
 
 const isPetRequired = true

@@ -115,10 +115,22 @@ const ageOpts = computed(() => {
     : []
 })
 
-const flavourOpts = computed(() => {
-  return qType.value
-    ? getFilteredOptions(CATEGORY_CONFIG.flavour.rules, qType.value)
-    : []
+const { data: flavourData } = await useLazyAsyncData(
+  'public-flavour-options',
+  async () => {
+    const { data, error } = await supabase
+      .from('product_flavour_options')
+      .select('flavour,is_active')
+      .eq('is_active', true)
+      .order('flavour')
+    if (error) throw error
+    return (data || []) as Array<{ flavour: string; is_active: boolean }>
+  },
+  { server: true }
+)
+const flavourOpts = computed<CategoryOption[]>(() => {
+  const rows = (flavourData.value || []) as Array<{ flavour: string; is_active: boolean }>
+  return rows.map(r => ({ id: r.flavour, label: r.flavour }))
 })
 
 const { data: brandData, pending: brandPending, error: brandError, refresh: refreshBrands } = await useLazyAsyncData(
@@ -153,17 +165,21 @@ function getFilteredOptions(rules: readonly CategoryRule[] | undefined, selected
 }
 
 function getLabelFromRules(rules: readonly CategoryRule[] | undefined, id: string): string {
-  if (!rules || !id) return ''
+  if (!rules) return ''
   const all = rules.flatMap(r => r.options)
   return all.find(o => o.id === id)?.label ?? ''
 }
+const flavourLabelMap = computed<Record<string, string>>(() => {
+  const arr = flavourOpts.value || []
+  return Object.fromEntries(arr.map(o => [o.id, o.label]))
+})
 
 function getLabel(category: CategoryKey, id: string): string {
   if (!id) return ''
   if (category === 'pet') return CATEGORY_CONFIG.pet.options?.find(o => o.id === id)?.label ?? ''
   if (category === 'type') return CATEGORY_CONFIG.type.options?.find(o => o.id === id)?.label ?? ''
   if (category === 'age') return getLabelFromRules(CATEGORY_CONFIG.age.rules, id)
-  if (category === 'flavour') return getLabelFromRules(CATEGORY_CONFIG.flavour.rules, id)
+  if (category === 'flavour') return flavourLabelMap.value[id] || ''
   return ''
 }
 
@@ -460,7 +476,7 @@ const apiError = computed(() => {
                 :filters="mobileFilters"
                 :type-opts="CATEGORY_CONFIG.type.options ?? []"
                 :age-opts="getFilteredOptions(CATEGORY_CONFIG.age.rules, mobileFilters.pet)"
-                :flavour-opts="getFilteredOptions(CATEGORY_CONFIG.flavour.rules, mobileFilters.type)"
+                :flavour-opts="flavourOpts"
                 :brand-opts="brandOpts"
                 :on-select="selectFilterMobile"
                 :on-apply="applyFilters"

@@ -1,4 +1,89 @@
-# Buypets.om — Pet E‑Commerce
+# Pet E-Commerce Platform
+
+**Live Preview:**  
+User App: https://blackhorse-ten.vercel.app/
+Admin Panel: https://blackhorse-ten.vercel.app/
+
+Built with **Nuxt 4 + Vue 3 + shadcn-vue + Supabase**  
+Mobile-first • TypeScript-strict • pnpm-only  
+
+---
+
+## 📌 Overview
+
+A full-stack role-based pet e-commerce platform built using:
+
+- Nuxt 4 (SSR enabled)
+- Vue 3 (Composition API)
+- TypeScript (strict mode)
+- Supabase (Auth + Postgres + RLS)
+- shadcn-vue UI
+- Tailwind CSS v4
+
+This project demonstrates:
+
+- Multi-role authentication
+- Retail & wholesale pricing logic
+- Secure admin APIs
+- Supabase Row Level Security (RLS)
+- Product grouping (base + variant system)
+- SSR-safe data fetching
+- Mobile-first UI architecture
+
+> This repository is shared for educational and study purposes.
+
+---
+
+# 👥 User Roles
+
+## 🛠 Admin
+- Manage products
+- Manage retail & wholesale users
+- Create wholesale accounts
+- Update pricing
+- View all orders
+- Delete customers (via secure server API)
+
+## 🛍 Retail Customers
+- Google login
+- Standard pricing
+- Place orders
+- Manage profile & addresses
+
+## 📦 Wholesale Customers
+- Created by Admin
+- Email/password login
+- Reset password via email
+- Automatic wholesale pricing applied
+
+---
+
+# 🎨 Design System
+
+- Primary: `text-foreground` (Black)
+- Secondary: Teal `#0f766e`
+- Accent: Orange `#FF9500`
+- Tailwind v4 design tokens
+- shadcn-vue components only
+- No custom CSS
+
+---
+
+# 🧱 Tech Stack
+
+### Frontend
+- Nuxt 4
+- Vue 3
+- TypeScript
+- Pinia
+- shadcn-vue
+- Tailwind v4
+
+### Backend
+- Supabase Auth
+- Supabase Postgres
+- Supabase RLS
+- Nuxt Server API routes (service role secured)
 
 Nuxt 4 + Vue 3 + shadcn‑vue + Supabase. Mobile‑first, TypeScript‑strict, and pnpm‑only.
 

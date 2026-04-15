@@ -36,7 +36,7 @@ interface ProductRow {
   name: string;
   description?: string | null;
   brand?: string | null;
-  pet_type?: string | null;
+  pet_type?: string | string[] | null;
   product_type?: string | null;
   age?: string | null;
   unit?: string | null;
@@ -61,6 +61,27 @@ interface CardProduct {
   image?: string;
   retail_price?: number | null;
   wholesale_price?: number | null;
+}
+
+function normalizeVariantValue(value?: string | null): string | null {
+  if (!value) return null
+  const normalized = value.trim()
+  return normalized && normalized !== '__none__' ? normalized : null
+}
+
+function normalizePetType(value?: string | string[] | null): string | null {
+  if (Array.isArray(value)) return value[0] || null
+  return value || null
+}
+
+function normalizeProductRow(row: ProductRow): ProductRow {
+  return {
+    ...row,
+    pet_type: normalizePetType(row.pet_type),
+    age: normalizeVariantValue(row.age),
+    flavour: normalizeVariantValue(row.flavour),
+    unit: normalizeVariantValue(row.unit),
+  }
 }
 
 const supabaseUser = useSupabaseUser()
@@ -128,7 +149,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
       .eq("id", productId.value)
       .single();
     if (e) throw e;
-    const current = row as unknown as ProductRow;
+    const current = normalizeProductRow(row as unknown as ProductRow);
     const baseId = current.base_product_id || current.id;
     const { data: variantsData, error: ve } = await supabase
       .from("products")
@@ -136,7 +157,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
       .or(`id.eq.${baseId},base_product_id.eq.${baseId}`)
       .eq("is_active", true);
     if (ve) throw ve;
-    const variants = (variantsData || []) as unknown as ProductRow[];
+    const variants = ((variantsData || []) as unknown as ProductRow[]).map(normalizeProductRow);
     return { current, variants, baseId };
   },
   { server: true, watch: [productId] }

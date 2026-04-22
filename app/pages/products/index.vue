@@ -239,7 +239,7 @@ const params = computed(() => ({
 }))
 
 const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
-  'products-list',
+  () => `products-list-${JSON.stringify(params.value)}`,
   async () => {
     let query = supabase
       .from('products')
@@ -270,7 +270,7 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
     if (error) throw error
     return { items: (data ?? []) as ProductRow[], total: count ?? 0 }
   },
-  { watch: [params], server: true }
+  { watch: [params], server: false } 
 )
 
 watch(pageData, (val) => {

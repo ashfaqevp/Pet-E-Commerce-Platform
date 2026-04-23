@@ -21,6 +21,7 @@ export default defineNuxtConfig({
     '@nuxtjs/supabase',
     'shadcn-nuxt',
     'nuxt-gtag',
+    '@vercel/analytics'
   ],
 
   gtag: {

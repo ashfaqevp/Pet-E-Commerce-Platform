@@ -209,7 +209,7 @@ function buildGroups() {
       }
     }
     if (r.age) {
-      const pet = cur.pet_type ?? r.pet_type ?? undefined;
+      const pet = normalizePetType(cur.pet_type ?? r.pet_type ?? null);
       const rules = CATEGORY_CONFIG.age.rules || [];
       const rule = pet ? rules.find(x => x.when.values.includes(pet)) : undefined;
       const label = rule?.options.find(o => o.id === r.age)?.label || r.age;
@@ -630,7 +630,7 @@ const availableAgeOptions = computed<VariantOption[]>(() => {
   const s = selectedSize.value?.id || null;
   const map = new Map<string, VariantOption>();
   const cur = current.value;
-  const pet = cur?.pet_type || null;
+  const pet = normalizePetType(cur?.pet_type ?? null);
   const ageRules = CATEGORY_CONFIG.age.rules || [];
   const matchedRule = pet ? ageRules.find(x => x.when.values.includes(pet)) : undefined;
   for (const r of rows) {
@@ -696,6 +696,8 @@ watch([selectedFlavour, selectedSize, variantRows], () => {
             <CarouselItem v-for="src in product.images ?? ['/images/placeholder.svg']" :key="src">
               <img
                 :src="src"
+                loading="lazy"
+                decoding="async"
                 alt="Product image"
                 class="w-full h-80 md:h-[70vh] object-contain rounded-2xl bg-white"
               />

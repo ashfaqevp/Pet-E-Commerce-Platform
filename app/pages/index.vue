@@ -159,6 +159,8 @@ onMounted(() => {
             <CarouselItem v-for="(b, idx) in banners" :key="idx">
               <img
                 :src="isMobile ? b.mobile : b.desktop"
+                loading="lazy"
+                decoding="async"
                 alt="Promotion banner"
                 class="w-full h-48 sm:h-48 md:h-64 lg:h-80 object-cover rounded-2xl"
               />

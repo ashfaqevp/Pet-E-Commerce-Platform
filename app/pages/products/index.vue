@@ -243,7 +243,7 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
   async () => {
     let query = supabase
       .from('products')
-      .select('*', { count: 'exact' })
+      .select('id,name,retail_price,wholesale_price,default_rating,thumbnail_url,brand', { count: 'exact' })
       .eq('is_active', true)
       .order('is_featured', { ascending: false })
       .order('row_index', { ascending: true })
@@ -308,8 +308,8 @@ if (process.client) {
       }
     },
     {
-      distance: 200,
-      interval: 300,
+      distance: 400,
+      interval: 800,
       direction: 'bottom',
       canLoadMore: () => products.value.length < totalCount.value && !pending.value,
     }

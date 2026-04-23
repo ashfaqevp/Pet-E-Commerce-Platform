@@ -4,7 +4,13 @@
     @click="goToProduct"
   >
     <div class="relative">
-      <img :src="product.image || placeholder" alt="" class="w-full h-30 sm:h-48 object-contain bg-white rounded-t-2xl" />
+      <img
+        :src="product.image || placeholder"
+        loading="lazy"
+        decoding="async"
+        alt=""
+        class="w-full h-30 sm:h-48 object-contain bg-white rounded-t-2xl"
+      />
       <span
         v-if="product.discount && product.discount > 0"
         class="absolute left-3 top-0 bg-yellow-200 text-secondary text-[11px] font-bold px-2.5 py-1 rounded-sm"

@@ -20,7 +20,12 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxtjs/supabase',
     'shadcn-nuxt',
+    'nuxt-gtag',
   ],
+
+  gtag: {
+    id: 'G-P3SHMPJ78M',
+  },
 
   supabase: {
     url: process.env.SUPABASE_URL,

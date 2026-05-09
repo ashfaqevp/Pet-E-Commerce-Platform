@@ -100,13 +100,13 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
 
 <template>
   <SidebarProvider>
-    <Sidebar side="left" variant="sidebar" collapsible="offcanvas" class="bg-white text-foreground">
+    <Sidebar side="left" variant="sidebar" collapsible="offcanvas" class="bg-white text-foreground !z-999 bg-white">
       <SidebarHeader class="bg-white px-4 py-5">
         <NuxtLink to="/admin" class="flex items-center gap-2">
           <img src="/images/logo-name.png" alt="Logo" class="h-13 w-auto" />
         </NuxtLink>
       </SidebarHeader>
-      <SidebarContent class="bg-white px-3 py-3">
+      <SidebarContent class="bg-white px-3 py-3 ">
         <SidebarMenu class="gap-2.5">
           <SidebarMenuItem v-for="item in menu" :key="item.label">
             <template v-if="item.children && item.children.length">

@@ -89,6 +89,45 @@ export type Database = {
         }
         Relationships: []
       }
+      brands: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          logo_url: string | null
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          logo_url?: string | null
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string | null
@@ -231,6 +270,39 @@ export type Database = {
         }
         Relationships: []
       }
+      pet_types: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          slug: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          slug: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       product_flavour_options: {
         Row: {
           created_at: string | null
@@ -278,6 +350,8 @@ export type Database = {
           age: string | null
           base_product_id: string | null
           brand: string | null
+          brand_id: string | null
+          colour: string | null
           created_at: string | null
           default_rating: number
           description: string | null
@@ -305,6 +379,8 @@ export type Database = {
           age?: string | null
           base_product_id?: string | null
           brand?: string | null
+          brand_id?: string | null
+          colour?: string | null
           created_at?: string | null
           default_rating?: number
           description?: string | null
@@ -332,6 +408,8 @@ export type Database = {
           age?: string | null
           base_product_id?: string | null
           brand?: string | null
+          brand_id?: string | null
+          colour?: string | null
           created_at?: string | null
           default_rating?: number
           description?: string | null
@@ -361,6 +439,13 @@ export type Database = {
             columns: ["base_product_id"]
             isOneToOne: false
             referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "brands"
             referencedColumns: ["id"]
           },
         ]

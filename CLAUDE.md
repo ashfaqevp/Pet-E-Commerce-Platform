@@ -10,9 +10,10 @@ pnpm build        # Production build
 pnpm preview      # Preview production build
 pnpm typecheck    # TypeScript type checking
 pnpm lint         # ESLint with auto-fix
+pnpm postinstall  # Regenerate Nuxt types (run after nuxt.config changes)
 ```
 
-Use **pnpm only** — no npm or yarn. Run `pnpm postinstall` (via `pnpm install`) to regenerate Nuxt types after config changes.
+Use **pnpm only** — no npm or yarn. No test suite exists yet.
 
 ## Architecture
 
@@ -36,7 +37,7 @@ Use **pnpm only** — no npm or yarn. Run `pnpm postinstall` (via `pnpm install`
 | `server/api/` | Server routes using Supabase service role (secure) |
 | `server/api/paytabs/` | Payment gateway: create, verify, webhook |
 | `server/api/admin/` | User management (create wholesaler, delete user) |
-| `supabase/` | DB migrations and Edge Functions |
+| `supabase/functions/` | Deno edge functions (Razorpay order creation) |
 | `scripts/` | One-off data processing (CSV → JSON) |
 
 ### Auto-import rules
@@ -63,23 +64,61 @@ Three roles: **admin**, **wholesale**, **retail** (default).
 - Retail: Google OAuth via Supabase
 - Wholesale: email/password (accounts created by admin only)
 - Role is fetched server-side via `/api/auth/get-role` using the service role key
-- `admin.ts` middleware protects all `/admin/**` routes
-- `auth.client.ts` plugin handles session restore and syncs guest cart to server on login
+- `admin.ts` middleware protects all `/admin/**` routes; on failure redirects to `/admin/login?redirect=<path>`
+- `auth.client.ts` plugin handles session restore and syncs guest cart to server on login (non-blocking via `queueMicrotask`)
 
 ### Cart architecture
 
-- **Guest**: localStorage via `useLocalStorage`
-- **Authenticated**: Supabase RLS-protected queries
-- `syncGuestToServer()` in `useCart.ts` merges guest items on login
-- Cart Pinia store tracks count; composable handles all operations
+Two implementations exist — use the **composable**, not the store directly:
+
+- `useCart()` composable — the primary implementation. Guest (localStorage) + authenticated (Supabase RLS) hybrid. `syncGuestToServer()` merges guest items on login.
+- `useCartStore` Pinia store — tracks cart count for the navbar badge only.
+
+The `auth.client.ts` plugin watches `onAuthStateChange`; on `SIGNED_IN` / `INITIAL_SESSION` it calls `syncGuestToServer()` then `refreshNuxtData()`.
+
+### Role-aware pricing
+
+`useCheckoutOrder` reads `profiles.role` at order creation time and applies `wholesale_price` or `retail_price` accordingly. Prices are baked into order item snapshots and are immutable after creation.
 
 ### Category system
 
-Product categories are config-driven via `app/domain/categories/category.config.ts`. They have cascading dependencies (pet → type, unit → size). Use `getCategoryOptions()` and `useCategories()` for reactive context. Do not hardcode category values — use the `CATEGORY_CONFIG` and helpers.
+Product categories are config-driven via `app/domain/categories/category.config.ts`. They have cascading dependencies: `pet → age`, `unit → size`, `type → flavour`.
 
-### Server API conventions
+Key helpers in `category.helpers.ts` (must import explicitly from `app/domain/`):
+- `getCategoryOptions(key, context)` — options for a field given current form state
+- `isCategoryVisible(key, context)` / `isCategoryRequired(key, context)` — driven by `dependsOn` rules
+- `getVisibleKeys(context)` / `collectCategoryIssues(context)` — for form validation
+- `getDependents(key)` — find downstream fields to reset when a parent changes
 
-All `/server/api/admin/**` routes verify the caller is an admin using the Supabase service role key. Paytabs webhook at `/server/api/paytabs/webhook.post.ts` uses XML parsing (fast-xml-parser).
+Use `useCategories()` composable for reactive form context. Never hardcode category values.
+
+### Middleware
+
+- `admin.ts` — checks auth + admin role, redirects unauthenticated users
+- `admin-logout.global.ts` — if an admin user navigates outside `/admin/**`, they are automatically signed out (security invariant)
+- `clear-search.global.ts` — strips `?q=` search param on any route except `/products`
+
+### Server API routes
+
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/api/auth/get-role` | GET | Returns `profiles.role` using service role key |
+| `/api/paytabs/create` | POST | Creates PayTabs transaction, stores `tran_ref` on order |
+| `/api/paytabs/verify` | POST | Verifies a transaction status |
+| `/api/paytabs/webhook` | POST | HMAC-verified webhook; updates order status (idempotent — source of truth for payment status) |
+| `/api/admin/users` | GET | List users (admin only) |
+| `/api/admin/create-wholesaler` | POST | Create wholesale account |
+| `/api/admin/delete-user` | DELETE | Delete user |
+| `/api/admin/update-wholesaler-email` | POST | Update wholesale email |
+
+All `/server/api/admin/**` routes verify the caller is admin via the service role key. The PayTabs webhook uses XML parsing (`fast-xml-parser`) — **never update payment status in `/create`**, only in the webhook handler.
+
+### Payment flow
+
+1. Frontend creates order → calls `/api/paytabs/create` → receives `tran_ref` + `redirect_url`
+2. User is redirected to PayTabs hosted page
+3. PayTabs POSTs to `/api/paytabs/webhook` (HMAC-verified) → order status updated
+4. Razorpay (secondary) is handled via a Deno edge function in `supabase/functions/create-razorpay-order/`
 
 ## Component style
 

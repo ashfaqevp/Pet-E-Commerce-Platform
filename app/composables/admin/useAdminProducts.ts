@@ -8,6 +8,7 @@ export interface AdminProduct {
   unit?: string | null
   size?: string | null
   flavour?: string | null
+  colour?: string | null
   retail_price: number | null
   wholesale_price?: number | null
   stock_quantity: number
@@ -30,6 +31,7 @@ export interface AdminProductInput {
   unit?: string | null
   size?: string | null
   flavour?: string | null
+  colour?: string | null
   retail_price?: number | null
   wholesale_price?: number | null
   stock_quantity?: number

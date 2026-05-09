@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/common/PageHeader.vue";
 import { formatOMR } from "@/utils";
 import { CATEGORY_CONFIG } from "~/domain/categories/category.config";
+import { COLOUR_SWATCH } from "~/lib/colourMap";
 import ProductCard from "@/components/product/ProductCard.vue";
 import { useProfile } from "@/composables/useProfile";
 
@@ -26,8 +27,8 @@ type VariantOption = {
 };
 
 type VariantGroup = {
-  name: "Flavour" | "Size" | "Age" | string;
-  key: "flavour" | "size" | "age" | string;
+  name: "Flavour" | "Size" | "Age" | "Colour" | string;
+  key: "flavour" | "size" | "age" | "colour" | string;
   options: VariantOption[];
 };
 
@@ -42,6 +43,7 @@ interface ProductRow {
   unit?: string | null;
   size?: string | null;
   flavour?: string | null;
+  colour?: string | null;
   retail_price?: number | null;
   wholesale_price?: number | null;
   default_rating?: number | null;
@@ -81,6 +83,7 @@ function normalizeProductRow(row: ProductRow): ProductRow {
     age: normalizeVariantValue(row.age),
     flavour: normalizeVariantValue(row.flavour),
     unit: normalizeVariantValue(row.unit),
+    colour: normalizeVariantValue(row.colour),
   }
 }
 
@@ -188,7 +191,15 @@ function buildGroups() {
   const flavourSet = new Map<string, VariantOption>();
   const sizeSet = new Map<string, VariantOption>();
   const ageSet = new Map<string, VariantOption>();
+  const colourSet = new Map<string, VariantOption>();
   for (const r of rows) {
+    if (r.colour) {
+      colourSet.set(r.colour, {
+        id: r.colour,
+        label: r.colour.charAt(0).toUpperCase() + r.colour.slice(1),
+        value: r.colour,
+      });
+    }
     if (r.flavour) {
       const label = flavourLabelMap.value[r.flavour] || r.flavour;
       flavourSet.set(r.flavour, { id: r.flavour, label, value: r.flavour });
@@ -220,6 +231,7 @@ function buildGroups() {
   if (flavourSet.size > 0) groups.push({ name: "Flavour", key: "flavour", options: Array.from(flavourSet.values()) });
   if (sizeSet.size > 0) groups.push({ name: "Size", key: "size", options: Array.from(sizeSet.values()) });
   if (ageSet.size > 0) groups.push({ name: "Age", key: "age", options: Array.from(ageSet.values()) });
+  if (colourSet.size > 0) groups.push({ name: "Colour", key: "colour", options: Array.from(colourSet.values()) });
   variantGroups.value = groups;
 }
 
@@ -228,10 +240,12 @@ watch([current, variantRows], buildGroups, { immediate: true });
 const flavourGroup = computed(() => variantGroups.value.find(v => v.key === "flavour"));
 const sizeGroup = computed(() => variantGroups.value.find(v => v.key === "size"));
 const ageGroup = computed(() => variantGroups.value.find(v => v.key === "age"));
+const colourGroup = computed(() => variantGroups.value.find(v => v.key === "colour"));
 
 const selectedFlavour = ref<VariantOption | null>(null);
 const selectedSize = ref<VariantOption | null>(null);
 const selectedAge = ref<VariantOption | null>(null);
+const selectedColour = ref<VariantOption | null>(null);
 
 function initSelections() {
   const cur = current.value;
@@ -239,9 +253,10 @@ function initSelections() {
   selectedFlavour.value = cur.flavour ? (flavourGroup.value?.options.find(o => o.id === cur.flavour) || null) : null;
   selectedSize.value = cur.size ? (sizeGroup.value?.options.find(o => o.id === cur.size) || null) : null;
   selectedAge.value = cur.age ? (ageGroup.value?.options.find(o => o.id === cur.age) || null) : null;
+  selectedColour.value = cur.colour ? (colourGroup.value?.options.find(o => o.id === cur.colour) || null) : null;
 }
 
-watch([flavourGroup, sizeGroup, ageGroup], initSelections, { immediate: true });
+watch([flavourGroup, sizeGroup, ageGroup, colourGroup], initSelections, { immediate: true });
 
 function moveSelectedToFront(group: VariantGroup | undefined, selected: VariantOption | null) {
   if (!group || !selected) return;
@@ -256,6 +271,7 @@ function moveSelectedToFront(group: VariantGroup | undefined, selected: VariantO
 watch(selectedFlavour, (v) => moveSelectedToFront(flavourGroup.value, v));
 watch(selectedSize, (v) => moveSelectedToFront(sizeGroup.value, v));
 watch(selectedAge, (v) => moveSelectedToFront(ageGroup.value, v));
+watch(selectedColour, (v) => moveSelectedToFront(colourGroup.value, v));
 
 const selectedVariant = computed<ProductRow | undefined>(() => {
   const rows = variantRows.value;
@@ -263,20 +279,23 @@ const selectedVariant = computed<ProductRow | undefined>(() => {
   const f = selectedFlavour.value?.id;
   const s = selectedSize.value?.id;
   const a = selectedAge.value?.id;
-  const noneSelected = !f && !s && !a;
+  const c = selectedColour.value?.id;
+  const noneSelected = !f && !s && !a && !c;
   if (noneSelected) return cur;
-  const matchesAll = rows.filter(x => (!f || x.flavour === f) && (!s || x.size === s) && (!a || x.age === a));
+  const matchesAll = rows.filter(x => (!f || x.flavour === f) && (!s || x.size === s) && (!a || x.age === a) && (!c || x.colour === c));
   const preferCurrent = matchesAll.find(x => String(x.id) === String(cur?.id));
   if (preferCurrent) return preferCurrent;
   if (matchesAll.length) return matchesAll[0];
-  const matchesFS = rows.filter(x => (!s || x.size === s) && (!f || x.flavour === f));
+  const matchesFS = rows.filter(x => (!s || x.size === s) && (!f || x.flavour === f) && (!c || x.colour === c));
   if (matchesFS.length) return matchesFS.find(x => String(x.id) === String(cur?.id)) || matchesFS[0];
-  const matchesS = rows.filter(x => (!s || x.size === s));
+  const matchesS = rows.filter(x => (!s || x.size === s) && (!c || x.colour === c));
   if (matchesS.length) return matchesS.find(x => String(x.id) === String(cur?.id)) || matchesS[0];
-  const matchesF = rows.filter(x => (!f || x.flavour === f));
+  const matchesF = rows.filter(x => (!f || x.flavour === f) && (!c || x.colour === c));
   if (matchesF.length) return matchesF.find(x => String(x.id) === String(cur?.id)) || matchesF[0];
-  const matchesA = rows.filter(x => (!a || x.age === a));
+  const matchesA = rows.filter(x => (!a || x.age === a) && (!c || x.colour === c));
   if (matchesA.length) return matchesA.find(x => String(x.id) === String(cur?.id)) || matchesA[0];
+  const matchesC = rows.filter(x => (!c || x.colour === c));
+  if (matchesC.length) return matchesC.find(x => String(x.id) === String(cur?.id)) || matchesC[0];
   return cur;
 });
 
@@ -337,18 +356,20 @@ const similarVariants = computed<CardProduct[]>(() => {
   const f = selectedFlavour.value?.id || null
   const s = selectedSize.value?.id || null
   const a = selectedAge.value?.id || null
-  const selCount = [f, s, a].filter(Boolean).length
+  const c = selectedColour.value?.id || null
+  const selCount = [f, s, a, c].filter(Boolean).length
   const list = rows.filter(r => String(r.id) !== excludeId)
 
   if (selCount > 0) {
-    const exact = list.filter(r => (!f || r.flavour === f) && (!s || r.size === s) && (!a || r.age === a))
+    const exact = list.filter(r => (!f || r.flavour === f) && (!s || r.size === s) && (!a || r.age === a) && (!c || r.colour === c))
     if (exact.length) return exact.slice(0, 16).map(mapRowToCard)
 
     const twoMatch = list.filter(r => {
       const mF = !f || r.flavour === f
       const mS = !s || r.size === s
       const mA = !a || r.age === a
-      const matches = [mF, mS, mA].filter(Boolean).length
+      const mC = !c || r.colour === c
+      const matches = [mF, mS, mA, mC].filter(Boolean).length
       return matches >= Math.max(1, selCount - 1)
     })
     if (twoMatch.length) return twoMatch.slice(0, 16).map(mapRowToCard)
@@ -473,6 +494,7 @@ watch(productId, async () => {
   selectedFlavour.value = null
   selectedSize.value = null
   selectedAge.value = null
+  selectedColour.value = null
   activeIndex.value = 0
   await nextTick()
   carouselApiRef.value?.scrollTo(0)
@@ -482,9 +504,11 @@ watch(current, async (cur) => {
   const f = cur?.flavour || null
   const s = cur?.size || null
   const a = cur?.age || null
+  const c = cur?.colour || null
   selectedFlavour.value = f ? (flavourGroup.value?.options.find(o => o.id === f) || null) : null
   selectedSize.value = s ? (sizeGroup.value?.options.find(o => o.id === s) || null) : null
   selectedAge.value = a ? (ageGroup.value?.options.find(o => o.id === a) || null) : null
+  selectedColour.value = c ? (colourGroup.value?.options.find(o => o.id === c) || null) : null
   activeIndex.value = 0
   await nextTick()
   carouselApiRef.value?.scrollTo(0)
@@ -531,10 +555,11 @@ onUnmounted(() => {
   if (productsChannel) supabase.removeChannel(productsChannel);
 });
 
-function onSelectVariant(group: 'flavour' | 'size' | 'age' | string, opt: VariantOption) {
+function onSelectVariant(group: 'flavour' | 'size' | 'age' | 'colour' | string, opt: VariantOption) {
   if (group === 'flavour') selectedFlavour.value = opt;
   else if (group === 'size') selectedSize.value = opt;
   else if (group === 'age') selectedAge.value = opt;
+  else if (group === 'colour') selectedColour.value = opt;
   const next = selectedVariant.value;
   const nextId = String(next?.id || '');
   if (nextId && nextId !== productId.value) router.replace(`/product/${nextId}`);
@@ -545,10 +570,12 @@ const availableFlavourOptions = computed<VariantOption[]>(() => {
   const rows = variantRows.value;
   const s = selectedSize.value?.id || null;
   const a = selectedAge.value?.id || null;
+  const c = selectedColour.value?.id || null;
   const map = new Map<string, VariantOption>();
   for (const r of rows) {
     if (s && r.size !== s) continue;
     if (a && r.age !== a) continue;
+    if (c && r.colour !== c) continue;
     if (!r.flavour) continue;
     const label = flavourLabelMap.value[r.flavour] || r.flavour;
     map.set(r.flavour, { id: r.flavour, label, value: r.flavour });
@@ -566,10 +593,10 @@ const availableFlavourOptions = computed<VariantOption[]>(() => {
   return arr;
 });
 
-watch([selectedSize, selectedAge, variantRows], () => {
+watch([selectedSize, selectedAge, selectedColour, variantRows], () => {
   const opts = availableFlavourOptions.value;
   if (!opts.length) { selectedFlavour.value = null; return; }
-  const hasSelection = !!selectedSize.value || !!selectedAge.value;
+  const hasSelection = !!selectedSize.value || !!selectedAge.value || !!selectedColour.value;
   if (hasSelection && (!selectedFlavour.value || !opts.some(o => o.id === selectedFlavour.value!.id))) {
     selectedFlavour.value = opts[0] || null;
   }
@@ -581,11 +608,13 @@ const availableSizeOptions = computed<VariantOption[]>(() => {
   const rows = variantRows.value;
   const f = selectedFlavour.value?.id || null;
   const a = selectedAge.value?.id || null;
+  const c = selectedColour.value?.id || null;
   const map = new Map<string, VariantOption>();
   const cur = current.value;
   for (const r of rows) {
     if (f && r.flavour !== f) continue;
     if (a && r.age !== a) continue;
+    if (c && r.colour !== c) continue;
     const id = r.size || null
     if (!id) continue
     const unit = r.unit || cur?.unit || ''
@@ -615,10 +644,10 @@ const availableSizeOptions = computed<VariantOption[]>(() => {
   return arr;
 });
 
-watch([selectedFlavour, selectedAge, variantRows], () => {
+watch([selectedFlavour, selectedAge, selectedColour, variantRows], () => {
   const opts = availableSizeOptions.value;
   if (!opts.length) { selectedSize.value = null; return; }
-  const hasSelection = !!selectedFlavour.value || !!selectedAge.value;
+  const hasSelection = !!selectedFlavour.value || !!selectedAge.value || !!selectedColour.value;
   if (hasSelection && (!selectedSize.value || !opts.some(o => o.id === selectedSize.value!.id))) {
     selectedSize.value = opts[0] || null;
   }
@@ -628,6 +657,7 @@ const availableAgeOptions = computed<VariantOption[]>(() => {
   const rows = variantRows.value;
   const f = selectedFlavour.value?.id || null;
   const s = selectedSize.value?.id || null;
+  const c = selectedColour.value?.id || null;
   const map = new Map<string, VariantOption>();
   const cur = current.value;
   const pet = normalizePetType(cur?.pet_type ?? null);
@@ -636,6 +666,7 @@ const availableAgeOptions = computed<VariantOption[]>(() => {
   for (const r of rows) {
     if (f && r.flavour !== f) continue;
     if (s && r.size !== s) continue;
+    if (c && r.colour !== c) continue;
     const id = r.age || null;
     if (!id) continue;
     const label = matchedRule?.options.find(o => o.id === id)?.label || id;
@@ -654,12 +685,51 @@ const availableAgeOptions = computed<VariantOption[]>(() => {
   return arr;
 });
 
-watch([selectedFlavour, selectedSize, variantRows], () => {
+watch([selectedFlavour, selectedSize, selectedColour, variantRows], () => {
   const opts = availableAgeOptions.value;
   if (!opts.length) { selectedAge.value = null; return; }
-  const hasSelection = !!selectedFlavour.value || !!selectedSize.value;
+  const hasSelection = !!selectedFlavour.value || !!selectedSize.value || !!selectedColour.value;
   if (hasSelection && (!selectedAge.value || !opts.some(o => o.id === selectedAge.value!.id))) {
     selectedAge.value = opts[0] || null;
+  }
+});
+
+const availableColourOptions = computed<VariantOption[]>(() => {
+  const rows = variantRows.value;
+  const f = selectedFlavour.value?.id || null;
+  const s = selectedSize.value?.id || null;
+  const a = selectedAge.value?.id || null;
+  const map = new Map<string, VariantOption>();
+  for (const r of rows) {
+    if (f && r.flavour !== f) continue;
+    if (s && r.size !== s) continue;
+    if (a && r.age !== a) continue;
+    if (!r.colour) continue;
+    map.set(r.colour, {
+      id: r.colour,
+      label: r.colour.charAt(0).toUpperCase() + r.colour.slice(1),
+      value: r.colour,
+    });
+  }
+  const arr = Array.from(map.values());
+  const sel = selectedColour.value;
+  if (sel) {
+    const idx = arr.findIndex(o => o.id === sel.id);
+    if (idx > 0) {
+      const opt = arr[idx]!;
+      arr.splice(idx, 1);
+      arr.unshift(opt);
+    }
+  }
+  return arr;
+});
+
+watch([selectedFlavour, selectedSize, selectedAge, variantRows], () => {
+  const opts = availableColourOptions.value;
+  if (!opts.length) { selectedColour.value = null; return; }
+  const hasSelection = !!selectedFlavour.value || !!selectedSize.value || !!selectedAge.value;
+  if (hasSelection && (!selectedColour.value || !opts.some(o => o.id === selectedColour.value!.id))) {
+    selectedColour.value = opts[0] || null;
   }
 });
 </script>
@@ -820,6 +890,31 @@ watch([selectedFlavour, selectedSize, variantRows], () => {
             >
               {{ opt.label ?? opt.value }}
             </Button>
+          </div>
+        </div>
+
+        <div v-if="availableColourOptions.length" class="mt-6">
+          <h3 class="font-medium mb-2 text-foreground">Colour</h3>
+          <div class="flex flex-wrap items-center gap-3">
+            <button
+              v-for="opt in availableColourOptions"
+              :key="opt.id"
+              type="button"
+              :title="opt.label ?? String(opt.value)"
+              :aria-label="opt.label ?? String(opt.value)"
+              :class="[
+                'w-8 h-8 rounded-full border-0 transition-all focus:outline-none',
+                selectedColour?.id === opt.id
+                  ? ' ring-2 ring-accent ring-offset-2 scale-110'
+                  : 'border-transparent hover:border-gray-300',
+                String(opt.value).toLowerCase() === 'white' ? 'border-gray-200' : '',
+              ]"
+              :style="{ backgroundColor: COLOUR_SWATCH[String(opt.value).toLowerCase()] ?? '#d1d5db' }"
+              @click="onSelectVariant('colour', opt)"
+            />
+            <span v-if="selectedColour" class="text-sm text-muted-foreground ml-1">
+              {{ selectedColour.label ?? selectedColour.value }}
+            </span>
           </div>
         </div>
 

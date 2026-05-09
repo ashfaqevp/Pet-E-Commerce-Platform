@@ -8,6 +8,7 @@ import type { Ref, ComputedRef } from 'vue'
 import type { CategoryKey, CategoryContext, CategoryOption } from '@/domain/categories'
 import { useCategories, isCategoryRequired, getCategoryLabel } from '@/domain/categories'
 import { CATEGORY_CONFIG } from '@/domain/categories/category.config'
+import { COLOUR_SWATCH } from '@/lib/colourMap'
 
 interface Emits {
   (e: 'update:open', v: boolean): void
@@ -19,6 +20,7 @@ interface Emits {
     unit?: string
     size?: string
     flavour?: string
+    colour?: string | null
     retail_price: number
     wholesale_price?: number | null
     stock_quantity: number
@@ -204,6 +206,7 @@ const schema = toTypedSchema(
       unit: z.string().optional(),
       size: z.union([z.number().min(0), z.string()]).optional(),
       flavour: z.string().optional(),
+      colour: z.string().optional(),
       price: z.number().min(0),
       wholesale_price: z.number().min(0).optional(),
       offer_percentage: z.number().min(0).max(90).optional(),
@@ -235,7 +238,7 @@ const schema = toTypedSchema(
 const { handleSubmit, isSubmitting, setValues, submitCount, resetForm } = useForm({
   validationSchema: schema,
   initialValues: {
-    name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
+    name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined, colour: undefined,
     price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
   },
 })
@@ -248,6 +251,7 @@ const { value: age, errorMessage: ageError, meta: ageMeta } = useField<string | 
 const { value: unit, errorMessage: unitError, meta: unitMeta } = useField<string | undefined>('unit')
 const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<number | string | undefined>('size')
 const { value: flavour, errorMessage: flavourError, meta: flavourMeta } = useField<string | undefined>('flavour')
+const { value: colour, errorMessage: colourError, meta: colourMeta } = useField<string | undefined>('colour')
 const { value: price, errorMessage: priceError, meta: priceMeta } = useField<number>('price')
 const { value: wholesalePrice, errorMessage: wholesalePriceError, meta: wholesalePriceMeta } = useField<number | undefined>('wholesale_price')
 const { value: offerPct, errorMessage: offerPctError, meta: offerPctMeta } = useField<number | undefined>('offer_percentage')
@@ -282,6 +286,23 @@ const brandValue = computed<string>({
   set(v: string) { brand.value = v === '__none__' ? '' : v }
 })
 
+const colourOptions = computed(() => {
+  return Object.entries(COLOUR_SWATCH)
+    .filter(([key]) => key !== 'gray') // 'grey' and 'gray' are same in the map, just show one
+    .map(([key, value]) => ({
+      id: key,
+      label: key.charAt(0).toUpperCase() + key.slice(1),
+      hex: value
+    }))
+})
+
+const colourValue = computed({
+  get: () => colour.value || '__none__',
+  set: (val: string) => {
+    colour.value = val === '__none__' ? undefined : val
+  }
+})
+
 watch(() => props.open, async (open) => {
   if (open) {
     initializing.value = true
@@ -290,6 +311,7 @@ watch(() => props.open, async (open) => {
     const initialUnit = props.initial?.unit ?? undefined
     
     const initialFlavour = props.initial?.flavour ?? undefined
+    const initialColour = props.initial?.colour ?? undefined
     const initialAge = props.initial?.age ?? undefined
     if (initialPetArray && initialPetArray.length) setCategory('pet', initialPetArray); else clearCategory('pet')
     await nextTick()
@@ -309,6 +331,7 @@ watch(() => props.open, async (open) => {
       unit: initialUnit ?? undefined,
       size: initialSizeMatch ? Number(initialSizeMatch[0]) : undefined,
       flavour: initialFlavour ?? undefined,
+      colour: initialColour ?? undefined,
       price: Number(props.initial?.retail_price ?? 0),
       wholesale_price: props.initial?.wholesale_price != null ? Number(props.initial.wholesale_price) : undefined,
       offer_percentage: undefined,
@@ -338,7 +361,7 @@ watch(() => props.open, async (open) => {
     initializing.value = true
     resetForm({
       values: {
-        name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined,
+        name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined, colour: undefined,
         price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
       },
     })
@@ -457,6 +480,7 @@ const onSubmit = async () => {
       unit: values.unit,
       size: typeof values.size === 'number' ? formatSizeToString(values.size) : (typeof values.size === 'string' ? values.size : undefined),
       flavour: values.flavour,
+      colour: values.colour ? values.colour.trim().toLowerCase() : null,
       retail_price: values.price,
       wholesale_price: values.wholesale_price ?? null,
       stock_quantity: 1000,
@@ -724,6 +748,34 @@ const filteredBaseProducts = computed(() => {
             </Select>
             <p v-if="errorMap[k]?.value && (k === 'type' ? typeMeta.touched : k === 'age' ? ageMeta.touched : k === 'unit' ? unitMeta.touched : flavourMeta.touched)" class="text-destructive text-xs">{{ errorMap[k]?.value }}</p>
           </div>
+              <div class="flex flex-col gap-1.5">
+                <Label for="colour">Colour</Label>
+                <Select v-model="colourValue">
+                  <SelectTrigger id="colour" class="w-full">
+                    <div class="flex items-center gap-2">
+                      <div
+                        v-if="colour && COLOUR_SWATCH[colour.toLowerCase()]"
+                        class="h-4 w-4 rounded-full border border-border"
+                        :style="{ backgroundColor: COLOUR_SWATCH[colour.toLowerCase()] }"
+                      />
+                      <SelectValue placeholder="Select colour" />
+                    </div>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__">No Colour</SelectItem>
+                    <SelectItem v-for="opt in colourOptions" :key="opt.id" :value="opt.id">
+                      <div class="flex items-center gap-2">
+                        <div
+                          class="h-4 w-4 rounded-full border border-border"
+                          :style="{ backgroundColor: opt.hex }"
+                        />
+                        <span>{{ opt.label }}</span>
+                      </div>
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <p v-if="colourError && colourMeta.touched" class="text-destructive text-xs">{{ colourError }}</p>
+              </div>
               <div class="flex flex-col gap-1.5">
                 <Label for="size">Size</Label>
                 <div v-if="unit !== 'size_label'" class="flex items-center gap-2">

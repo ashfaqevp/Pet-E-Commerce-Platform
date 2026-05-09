@@ -21,6 +21,7 @@ export interface AdminProduct {
   default_rating?: number | null
   base_product_id?: string | null
   is_featured?: boolean
+  brands?: { name: string } | null
 }
 
 export interface AdminProductInput {
@@ -56,6 +57,7 @@ export const useAdminProducts = () => {
     petType?: string
     productType?: string
     brand?: string
+    brandId?: string
     status?: 'active' | 'inactive'
     sortBy?: keyof AdminProduct
     ascending?: boolean
@@ -65,11 +67,12 @@ export const useAdminProducts = () => {
     pending.value = true
     error.value = null
     try {
-      let q = supabase.from('products').select('*', { count: 'exact' })
+      let q = supabase.from('products').select('*, brands(name)', { count: 'exact' })
       if (params.search) q = q.ilike('name', `%${params.search}%`)
       if (params.petType) q = q.contains('pet_type', [params.petType])
       if (params.productType) q = q.eq('product_type', params.productType)
       if (params.brand) q = q.eq('brand', params.brand)
+      if (params.brandId) q = q.eq('brand_id', params.brandId)
       if (params.status === 'active') q = q.eq('is_active', true)
       if (params.status === 'inactive') q = q.eq('is_active', false)
       q = q.order('is_featured', { ascending: false, nullsFirst: false })

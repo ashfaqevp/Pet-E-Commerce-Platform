@@ -5,6 +5,7 @@ import { useAdminProducts } from '@/composables/admin/useAdminProducts'
 import { createColumnHelper, FlexRender, getCoreRowModel, useVueTable, type SortingState } from '@tanstack/vue-table'
 import { valueUpdater } from '@/components/ui/table/utils'
 import { useCategories } from '@/domain/categories'
+import { useBrands } from '@/composables/useBrands'
 import ProductSheet from '@/components/admin/products/ProductSheet.vue'
 import ProductDeleteConfirm from '@/components/admin/products/ProductDeleteConfirm.vue'
 
@@ -30,17 +31,26 @@ const sheetOpen = ref(false)
 const editProduct = ref<AdminProduct | null>(null)
 const deletingId = ref<string | null>(null)
 
-const params = computed(() => ({
-  search: debouncedSearch.value || undefined,
-  petType: petType.value === ALL ? undefined : (petType.value || undefined),
-  productType: productType.value === ALL ? undefined : (productType.value || undefined),
-  brand: brand.value === ALL ? undefined : (brand.value || undefined),
-  status: status.value === ALL ? undefined : (status.value || undefined),
-  sortBy: sortBy.value,
-  ascending: ascending.value,
-  page: page.value,
-  pageSize: pageSize.value,
-}))
+const params = computed(() => {
+  let bName: string | undefined
+  let bId: string | undefined
+  if (brand.value && brand.value !== ALL) {
+    if (brand.value.startsWith('legacy:')) bName = brand.value.replace('legacy:', '')
+    else if (brand.value.startsWith('id:')) bId = brand.value.replace('id:', '')
+  }
+  return {
+    search: debouncedSearch.value || undefined,
+    petType: petType.value === ALL ? undefined : (petType.value || undefined),
+    productType: productType.value === ALL ? undefined : (productType.value || undefined),
+    brand: bName,
+    brandId: bId,
+    status: status.value === ALL ? undefined : (status.value || undefined),
+    sortBy: sortBy.value,
+    ascending: ascending.value,
+    page: page.value,
+    pageSize: pageSize.value,
+  }
+})
 
 const { data, pending, error, refresh } = await useLazyAsyncData(
   'admin-products',
@@ -77,7 +87,12 @@ const columns = [
   columnHelper.accessor('name', { header: 'Product', enableSorting: true }),
   columnHelper.accessor('pet_type', { header: 'Pet Type', enableSorting: false }),
   columnHelper.accessor('product_type', { header: 'Product Type', enableSorting: false }),
-  columnHelper.accessor('brand', { header: 'Brand', enableSorting: false }),
+  columnHelper.display({
+    id: 'brand',
+    header: 'Brand',
+    enableSorting: false,
+    cell: ({ row }) => row.original.brands?.name || row.original.brand || '-',
+  }),
   columnHelper.display({ id: 'price', header: 'Price', enableSorting: true }),
   columnHelper.display({ id: 'rating', header: 'Rating', enableSorting: false }),
   columnHelper.display({ id: 'status', header: 'Status', enableSorting: false }),
@@ -142,26 +157,42 @@ const totalItems = computed(() => Number(data.value?.count || 0))
 const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageSize.value)))
 
 const { options, getCategoryLabel, setCategory, clearCategory } = useCategories()
+const { fetchActiveBrands } = useBrands()
 const petOptions = options('pet')
 const typeOptions = options('type')
+
 const { data: brandData, refresh: refreshBrands } = await useLazyAsyncData(
-  'admin-brands',
+  'admin-brands-combined',
   async () => {
     const supabase = useSupabaseClient()
-    const { data, error } = await supabase
+    
+    // Fetch legacy brands (unique strings from products table)
+    const { data: legacyRes } = await supabase
       .from('products')
       .select('brand')
       .not('brand', 'is', null)
-    if (error) throw error
-    const arr = ((data || []) as Array<{ brand: string | null }>)
-      .map(r => String(r.brand || '').trim())
-      .filter(Boolean)
-    const unique = Array.from(new Set(arr)).sort()
-    return unique
+    
+    const legacyNames = Array.from(new Set(((legacyRes || []) as { brand: string }[]).map(r => r.brand.trim()).filter(Boolean))).sort()
+    
+    // Fetch current brands (from brands table)
+    const dbBrands = await fetchActiveBrands()
+    
+    return {
+      legacy: legacyNames.map(name => ({ id: `legacy:${name}`, label: name, isLegacy: true })),
+      current: dbBrands.map(b => ({ id: `id:${b.id}`, label: b.name, isLegacy: false }))
+    }
   },
   { server: true }
 )
-const brandOptions = computed(() => (brandData.value || []) as string[])
+
+const brandOptions = computed(() => {
+  const data = brandData.value
+  if (!data) return []
+  return [
+    ...data.current,
+    ...data.legacy
+  ]
+})
 
 type OptionItem = { id: string; label: string }
 const petLabelMap = computed<Record<string, string>>(() => {
@@ -395,7 +426,12 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">All</SelectItem>
-            <SelectItem v-for="b in brandOptions" :key="b" :value="b">{{ b }}</SelectItem>
+            <SelectItem v-for="b in brandOptions" :key="b.id" :value="b.id">
+              <div class="flex items-center gap-2">
+                <Icon v-if="b.isLegacy" name="lucide:history" class="h-3.5 w-3.5 text-muted-foreground/70" />
+                <span :class="{ 'text-muted-foreground/80 italic font-normal': b.isLegacy }">{{ b.label }}</span>
+              </div>
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -502,7 +538,17 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
                 <Badge variant="outline">{{ typeLabelMap[row.original.product_type] ?? row.original.product_type }}</Badge>
               </TableCell>
               <TableCell class="py-3 text-center">
-                <Badge variant="outline">{{ row.original.brand || '—' }}</Badge>
+                <Badge
+                  variant="outline"
+                  :class="row.original.brands?.name
+                    ? 'border-secondary/20 bg-secondary/5 text-secondary'
+                    : (row.original.brand ? 'border-orange-200 bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800' : '')"
+                >
+                  <div class="flex items-center gap-1.5">
+                    <Icon v-if="!row.original.brands?.name && row.original.brand" name="lucide:history" class="h-3 w-3" />
+                    {{ row.original.brands?.name || row.original.brand || '—' }}
+                  </div>
+                </Badge>
               </TableCell>
               <TableCell class="py-3 text-right">
                 <div class="flex flex-col items-end">

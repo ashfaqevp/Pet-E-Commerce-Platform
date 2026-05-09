@@ -282,6 +282,13 @@ const brandIdValue = computed<string>({
   get() { return brandId.value ?? '__none__' },
   set(v: string) { brandId.value = v === '__none__' ? null : v }
 })
+const brandSearch = ref('')
+const filteredBrandOptions = computed(() => {
+  const list = brandOptions.value
+  const q = brandSearch.value.trim().toLowerCase()
+  if (!q) return list
+  return list.filter(b => b.name.toLowerCase().includes(q))
+})
 const legacyBrandText = computed(() => props.initial?.brand ?? null)
 
 const colourOptions = computed(() => {
@@ -632,19 +639,36 @@ const filteredBaseProducts = computed(() => {
               <div class="flex flex-col gap-1.5 md:col-span-2">
                 <Label for="brand_id">Brand</Label>
                 <Select v-model="brandIdValue">
-                  <SelectTrigger id="brand_id" class="w-full"><SelectValue placeholder="Select a brand…" /></SelectTrigger>
+                  <SelectTrigger id="brand_id" class="w-full">
+                    <SelectValue placeholder="Select a brand…" />
+                  </SelectTrigger>
                   <SelectContent>
+                    <div class="sticky top-0 z-10 bg-background p-2 border-b">
+                      <Input v-model="brandSearch" placeholder="Search brands..." class="w-full h-8 text-xs" @click.stop @keydown.stop />
+                    </div>
                     <SelectItem value="__none__">— No brand —</SelectItem>
-                    <SelectItem v-for="b in brandOptions" :key="b.id" :value="b.id">{{ b.name }}</SelectItem>
+                    <SelectItem v-for="b in filteredBrandOptions" :key="b.id" :value="b.id">{{ b.name }}</SelectItem>
                   </SelectContent>
                 </Select>
-                <p class="text-xs text-muted-foreground mt-1">
+                
+                <div v-if="legacyBrandText && !brandId" class="mt-2 p-3 bg-orange-50 border border-orange-100 rounded-md">
+                  <div class="flex items-center gap-2 text-xs text-orange-800">
+                    <Icon name="lucide:history" class="h-3.5 w-3.5" />
+                    <span class="font-bold uppercase tracking-wider text-[10px]">Legacy Reference</span>
+                  </div>
+                  <p  class="text-sm font-semibold text-orange-900 mt-1">{{ legacyBrandText }}</p>
+                  <p v-if="!brandId" class="text-xs text-orange-700/80 mt-1.5">
+                    This product is using an old brand text. Please link it to an official brand above to enable logo display and better filtering.
+                  </p>
+                  <!-- <p v-else class="text-xs text-orange-700/60 mt-1.5 italic">
+                    Linked to official brand. Legacy text kept for historical reference only.
+                  </p> -->
+                </div>
+                
+                <!-- <p v-else class="text-xs text-muted-foreground mt-1">
                   Link to a brand for logo + homepage display.
-                  <NuxtLink to="/admin/brands?new=true" target="_blank" class="underline text-secondary">Create a new brand</NuxtLink>
-                </p>
-                <p v-if="legacyBrandText && !brandId" class="text-xs text-muted-foreground">
-                  Legacy brand text: <span class="font-medium">{{ legacyBrandText }}</span> — link to a brand above to enable logo display.
-                </p>
+                  <NuxtLink to="/admin/brands?new=true" target="_blank" class="underline text-secondary ml-1">Create a new brand</NuxtLink>
+                </p> -->
               </div>
               <div class="flex flex-col gap-1.5 md:col-span-2">
                 <Label for="description">Description</Label>

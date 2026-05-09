@@ -3,17 +3,17 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import type { CategoryKey, CategoryOption } from '@/domain/categories/category.types'
-import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
+import type { CategoryOption } from '@/domain/categories/category.types'
 
 type FilterKey = 'pet' | 'type' | 'age' | 'flavour' | 'brand'
 
 interface Props {
   filters: Record<FilterKey, string>
+  petOpts: CategoryOption[]
   typeOpts: CategoryOption[]
   ageOpts: CategoryOption[]
   flavourOpts: CategoryOption[]
-  brandOpts: string[]
+  brandOpts: CategoryOption[]
   onSelect: (key: FilterKey, id: string) => void
   onApply: () => void
   onClear: () => void
@@ -104,12 +104,12 @@ function selectAndOpen(key: FilterKey, id: string) {
         <AccordionContent>
           <RadioGroup :model-value="filters.pet" @update:modelValue="v => selectAndOpen('pet', String(v))">
             <div :class="containerClass">
-              <Label :for="'pet-all'" class="flex items-center gap-2 cursor-pointer">
+              <Label for="pet-all" class="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem id="pet-all" value="" />
                 <span class="text-sm">All</span>
               </Label>
               <Label
-                v-for="option in CATEGORY_CONFIG.pet.options"
+                v-for="option in petOpts"
                 :key="option.id"
                 class="flex items-center gap-2 cursor-pointer"
                 :for="`pet-${option.id}`"
@@ -208,18 +208,18 @@ function selectAndOpen(key: FilterKey, id: string) {
         <AccordionContent>
           <RadioGroup :model-value="filters.brand" @update:modelValue="v => selectAndOpen('brand', String(v))">
             <div :class="containerClass">
-              <Label :for="'brand-all'" class="flex items-center gap-2 cursor-pointer">
+              <Label for="brand-all" class="flex items-center gap-2 cursor-pointer">
                 <RadioGroupItem id="brand-all" value="" />
                 <span class="text-sm">All</span>
               </Label>
               <Label
                 v-for="b in brandOpts"
-                :key="b"
+                :key="b.id"
                 class="flex items-center gap-2 cursor-pointer"
-                :for="`brand-${b}`"
+                :for="`brand-${b.id}`"
               >
-                <RadioGroupItem :id="`brand-${b}`" :value="b" />
-                <span class="text-sm">{{ b }}</span>
+                <RadioGroupItem :id="`brand-${b.id}`" :value="b.id" />
+                <span class="text-sm">{{ b.label }}</span>
               </Label>
             </div>
           </RadioGroup>

@@ -133,23 +133,17 @@ const flavourOpts = computed<CategoryOption[]>(() => {
   return rows.map(r => ({ id: r.flavour, label: r.flavour }))
 })
 
-const { data: brandData, pending: brandPending, error: brandError, refresh: refreshBrands } = await useLazyAsyncData(
-  'public-brands',
-  async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('brand')
-      .not('brand', 'is', null)
-    if (error) throw error
-    const arr = ((data || []) as Array<{ brand: string | null }>)
-      .map(r => String(r.brand || '').trim())
-      .filter(Boolean)
-    const unique = Array.from(new Set(arr)).sort()
-    return unique
-  },
-  { server: true }
+const { fetchActivePetTypes } = usePetTypes()
+const { data: petTypesData } = await useLazyAsyncData('public-pet-types', fetchActivePetTypes, { server: true })
+const petOpts = computed<CategoryOption[]>(() =>
+  (petTypesData.value ?? []).map(p => ({ id: p.slug, label: p.name }))
 )
-const brandOpts = computed(() => (brandData.value || []) as string[])
+
+const { fetchActiveBrands } = useBrands()
+const { data: brandsData } = await useLazyAsyncData('public-brands', fetchActiveBrands, { server: true })
+const brandOpts = computed<CategoryOption[]>(() =>
+  (brandsData.value ?? []).map(b => ({ id: b.slug, label: b.name }))
+)
 
 function getFilteredOptions(rules: readonly CategoryRule[] | undefined, selected: string | string[]): CategoryOption[] {
   if (!rules) return []
@@ -176,7 +170,7 @@ const flavourLabelMap = computed<Record<string, string>>(() => {
 
 function getLabel(category: CategoryKey, id: string): string {
   if (!id) return ''
-  if (category === 'pet') return CATEGORY_CONFIG.pet.options?.find(o => o.id === id)?.label ?? ''
+  if (category === 'pet') return petOpts.value.find(o => o.id === id)?.label ?? ''
   if (category === 'type') return CATEGORY_CONFIG.type.options?.find(o => o.id === id)?.label ?? ''
   if (category === 'age') return getLabelFromRules(CATEGORY_CONFIG.age.rules, id)
   if (category === 'flavour') return flavourLabelMap.value[id] || ''
@@ -188,7 +182,7 @@ const selectedLabels = computed(() => ({
   type: getLabel('type', qType.value || ''),
   age: getLabel('age', qAge.value || ''),
   flavour: getLabel('flavour', qFlavour.value || ''),
-  brand: qBrand.value || '',
+  brand: brandOpts.value.find(b => b.id === (qBrand.value || ''))?.label ?? (qBrand.value || ''),
 }))
 
 const summaryParts = computed(() => {
@@ -253,7 +247,11 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
     if (params.value.type) query = query.eq('product_type', params.value.type)
     if (params.value.age) query = query.eq('age', params.value.age)
     if (params.value.flavour) query = query.eq('flavour', params.value.flavour)
-    if (params.value.brand) query = query.eq('brand', params.value.brand)
+    if (params.value.brand) {
+      const matched = brandsData.value?.find(b => b.slug === params.value.brand)
+      if (matched?.id) query = query.eq('brand_id', matched.id)
+      else query = query.eq('brand', params.value.brand)
+    }
     if (params.value.featured) query = query.eq('is_featured', true)
 
     const term = params.value.search
@@ -477,6 +475,7 @@ const apiError = computed(() => {
             <div class="space-y-4 py-4">
               <ProductFilters
                 :filters="mobileFilters"
+                :pet-opts="petOpts"
                 :type-opts="CATEGORY_CONFIG.type.options ?? []"
                 :age-opts="getFilteredOptions(CATEGORY_CONFIG.age.rules, mobileFilters.pet)"
                 :flavour-opts="flavourOpts"
@@ -502,6 +501,7 @@ const apiError = computed(() => {
         <CardContent class="space-y-4">
           <ProductFilters
             :filters="filters"
+            :pet-opts="petOpts"
             :type-opts="typeOpts"
             :age-opts="ageOpts"
             :flavour-opts="flavourOpts"

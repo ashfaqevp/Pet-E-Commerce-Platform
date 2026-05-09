@@ -9,6 +9,8 @@ definePageMeta({
 })
 
 const { fetchAllPetTypesAdmin, updatePetType, deletePetType } = usePetTypes()
+const route = useRoute()
+const router = useRouter()
 
 const { data, pending, error, refresh } = await useLazyAsyncData<PetType[]>(
   'admin-pet-types',
@@ -17,7 +19,15 @@ const { data, pending, error, refresh } = await useLazyAsyncData<PetType[]>(
 )
 
 const petTypes = computed(() => (data.value ?? []) as PetType[])
+
+const sheetOpen = ref(false)
+const selectedPetType = ref<PetType | null>(null)
 const deletingId = ref<string | null>(null)
+
+const openSheet = (pt: PetType | null = null) => {
+  selectedPetType.value = pt
+  sheetOpen.value = true
+}
 
 const toggleActive = async (id: string, current: boolean) => {
   try {
@@ -38,18 +48,30 @@ const confirmDelete = async (id: string) => {
     toast.error(e instanceof Error ? e.message : 'Delete failed')
   }
 }
+
+onMounted(() => {
+  if (route.query.new === 'true') {
+    openSheet(null)
+    router.replace({ query: { ...route.query, new: undefined } })
+  }
+})
+
+watch(() => route.query.new, (newVal) => {
+  if (newVal === 'true') {
+    openSheet(null)
+    router.replace({ query: { ...route.query, new: undefined } })
+  }
+})
 </script>
 
 <template>
   <div class="space-y-4">
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-semibold">Pet Types</h1>
-      <NuxtLink to="/admin/pet-types/new">
-        <Button class="bg-secondary text-white">
-          <Icon name="lucide:plus" class="h-4 w-4 mr-2" />
-          New Pet Type
-        </Button>
-      </NuxtLink>
+      <Button class="bg-secondary text-white" @click="openSheet(null)">
+        <Icon name="lucide:plus" class="h-4 w-4 mr-2" />
+        New Pet Type
+      </Button>
     </div>
 
     <Card class="rounded-sm">
@@ -95,11 +117,9 @@ const confirmDelete = async (id: string) => {
                 </TableCell>
                 <TableCell class="text-center">
                   <div class="flex items-center gap-2 justify-center">
-                    <NuxtLink :to="`/admin/pet-types/${pt.id}`">
-                      <Button variant="default" size="sm">
-                        <Icon name="lucide:pencil" class="h-4 w-4 mr-1" /> Edit
-                      </Button>
-                    </NuxtLink>
+                    <Button variant="default" size="sm" @click="openSheet(pt)">
+                      <Icon name="lucide:pencil" class="h-4 w-4 mr-1" /> Edit
+                    </Button>
                     <AlertDialog :open="deletingId === pt.id" @update:open="(v) => !v && (deletingId = null)">
                       <AlertDialogTrigger as-child>
                         <Button variant="destructive" size="sm" @click="deletingId = pt.id">
@@ -127,5 +147,12 @@ const confirmDelete = async (id: string) => {
         </div>
       </CardContent>
     </Card>
+
+    <AdminPetTypesPetTypeSheet
+      v-model:open="sheetOpen"
+      :pet-type="selectedPetType"
+      @saved="refresh"
+    />
   </div>
 </template>
+

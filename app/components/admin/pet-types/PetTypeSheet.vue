@@ -2,35 +2,21 @@
 import { toast } from 'vue-sonner'
 import type { PetType } from '@/composables/usePetTypes'
 
-definePageMeta({
-  layout: 'admin',
-  middleware: 'admin',
-})
+interface Emits {
+  (e: 'update:open', v: boolean): void
+  (e: 'saved'): void
+}
 
-const route = useRoute()
-const isNew = computed(() => route.params.id === 'new')
-const petTypeId = computed(() => isNew.value ? null : String(route.params.id))
+const props = defineProps<{
+  open: boolean
+  petType: PetType | null
+}>()
+
+const emit = defineEmits<Emits>()
 
 const { createPetType, updatePetType, uploadImage } = usePetTypes()
 
-const { data: existing, pending: loadPending } = await useLazyAsyncData<PetType | null>(
-  `admin-pet-type-${route.params.id}`,
-  async () => {
-    if (isNew.value) return null
-    const supabase = useSupabaseClient()
-    const { data, error } = await supabase
-      .from('pet_types')
-      .select('*')
-      .eq('id', petTypeId.value as string)
-      .single()
-    if (error) throw error
-    return data as unknown as PetType
-  },
-  { server: true }
-)
-
-useHead({ title: computed(() => isNew.value ? 'New Pet Type' : 'Edit Pet Type') })
-
+const isNew = computed(() => !props.petType)
 const name = ref('')
 const slug = ref('')
 const sortOrder = ref(0)
@@ -41,15 +27,31 @@ const existingImageUrl = ref<string | null>(null)
 const submitting = ref(false)
 const slugManuallyEdited = ref(false)
 
-watch(existing, (val) => {
-  if (!val) return
-  name.value = val.name ?? ''
-  slug.value = val.slug ?? ''
-  sortOrder.value = val.sort_order ?? 0
-  isActive.value = val.is_active ?? true
-  existingImageUrl.value = val.image_url ?? null
-  slugManuallyEdited.value = true
-}, { immediate: true })
+function resetForm() {
+  name.value = ''
+  slug.value = ''
+  sortOrder.value = 0
+  isActive.value = true
+  imageFile.value = null
+  imagePreview.value = null
+  existingImageUrl.value = null
+  slugManuallyEdited.value = false
+}
+
+watch(() => props.open, (isOpen) => {
+  if (isOpen) {
+    if (props.petType) {
+      name.value = props.petType.name ?? ''
+      slug.value = props.petType.slug ?? ''
+      sortOrder.value = props.petType.sort_order ?? 0
+      isActive.value = props.petType.is_active ?? true
+      existingImageUrl.value = props.petType.image_url ?? null
+      slugManuallyEdited.value = true
+    } else {
+      resetForm()
+    }
+  }
+})
 
 function toSlug(n: string): string {
   return n.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
@@ -93,10 +95,11 @@ const onSubmit = async () => {
       await createPetType(payload)
       toast.success('Pet type created')
     } else {
-      await updatePetType(petTypeId.value as string, payload)
+      await updatePetType(props.petType!.id, payload)
       toast.success('Pet type updated')
     }
-    await navigateTo('/admin/pet-types')
+    emit('saved')
+    emit('update:open', false)
   } catch (e) {
     toast.error(e instanceof Error ? e.message : 'Save failed')
   } finally {
@@ -106,23 +109,22 @@ const onSubmit = async () => {
 </script>
 
 <template>
-  <div class="max-w-xl space-y-6">
-    <div class="flex items-center gap-3">
-      <NuxtLink to="/admin/pet-types">
-        <Button variant="ghost" size="icon">
-          <Icon name="lucide:arrow-left" class="h-4 w-4" />
-        </Button>
-      </NuxtLink>
-      <h1 class="text-2xl font-semibold">{{ isNew ? 'New Pet Type' : 'Edit Pet Type' }}</h1>
-    </div>
-
-    <Card>
-      <CardContent class="pt-6 space-y-4">
-        <div v-if="loadPending" class="space-y-3">
-          <Skeleton v-for="i in 4" :key="i" class="h-10 w-full" />
+  <Sheet :open="props.open" @update:open="(v) => emit('update:open', v)">
+    <SheetContent class="sm:max-w-md p-0 h-full gap-0 flex flex-col" :showCloseButton="false">
+      <SheetHeader class="sticky top-0 z-10 bg-secondary/10 border-b px-6 py-4 shadow-sm">
+        <div class="flex items-center justify-between">
+          <SheetTitle>{{ isNew ? 'New Pet Type' : 'Edit Pet Type' }}</SheetTitle>
+          <SheetClose as-child>
+            <Button variant="ghost" size="icon" aria-label="Close">
+              <Icon name="lucide:x" class="h-4 w-4" />
+            </Button>
+          </SheetClose>
         </div>
+        <SheetDescription />
+      </SheetHeader>
 
-        <template v-else>
+      <div class="flex-1 overflow-y-auto px-6 py-6">
+        <div class="space-y-4">
           <div class="flex flex-col gap-1.5">
             <Label for="pt-name">Name <span class="text-destructive">*</span></Label>
             <Input id="pt-name" v-model="name" placeholder="e.g. Rabbit" />
@@ -138,8 +140,7 @@ const onSubmit = async () => {
             />
             <p v-if="slugError && slug" class="text-xs text-destructive">{{ slugError }}</p>
             <p v-else class="text-xs text-muted-foreground">
-              Must exactly match the values in <code class="font-mono">products.pet_type[]</code>
-              (e.g. <code class="font-mono">rabbit</code>, <code class="font-mono">small-animal</code>).
+              Must exactly match the values in <code class="font-mono text-[10px]">products.pet_type[]</code>
             </p>
           </div>
 
@@ -151,32 +152,32 @@ const onSubmit = async () => {
                 <img v-else-if="existingImageUrl" :src="existingImageUrl" alt="image" class="h-full w-full object-cover rounded-full" />
                 <Icon v-else name="lucide:paw-print" class="h-6 w-6 text-muted-foreground" />
               </div>
-              <Input id="pt-image" type="file" accept="image/*" class="flex-1" @change="onImageChange" />
+              <Input type="file" accept="image/*" class="flex-1" @change="onImageChange" />
             </div>
           </div>
 
           <div class="flex flex-col gap-1.5">
             <Label for="pt-sort">Sort Order</Label>
             <Input id="pt-sort" type="number" v-model.number="sortOrder" class="w-32" />
-            <p class="text-xs text-muted-foreground">Lower number appears first on the homepage</p>
+            <p class="text-xs text-muted-foreground">Lower number appears first</p>
           </div>
 
           <div class="flex items-center justify-between py-1">
             <Label for="pt-active" class="cursor-pointer">Active</Label>
-            <Switch id="pt-active" v-model:checked="isActive" />
+            <Switch id="pt-active" v-model="isActive" />
           </div>
+        </div>
+      </div>
 
-          <div class="flex gap-2 pt-2">
-            <NuxtLink to="/admin/pet-types" class="flex-1">
-              <Button variant="outline" class="w-full">Cancel</Button>
-            </NuxtLink>
-            <Button class="flex-1 bg-secondary text-white" :disabled="submitting" @click="onSubmit">
-              <Icon v-if="submitting" name="lucide:loader-2" class="h-4 w-4 mr-2 animate-spin" />
-              {{ isNew ? (submitting ? 'Creating…' : 'Create Pet Type') : (submitting ? 'Saving…' : 'Save Changes') }}
-            </Button>
-          </div>
-        </template>
-      </CardContent>
-    </Card>
-  </div>
+      <div class="mt-auto border-t p-6 bg-muted/20">
+        <div class="flex gap-3">
+          <Button variant="outline" class="flex-1" @click="emit('update:open', false)">Cancel</Button>
+          <Button class="flex-1 bg-secondary text-white" :disabled="submitting" @click="onSubmit">
+            <Icon v-if="submitting" name="lucide:loader-2" class="h-4 w-4 mr-2 animate-spin" />
+            {{ isNew ? (submitting ? 'Creating…' : 'Create Pet Type') : (submitting ? 'Saving…' : 'Save Changes') }}
+          </Button>
+        </div>
+      </div>
+    </SheetContent>
+  </Sheet>
 </template>

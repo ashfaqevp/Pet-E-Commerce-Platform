@@ -229,7 +229,7 @@ onMounted(() => {
             v-if="pet.image_url"
             :src="pet.image_url"
             :alt="pet.name"
-            class="h-14 w-14 object-contain rounded-full"
+            class="h-14 w-14 object-contain"
           />
           <div v-else class="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
             <Icon name="lucide:paw-print" class="w-7 h-7 text-muted-foreground" />

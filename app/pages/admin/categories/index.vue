@@ -8,11 +8,11 @@ definePageMeta({
 import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
 import type { CategoryOption, CategoryRule } from '~/domain/categories/category.types'
 
-type PetId = CategoryOption['id']
-type TypeId = CategoryRule['options'][number]['id']
-type AgeId = CategoryRule['options'][number]['id']
-type UnitId = CategoryOption['id']
-type FlavourId = CategoryRule['options'][number]['id']
+type PetId = string
+type TypeId = string
+type AgeId = string
+type UnitId = string
+type FlavourId = string
 
 const selectedPet = ref<PetId | null>(null)
 const selectedType = ref<TypeId | null>(null)
@@ -33,15 +33,16 @@ function getRuleOptions(
   return result
 }
 
-const typeOptions = computed(() => {
-  if (!selectedPet.value) return [] as readonly { id: string; label: string }[]
-  return getRuleOptions(CATEGORY_CONFIG.type.rules, { pet: selectedPet.value })
-})
+const typeOptions = computed(() => (CATEGORY_CONFIG.type.options ?? []) as readonly { id: string; label: string }[])
 const ageOptions = computed(() => {
   if (!selectedPet.value) return [] as readonly { id: string; label: string }[]
   return getRuleOptions(CATEGORY_CONFIG.age.rules, { pet: selectedPet.value })
 })
 const supabase = useSupabaseClient()
+
+const { fetchActivePetTypes } = usePetTypes()
+const { data: petTypesData } = await useLazyAsyncData('admin-cat-pet-types', fetchActivePetTypes, { server: true })
+const dbPetOpts = computed(() => (petTypesData.value ?? []).map(p => ({ id: p.slug, label: p.name })))
 const { data: flavourData } = await useLazyAsyncData(
   'admin-flavour-options',
   async () => {
@@ -157,7 +158,7 @@ const selectedTab = ref('definitions')
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Pet Type</SelectLabel>
-                        <SelectItem v-for="o in CATEGORY_CONFIG.pet.options" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
+                        <SelectItem v-for="o in dbPetOpts" :key="o.id" :value="o.id">{{ o.label }}</SelectItem>
                       </SelectGroup>
                     </SelectContent>
                   </Select>
@@ -168,9 +169,9 @@ const selectedTab = ref('definitions')
                     <Label>Product Type</Label>
                     <Badge :class="isTypeRequired ? 'bg-[#FF9500] text-white' : 'bg-muted'">Required</Badge>
                   </div>
-                  <Select v-model="selectedType" :disabled="!selectedPet || typeOptions.length === 0">
+                  <Select v-model="selectedType">
                     <SelectTrigger class="w-full">
-                      <SelectValue :placeholder="!selectedPet ? 'Select pet first' : 'Select product type'" />
+                      <SelectValue placeholder="Select product type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
@@ -292,7 +293,7 @@ const selectedTab = ref('definitions')
                 <AccordionContent>
                   <div class="flex items-center gap-2 mb-2"><Badge variant="outline">Required</Badge></div>
                   <div class="flex flex-wrap gap-2">
-                    <Badge v-for="o in CATEGORY_CONFIG.pet.options" :key="o.id" variant="outline">{{ o.label }}</Badge>
+                    <Badge v-for="o in dbPetOpts" :key="o.id" variant="outline">{{ o.label }}</Badge>
                   </div>
                 </AccordionContent>
               </AccordionItem>

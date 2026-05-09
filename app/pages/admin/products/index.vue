@@ -158,7 +158,10 @@ const totalPages = computed(() => Math.max(1, Math.ceil(totalItems.value / pageS
 
 const { options, getCategoryLabel, setCategory, clearCategory } = useCategories()
 const { fetchActiveBrands } = useBrands()
-const petOptions = options('pet')
+const { fetchActivePetTypes } = usePetTypes()
+
+const { data: petTypesData } = await useLazyAsyncData('admin-pet-types', fetchActivePetTypes, { server: true })
+const petOptions = computed(() => (petTypesData.value ?? []).map(p => ({ id: p.slug, label: p.name })))
 const typeOptions = options('type')
 
 const { data: brandData, refresh: refreshBrands } = await useLazyAsyncData(

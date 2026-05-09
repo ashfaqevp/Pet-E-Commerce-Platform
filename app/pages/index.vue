@@ -269,9 +269,9 @@ onMounted(() => {
           v-for="brand in (featuredBrands as any[])"
           :key="brand.id"
           :to="`/brands/${brand.slug}`"
-          class="flex flex-col items-center gap-6 min-w-[120px] md:min-w-[140px] group shrink-0"
+          class="flex flex-col items-center gap-3 min-w-[120px] md:min-w-[140px] group shrink-0"
         >
-          <div class="h-16 w-full flex items-center justify-center">
+          <div class="h-20 w-full flex items-center justify-center">
             <img
               v-if="brand.logo_url"
               :src="brand.logo_url"

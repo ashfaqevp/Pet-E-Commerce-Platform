@@ -37,6 +37,8 @@ interface ProductRow {
   name: string;
   description?: string | null;
   brand?: string | null;
+  brand_id?: string | null;
+  brands?: { id: string; name: string; slug: string; logo_url: string | null } | null;
   pet_type?: string | string[] | null;
   product_type?: string | null;
   age?: string | null;
@@ -148,7 +150,7 @@ const { data, pending, error, refresh } = await useLazyAsyncData(
   async () => {
     const { data: row, error: e } = await supabase
       .from("products")
-      .select("*")
+      .select("*, brands ( id, name, slug, logo_url )")
       .eq("id", productId.value)
       .single();
     if (e) throw e;
@@ -327,7 +329,8 @@ const product = computed(() => {
   return {
     id: String(source?.id ?? productId.value),
     name: String(source?.name || "Product"),
-    brand: source?.brand || undefined,
+    brand: source?.brands?.name ?? source?.brand ?? undefined,
+    brandSlug: source?.brands?.slug ?? null,
     price,
     rating,
     thumbnail: source?.thumbnail_url || undefined,
@@ -339,6 +342,7 @@ const product = computed(() => {
     id: string;
     name: string;
     brand?: string;
+    brandSlug?: string | null;
     price: number;
     rating: number;
     thumbnail?: string;
@@ -409,20 +413,26 @@ const { data: relatedData, pending: relatedPending, error: relatedError, refresh
 )
 const relatedProducts = computed<CardProduct[]>(() => ((relatedData.value ?? []) as ProductRow[]).map(mapRowToCard))
 const { data: sameBrandData, pending: brandPending, error: brandError, refresh: refreshBrand } = await useLazyAsyncData(
-  () => `same-brand-${productId.value}-${current.value?.brand || ''}`,
+  () => `same-brand-${productId.value}-${current.value?.brand_id || current.value?.brand || ''}`,
   async () => {
     const cur = current.value
-    const b = cur?.brand || null
-    if (!b) return [] as ProductRow[]
+    const brandIdVal = cur?.brand_id || null
+    const brandText = cur?.brand || null
+    if (!brandIdVal && !brandText) return [] as ProductRow[]
     let q = supabase
       .from('products')
-      .select('id,name,retail_price,wholesale_price,default_rating,thumbnail_url,brand,base_product_id', { count: 'exact' })
+      .select('id,name,retail_price,wholesale_price,default_rating,thumbnail_url,brand,brand_id,base_product_id', { count: 'exact' })
       .eq('is_active', true)
-      .eq('brand', b)
       .order('is_featured', { ascending: false })
       .order('row_index', { ascending: true })
       .order('created_at', { ascending: false })
       .range(0, 11)
+
+    if (brandIdVal) {
+      q = q.eq('brand_id', brandIdVal)
+    } else if (brandText) {
+      q = q.eq('brand', brandText)
+    }
 
     const excludeId = product.value?.id || ''
     if (excludeId) q = q.neq('id', excludeId)
@@ -431,7 +441,7 @@ const { data: sameBrandData, pending: brandPending, error: brandError, refresh: 
     if (error) throw error
     return (rows ?? []) as ProductRow[]
   },
-  { server: true, watch: [productId, () => current.value?.brand] }
+  { server: true, watch: [productId, () => current.value?.brand_id, () => current.value?.brand] }
 )
 const brandProducts = computed<CardProduct[]>(() => ((sameBrandData.value ?? []) as ProductRow[]).map(mapRowToCard))
 const runtimeConfig = useRuntimeConfig()
@@ -789,7 +799,12 @@ watch([selectedFlavour, selectedSize, selectedAge, variantRows], () => {
       <div>
         <h1 class="text-2xl font-medium text-foreground">{{ product.name }}</h1>
         <div class="flex justify-start gap-3 items-center">
-          <p v-if="product.brand" class="text-md text-secondary mt-1"><span class="text-gray-500">By</span> {{ product.brand }}</p>
+          <NuxtLink
+            v-if="product.brand && product.brandSlug"
+            :to="`/brands/${product.brandSlug}`"
+            class="text-md text-secondary mt-1 hover:underline"
+          ><span class="text-gray-500">By</span> {{ product.brand }}</NuxtLink>
+          <p v-else-if="product.brand" class="text-md text-secondary mt-1"><span class="text-gray-500">By</span> {{ product.brand }}</p>
           <p>.</p>
           <div class="flex items-center gap-2 mt-2 text-yellow-500">
             <Icon name="lucide:star" />

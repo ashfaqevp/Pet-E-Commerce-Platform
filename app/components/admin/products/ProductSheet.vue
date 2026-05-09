@@ -33,6 +33,7 @@ interface Emits {
     existingThumbnailUrl?: string | null
     existingGalleryUrls?: string[]
     brand?: string | null
+    brand_id?: string | null
   }): void
 }
 
@@ -262,29 +263,19 @@ const { value: baseProductId, errorMessage: baseProductIdError, meta: baseProduc
 
 const initializing = ref(false)
 
-const brand = ref<string>(props.initial?.brand ?? '')
-const newBrand = ref('')
+const brandId = ref<string | null>(props.initial?.brand_id ?? null)
+const { fetchActiveBrands } = useBrands()
 const brandsState = await useLazyAsyncData(
-  'admin-product-brands',
-  async () => {
-    const { data, error } = await supabase
-      .from('products')
-      .select('brand')
-      .not('brand', 'is', null)
-    if (error) throw error
-    const arr = ((data || []) as Array<{ brand: string | null }>)
-      .map(r => String(r.brand || '').trim())
-      .filter(Boolean)
-    const unique = Array.from(new Set(arr)).sort()
-    return unique
-  },
+  'admin-product-brand-options',
+  fetchActiveBrands,
   { server: true }
 )
-const brandList = computed(() => (brandsState.data.value || []) as string[])
-const brandValue = computed<string>({
-  get() { return brand.value && brand.value.length ? brand.value : '__none__' },
-  set(v: string) { brand.value = v === '__none__' ? '' : v }
+const brandOptions = computed(() => (brandsState.data.value || []) as Array<{ id: string; name: string; slug: string; logo_url: string | null; is_featured: boolean; sort_order: number }>)
+const brandIdValue = computed<string>({
+  get() { return brandId.value ?? '__none__' },
+  set(v: string) { brandId.value = v === '__none__' ? null : v }
 })
+const legacyBrandText = computed(() => props.initial?.brand ?? null)
 
 const colourOptions = computed(() => {
   return Object.entries(COLOUR_SWATCH)
@@ -346,7 +337,7 @@ watch(() => props.open, async (open) => {
     if (!initialSizeMatch && initialSizeRaw) {
       size.value = initialSizeRaw
     }
-    brand.value = props.initial?.brand ?? ''
+    brandId.value = props.initial?.brand_id ?? null
     valueMap.pet.value = initialPetArray || undefined
     valueMap.type.value = initialType || undefined
     valueMap.unit.value = initialUnit || undefined
@@ -365,7 +356,7 @@ watch(() => props.open, async (open) => {
         price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
       },
     })
-    brand.value = ''
+    brandId.value = null
     existingThumbnailUrl.value = null
     thumbnailFile.value = null
     thumbnailPreview.value = null
@@ -491,7 +482,8 @@ const onSubmit = async () => {
       galleryFiles: galleryFiles.value,
       existingThumbnailUrl: existingThumbnailUrl.value,
       existingGalleryUrls: existingGalleryUrls.value,
-      brand: brand.value.trim() || undefined,
+      brand: props.initial?.brand ?? undefined,
+      brand_id: brandId.value ?? undefined,
     })
   })()
 }
@@ -631,18 +623,21 @@ const filteredBaseProducts = computed(() => {
                 
               </div>
               <div class="flex flex-col gap-1.5 md:col-span-2">
-                <Label for="brand">Brand</Label>
-                <Select v-model="brandValue">
-                  <SelectTrigger id="brand" class="w-full"><SelectValue placeholder="Select brand or add new" /></SelectTrigger>
+                <Label for="brand_id">Brand</Label>
+                <Select v-model="brandIdValue">
+                  <SelectTrigger id="brand_id" class="w-full"><SelectValue placeholder="Select a brand…" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">No Brand</SelectItem>
-                    <SelectItem v-for="b in brandList" :key="b" :value="b">{{ b }}</SelectItem>
+                    <SelectItem value="__none__">— No brand —</SelectItem>
+                    <SelectItem v-for="b in brandOptions" :key="b.id" :value="b.id">{{ b.name }}</SelectItem>
                   </SelectContent>
                 </Select>
-                <div class="flex gap-2 mt-2">
-                  <Input v-model="newBrand" placeholder="Add new brand" class="w-full" />
-                  <Button type="button" @click="() => { const b = newBrand.trim(); brandValue = b || '__none__'; const list = (brandsState.data.value || []); if (b && !list.includes(b)) brandsState.data.value = Array.from(new Set([...list, b])).sort(); newBrand = '' }">Add</Button>
-                </div>
+                <p class="text-xs text-muted-foreground mt-1">
+                  Link to a brand for logo + homepage display.
+                  <NuxtLink to="/admin/brands?new=true" target="_blank" class="underline text-secondary">Create a new brand</NuxtLink>
+                </p>
+                <p v-if="legacyBrandText && !brandId" class="text-xs text-muted-foreground">
+                  Legacy brand text: <span class="font-medium">{{ legacyBrandText }}</span> — link to a brand above to enable logo display.
+                </p>
               </div>
               <div class="flex flex-col gap-1.5 md:col-span-2">
                 <Label for="description">Description</Label>

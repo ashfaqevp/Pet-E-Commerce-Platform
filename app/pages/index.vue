@@ -116,6 +116,40 @@ const onInitApi = (api: UnwrapRefCarouselApi) => {
 
 const featuredProducts = computed<CardProduct[]>(() => (featuredData.value ?? []).map(mapRow))
 
+const { fetchActiveBrands } = useBrands()
+const { data: featuredBrandsData } = await useLazyAsyncData(
+  'featured-brands',
+  async () => {
+    const brands = await fetchActiveBrands()
+    const featured = brands.filter(b => b.is_featured)
+
+    if (featured.length === 0) return []
+
+    // Fetch product counts for these brands
+    const { data: countsData, error: countsError } = await supabase
+      .from('products')
+      .select('brand_id')
+      .eq('is_active', true)
+      .not('brand_id', 'is', null)
+
+    if (countsError) throw countsError
+
+    const countsMap = (countsData || []).reduce((acc: Record<string, number>, curr) => {
+      if (curr.brand_id) {
+        acc[curr.brand_id] = (acc[curr.brand_id] || 0) + 1
+      }
+      return acc
+    }, {})
+
+    return featured.map(b => ({
+      ...b,
+      product_count: countsMap[b.id] || 0
+    }))
+  },
+  { server: true }
+)
+const featuredBrands = computed(() => featuredBrandsData.value ?? [])
+
 const { width } = useWindowSize()
 const isMobile = computed(() => width.value < 768)
 
@@ -215,6 +249,36 @@ onMounted(() => {
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{{ featuredError.message || 'Failed to load featured' }}</AlertDescription>
       </Alert>
+    </section>
+
+    <!-- Shop by Brand -->
+    <section v-if="featuredBrands.length" class="container mx-auto px-4 py-12 border-t">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-xl font-semibold">Shop by Brand</h3>
+      </div>
+      <div class="flex items-start gap-8 md:gap-16 overflow-x-auto pb-4 no-scrollbar">
+        <NuxtLink
+          v-for="brand in (featuredBrands as any[])"
+          :key="brand.id"
+          :to="`/brands/${brand.slug}`"
+          class="flex flex-col items-center gap-6 min-w-[120px] md:min-w-[140px] group shrink-0"
+        >
+          <div class="h-16 w-full flex items-center justify-center">
+            <img
+              v-if="brand.logo_url"
+              :src="brand.logo_url"
+              :alt="brand.name"
+              class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
+            />
+            <span v-else class="text-sm font-bold text-center text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-tight">{{ brand.name }}</span>
+          </div>
+          <div class="text-center">
+            <span class="text-[11px] md:text-xs font-semibold text-black tracking-wider transition-colors group-hover:text-secondary">
+              {{ brand.name }} ({{ brand.product_count || 0 }})
+            </span>
+          </div>
+        </NuxtLink>
+      </div>
     </section>
   </div>
   

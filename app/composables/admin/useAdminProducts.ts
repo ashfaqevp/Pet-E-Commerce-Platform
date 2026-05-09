@@ -4,6 +4,7 @@ export interface AdminProduct {
   pet_type: string[]
   product_type: string
   brand?: string | null
+  brand_id?: string | null
   age?: string | null
   unit?: string | null
   size?: string | null
@@ -27,6 +28,7 @@ export interface AdminProductInput {
   pet_type: string[]
   product_type: string
   brand?: string | null
+  brand_id?: string | null
   age?: string | null
   unit?: string | null
   size?: string | null

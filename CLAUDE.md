@@ -19,16 +19,21 @@ Use **pnpm only** — no npm or yarn. No test suite exists yet.
 
 **Nuxt 4 SPA** (`ssr: false`) — Vue 3 + TypeScript strict mode. All code lives under `app/` (Nuxt's app directory convention). The backend is serverless: Supabase for auth/DB and Nuxt server routes for secure operations.
 
+### Path aliases
+
+- `~/` and `@/` both resolve to `app/` (Nuxt convention)
+- `~/domain/categories/...` — explicit import required (not auto-imported)
+
 ### Directory map
 
 | Path | Purpose |
 |------|---------|
 | `app/pages/` | File-based routing. `/admin/**` is middleware-protected. |
 | `app/components/ui/` | shadcn-vue components — auto-imported, use as `<Button />` |
-| `app/components/admin/` | Admin dashboard components |
-| `app/stores/` | Pinia stores (auto-imported) — auth dialog state, cart count |
-| `app/composables/` | Business logic — auth, cart, orders, profile, addresses |
-| `app/domain/categories/` | Config-driven category system (not DB-driven) |
+| `app/components/admin/` | Admin dashboard components. CRUD modals use a Sheet pattern: `BrandSheet.vue`, `PetTypeSheet.vue` |
+| `app/stores/` | Pinia stores (auto-imported) — auth dialog state (`useAuthStore`), cart count (`useCartStore`) |
+| `app/composables/` | Business logic — auth, cart, orders, profile, addresses, brands, pet types |
+| `app/domain/categories/` | Config-driven category system (partially migrated to DB — see below) |
 | `app/layouts/` | `default.vue` (main), `admin.vue` (sidebar), `admin-auth.vue` |
 | `app/middleware/` | `admin.ts` (route guard), two `.global.ts` guards |
 | `app/plugins/` | `auth.client.ts` (session restore + guest cart sync), `seo.global.ts` |
@@ -38,13 +43,16 @@ Use **pnpm only** — no npm or yarn. No test suite exists yet.
 | `server/api/paytabs/` | Payment gateway: create, verify, webhook |
 | `server/api/admin/` | User management (create wholesaler, delete user) |
 | `supabase/functions/` | Deno edge functions (Razorpay order creation) |
+| `types/database.types.ts` | Generated Supabase DB types — regenerate with `pnpm supabase gen types` |
 | `scripts/` | One-off data processing (CSV → JSON) |
+| `data/` | Static JSON files used by seed scripts, not imported by the app |
 
 ### Auto-import rules
 
 - **Never manually import** from `app/` — Nuxt auto-imports all composables, stores, utils, and components.
 - Components in `app/components/**` are available globally without prefix (`<ProductCard />`, not `<ProductsProductCard />`).
 - `app/domain/` is **NOT auto-imported** — must be explicitly imported when used.
+- `@iconify/vue` icons are wrapped in `<Icon name="lucide:..." />` — use that component, not the raw `Icon` from iconify.
 
 ### Data fetching pattern
 
@@ -56,6 +64,10 @@ const { data, pending } = await useLazyAsyncData('unique-key', async () => {
   return data
 }, { server: true })
 ```
+
+### Form validation
+
+Forms use **vee-validate + zod** (`@vee-validate/nuxt` auto-imports `useForm`, `Field`, etc.). Define a zod schema, pass it to `useForm({ validationSchema: toTypedSchema(schema) })`.
 
 ### Authentication & roles
 
@@ -80,9 +92,13 @@ The `auth.client.ts` plugin watches `onAuthStateChange`; on `SIGNED_IN` / `INITI
 
 `useCheckoutOrder` reads `profiles.role` at order creation time and applies `wholesale_price` or `retail_price` accordingly. Prices are baked into order item snapshots and are immutable after creation.
 
-### Category system
+### Category system (partially migrated to DB)
 
-Product categories are config-driven via `app/domain/categories/category.config.ts`. They have cascading dependencies: `pet → age`, `unit → size`, `type → flavour`.
+The category config in `app/domain/categories/category.config.ts` is in transition:
+
+- **Pet types** → fully migrated to the `pet_types` DB table. Use `usePetTypes()` composable. **Do not add new pets to `category.config.ts`** — the static list there is a deprecated fallback.
+- **Flavour options** → stored in the `product_flavour_options` DB table (queried via Supabase client).
+- **Type, Age, Unit** → still static in `category.config.ts`.
 
 Key helpers in `category.helpers.ts` (must import explicitly from `app/domain/`):
 - `getCategoryOptions(key, context)` — options for a field given current form state
@@ -91,6 +107,14 @@ Key helpers in `category.helpers.ts` (must import explicitly from `app/domain/`)
 - `getDependents(key)` — find downstream fields to reset when a parent changes
 
 Use `useCategories()` composable for reactive form context. Never hardcode category values.
+
+### Brands
+
+`useBrands()` composable wraps all CRUD operations for the `brands` table. Images upload to the `brand-logos` Supabase storage bucket. The admin UI uses `BrandSheet.vue` for create/edit.
+
+### Pet types (DB-driven)
+
+`usePetTypes()` composable wraps all CRUD operations for the `pet_types` table. Images upload to the `pet-type-images` Supabase storage bucket. The admin UI uses `PetTypeSheet.vue` for create/edit. `sort_order` controls display order; `is_active` gates visibility on the storefront.
 
 ### Middleware
 

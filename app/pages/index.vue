@@ -175,7 +175,7 @@ onMounted(() => {
     <!-- Hero banner: shadcn-vue Carousel with sliding images -->
     <section class="container mx-auto px-4 py-6">
       <div v-if="bannersPending" class="w-full">
-        <Skeleton class="h-48 w-full rounded-2xl" />
+        <Skeleton class="w-full aspect-[16/9] md:aspect-[8/3] rounded-2xl" />
       </div>
       <div v-else>
         <Carousel
@@ -191,7 +191,7 @@ onMounted(() => {
                 loading="lazy"
                 decoding="async"
                 alt="Promotion banner"
-                class="w-full h-48 sm:h-48 md:h-64 lg:h-80 object-cover rounded-2xl"
+                class="w-full aspect-[16/9] md:aspect-[8/3] object-cover rounded-2xl"
               />
             </CarouselItem>
           </CarouselContent>

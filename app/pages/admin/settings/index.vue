@@ -363,16 +363,16 @@ onMounted(() => {
                   <div class="space-y-2">
                     <Label for="mobile-upload">Mobile Image</Label>
                     <Input id="mobile-upload" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; mobileFile = f }" />
-                    <p class="text-xs text-muted-foreground">Recommended: 750×420</p>
-                    <div class="border rounded-md w-full h-40 overflow-hidden bg-muted/20">
+                    <p class="text-xs text-muted-foreground">800 × 450 px — 16:9</p>
+                    <div class="border rounded-md w-full aspect-[16/9] overflow-hidden bg-muted/20">
                       <img v-if="mobilePreview" :src="mobilePreview" alt="Mobile preview" class="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div class="space-y-2">
                     <Label for="desktop-upload">Desktop Image</Label>
                     <Input id="desktop-upload" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; desktopFile = f }" />
-                    <p class="text-xs text-muted-foreground">Recommended: 1920×720</p>
-                    <div class="border rounded-md w-full h-40 overflow-hidden bg-muted/20">
+                    <p class="text-xs text-muted-foreground">1920 × 720 px — 16:6 (8:3)</p>
+                    <div class="border rounded-md w-full aspect-[8/3] overflow-hidden bg-muted/20">
                       <img v-if="desktopPreview" :src="desktopPreview" alt="Desktop preview" class="w-full h-full object-cover" />
                     </div>
                   </div>
@@ -406,12 +406,12 @@ onMounted(() => {
               <TableRow v-for="b in (bannersData as BannerRow[] || [])" :key="b.id">
                 <TableCell>{{ b.name }}</TableCell>
                 <TableCell>
-                  <div class="border rounded-md w-32 h-20 md:w-48 md:h-28 overflow-hidden bg-muted/20">
+                  <div class="border rounded-md w-32 md:w-40 aspect-[16/9] overflow-hidden bg-muted/20">
                     <img :src="b.mobile" alt="Mobile" class="w-full h-full object-cover" />
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div class="border rounded-md w-32 h-20 md:w-48 md:h-28 overflow-hidden bg-muted/20">
+                  <div class="border rounded-md w-32 md:w-48 aspect-[8/3] overflow-hidden bg-muted/20">
                     <img :src="b.desktop" alt="Desktop" class="w-full h-full object-cover" />
                   </div>
                 </TableCell>
@@ -463,8 +463,8 @@ onMounted(() => {
                   <div class="space-y-2">
                     <Label for="mobile-upload-edit">Mobile Image</Label>
                     <Input id="mobile-upload-edit" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; mobileEditFile = f }" />
-                    <p class="text-xs text-muted-foreground">Recommended: 750×420</p>
-                    <div class="border rounded-md w-full h-40 overflow-hidden bg-muted/20">
+                    <p class="text-xs text-muted-foreground">800 × 450 px — 16:9</p>
+                    <div class="border rounded-md w-full aspect-[16/9] overflow-hidden bg-muted/20">
                       <img v-if="mobileEditPreview" :src="mobileEditPreview" alt="Mobile preview" class="w-full h-full object-cover" />
                       <img v-else :src="editing?.mobile || ''" alt="Mobile" class="w-full h-full object-cover" />
                     </div>
@@ -472,8 +472,8 @@ onMounted(() => {
                   <div class="space-y-2">
                     <Label for="desktop-upload-edit">Desktop Image</Label>
                     <Input id="desktop-upload-edit" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; desktopEditFile = f }" />
-                    <p class="text-xs text-muted-foreground">Recommended: 1920×720</p>
-                    <div class="border rounded-md w-full h-40 overflow-hidden bg-muted/20">
+                    <p class="text-xs text-muted-foreground">1920 × 720 px — 16:6 (8:3)</p>
+                    <div class="border rounded-md w-full aspect-[8/3] overflow-hidden bg-muted/20">
                       <img v-if="desktopEditPreview" :src="desktopEditPreview" alt="Desktop preview" class="w-full h-full object-cover" />
                       <img v-else :src="editing?.desktop || ''" alt="Desktop" class="w-full h-full object-cover" />
                     </div>

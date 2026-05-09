@@ -79,6 +79,7 @@ export const CATEGORY_CONFIG: CategoryConfig = {
       { id: 'pcs', label: 'Pieces (pcs)' },
       { id: 'piece', label: 'Piece' },
       { id: 'watt', label: 'Watt (W)' },
+      { id: 'dimension', label: 'Dimension (L×W×H)' },
     ],
   },
 

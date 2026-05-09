@@ -237,6 +237,12 @@ const schema = toTypedSchema(
           ctx.addIssue({ code: z.ZodIssueCode.custom, message: `${getCategoryLabel(key)} is required`, path: [key] })
         }
       }
+      if (val.unit === 'dimension') {
+        const dimStr = typeof val.size === 'string' ? val.size : ''
+        if (!/^\d+(?:\.\d+)?x\d+(?:\.\d+)?/.test(dimStr)) {
+          ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Length and Width are required', path: ['size'] })
+        }
+      }
       if (val.product_kind === 'variant' && !val.base_product_id) {
         ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Base product is required', path: ['base_product_id'] })
       }
@@ -258,6 +264,9 @@ const { value: type, errorMessage: typeError, meta: typeMeta } = useField<string
 const { value: age, errorMessage: ageError, meta: ageMeta } = useField<string | undefined>('age')
 const { value: unit, errorMessage: unitError, meta: unitMeta } = useField<string | undefined>('unit')
 const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<number | string | undefined>('size')
+const dimensionLength = ref<number | undefined>(undefined)
+const dimensionWidth = ref<number | undefined>(undefined)
+const dimensionHeight = ref<number | undefined>(undefined)
 const { value: flavour, errorMessage: flavourError, meta: flavourMeta } = useField<string | undefined>('flavour')
 const { value: colour, errorMessage: colourError, meta: colourMeta } = useField<string | undefined>('colour')
 const { value: price, errorMessage: priceError, meta: priceMeta } = useField<number>('price')
@@ -351,6 +360,16 @@ watch(() => props.open, async (open) => {
     if (!initialSizeMatch && initialSizeRaw) {
       size.value = initialSizeRaw
     }
+    if (initialUnit === 'dimension' && initialSizeRaw) {
+      const parts = String(initialSizeRaw).split('x')
+      dimensionLength.value = parts[0] ? Number(parts[0]) : undefined
+      dimensionWidth.value = parts[1] ? Number(parts[1]) : undefined
+      dimensionHeight.value = parts[2] ? Number(parts[2]) : undefined
+    } else {
+      dimensionLength.value = undefined
+      dimensionWidth.value = undefined
+      dimensionHeight.value = undefined
+    }
     brandId.value = props.initial?.brand_id ?? null
     valueMap.pet.value = initialPetArray || undefined
     valueMap.type.value = initialType || undefined
@@ -371,6 +390,9 @@ watch(() => props.open, async (open) => {
       },
     })
     brandId.value = null
+    dimensionLength.value = undefined
+    dimensionWidth.value = undefined
+    dimensionHeight.value = undefined
     existingThumbnailUrl.value = null
     thumbnailFile.value = null
     thumbnailPreview.value = null
@@ -510,10 +532,28 @@ const parseSizeToNumber = (s?: string | null) => {
 const formatSizeToString = (n?: number) => {
   return typeof n === 'number' ? n.toFixed(2) : undefined
 }
-watch(() => unit.value, (v) => {
+watch([dimensionLength, dimensionWidth, dimensionHeight], () => {
+  if (unit.value !== 'dimension') return
+  const l = dimensionLength.value
+  const w = dimensionWidth.value
+  const h = dimensionHeight.value
+  if (!l || !w) { size.value = undefined; return }
+  size.value = (h != null ? `${l}x${w}x${h}` : `${l}x${w}`) as unknown as number
+})
+
+watch(() => unit.value, (v, oldV) => {
   if (v === '__none__') {
     valueMap.unit.value = undefined
     clearCategory('unit')
+  }
+  if (oldV === 'dimension' && v !== 'dimension') {
+    dimensionLength.value = undefined
+    dimensionWidth.value = undefined
+    dimensionHeight.value = undefined
+    size.value = undefined
+  }
+  if (v === 'dimension' && typeof size.value === 'number') {
+    size.value = undefined
   }
 })
 watch(size, (v) => {
@@ -804,11 +844,12 @@ const filteredBaseProducts = computed(() => {
               </div>
               <div class="flex flex-col gap-1.5">
                 <Label for="size">Size</Label>
-                <div v-if="unit !== 'size_label'" class="flex items-center gap-2">
-                  <Input id="size" type="number" step="0.01" min="0" v-model.number="size" placeholder="0.00" class="w-full" />
-                  <span class="text-xs text-muted-foreground">{{ unit || 'unit' }}</span>
+                <div v-if="unit === 'dimension'" class="grid grid-cols-3 gap-2">
+                  <Input type="number" step="0.01" min="0" v-model.number="dimensionLength" placeholder="Length" class="w-full" />
+                  <Input type="number" step="0.01" min="0" v-model.number="dimensionWidth" placeholder="Width" class="w-full" />
+                  <Input type="number" step="0.01" min="0" v-model.number="dimensionHeight" placeholder="Height" class="w-full" />
                 </div>
-                <div v-else>
+                <div v-else-if="unit === 'size_label'">
                   <Select v-model="sizeStr">
                     <SelectTrigger id="sizeLabel" class="w-full"><SelectValue placeholder="Select size" /></SelectTrigger>
                     <SelectContent>
@@ -816,6 +857,13 @@ const filteredBaseProducts = computed(() => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div v-else class="flex items-center gap-2">
+                  <Input id="size" type="number" step="0.01" min="0" v-model.number="size" placeholder="0.00" class="w-full" />
+                  <span class="text-xs text-muted-foreground">{{ unit || 'unit' }}</span>
+                </div>
+                <p v-if="unit === 'dimension' && dimensionLength && dimensionWidth" class="text-xs text-muted-foreground">
+                  Stored as: {{ dimensionLength }}x{{ dimensionWidth }}{{ dimensionHeight ? `x${dimensionHeight}` : '' }}
+                </p>
                 <p v-if="sizeError && sizeMeta.touched" class="text-destructive text-xs">{{ sizeError }}</p>
               </div>
               <div class="flex flex-col gap-1.5">

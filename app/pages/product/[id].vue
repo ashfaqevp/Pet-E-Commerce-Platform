@@ -214,6 +214,10 @@ function buildGroups() {
           const label = sizeLabelMap.value[id] || (id.charAt(0).toUpperCase() + id.slice(1))
           sizeSet.set(id, { id, label, value: id })
         }
+      } else if (unit === 'dimension') {
+        const raw = String(r.size)
+        const label = raw.split('x').join(' × ')
+        sizeSet.set(raw, { id: raw, label, value: raw })
       } else {
         const raw = String(r.size)
         const numeric = raw.match(/\d+(?:\.\d+)?/)?.[0] || raw
@@ -634,6 +638,12 @@ const availableSizeOptions = computed<VariantOption[]>(() => {
         const label = sizeLabelMap.value[key] || (key.charAt(0).toUpperCase() + key.slice(1))
         map.set(key, { id: key, label, value: key })
       }
+      continue
+    }
+    if (unit === 'dimension') {
+      const raw = String(id)
+      const label = raw.split('x').join(' × ')
+      map.set(raw, { id: raw, label, value: raw })
       continue
     }
     const raw = String(id)

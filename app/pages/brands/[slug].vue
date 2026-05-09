@@ -1,5 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'default' })
+import ProductCard from '~/components/product/ProductCard.vue'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const route = useRoute()
 const supabase = useSupabaseClient()
@@ -20,7 +22,6 @@ const { data: productsData, pending: productsPending } = await useLazyAsyncData(
       .select('id,name,retail_price,wholesale_price,default_rating,thumbnail_url,brand,brand_id')
       .eq('brand_id', brand.value.id)
       .eq('is_active', true)
-      .is('base_product_id', null)
       .order('created_at', { ascending: false })
     if (error) throw error
     return data ?? []

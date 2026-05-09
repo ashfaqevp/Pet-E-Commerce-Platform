@@ -1,6 +1,11 @@
 import type { CategoryConfig } from './category.types'
 
 export const CATEGORY_CONFIG: CategoryConfig = {
+  // PET TYPES — MIGRATED TO DB (pet_types table)
+  // The list below is kept only as a reference / fallback during transition.
+  // The product form and homepage now source pet types from usePetTypes() composable.
+  // This list can be removed once all usages have been confirmed migrated.
+  // DO NOT add new pet types here — add them via the admin dashboard instead.
   pet: {
     label: 'Pet Type',
     required: true,

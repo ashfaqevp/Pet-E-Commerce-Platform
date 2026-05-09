@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import CategoryPill from '~/components/common/CategoryPill.vue'
 import ProductCard from '~/components/product/ProductCard.vue'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -7,7 +6,6 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import Autoplay from 'embla-carousel-autoplay'
 import type { UnwrapRefCarouselApi } from '@/components/ui/carousel/interface'
 const supabase = useSupabaseClient()
-const router = useRouter()
 import { useWindowSize } from '@vueuse/core'
 import { useSeoMeta } from '#imports'
 
@@ -37,13 +35,13 @@ const { data: bannersData, pending: bannersPending, error: bannersError, refresh
 const banners = computed(() => (bannersData.value ?? []).map(b => ({ mobile: b.mobile, desktop: b.desktop })))
 
   
-const categories = [
-  { id: 'cat', name: 'Cat', icon: 'emojione-v1:cat-face' },
-  { id: 'dog', name: 'Dog', icon: 'fluent-emoji-flat:dog-face' },
-  { id: 'bird', name: 'Bird', icon: 'emojione-v1:bird' },
-  { id: 'fish', name: 'Fish', icon: 'fxemoji:fish' },
-  { id: 'other', name: 'Other', icon: 'fluent-color:animal-paw-print-20' },
-] as const
+const { fetchActivePetTypes } = usePetTypes()
+const { data: activePetTypesData } = await useLazyAsyncData(
+  'home-pet-types',
+  fetchActivePetTypes,
+  { server: true }
+)
+const activePetTypes = computed(() => activePetTypesData.value ?? [])
 
 interface ProductRow {
   id: string
@@ -95,9 +93,6 @@ const { data: featuredData, pending: featuredPending, error: featuredError, refr
   { server: true }
 )
 
-const onCategoryClick = (id: typeof categories[number]['id']) => {
-  router.push({ path: '/products', query: { pet: id } })
-}
 definePageMeta({ layout: 'default' })
 
 // Carousel state for dots pagination
@@ -134,7 +129,7 @@ const { data: featuredBrandsData } = await useLazyAsyncData(
 
     if (countsError) throw countsError
 
-    const countsMap = (countsData || []).reduce((acc: Record<string, number>, curr) => {
+    const countsMap = (countsData || []).reduce((acc: Record<string, number>, curr: { brand_id: string | null }) => {
       if (curr.brand_id) {
         acc[curr.brand_id] = (acc[curr.brand_id] || 0) + 1
       }
@@ -218,16 +213,29 @@ onMounted(() => {
       </div>
     </section>
 
-    <!-- Categories -->
-    <section class="container mx-auto px-4">
+    <!-- Shop by Pet -->
+    <section v-if="activePetTypes.length" class="container mx-auto px-4">
       <div class="flex items-center justify-between mb-4">
-        <h3 class="text-xl font-semibold">Categories</h3>
-        <!-- <NuxtLink to="/browse"><Button variant="ghost">See All</Button></NuxtLink> -->
+        <h3 class="text-xl font-semibold">Shop by Pet</h3>
       </div>
-      <div class="grid grid-cols-5 sm:grid-cols-12 gap-4">
-        <div v-for="c in categories" :key="c.id" @click="onCategoryClick(c.id)" class="cursor-pointer">
-          <CategoryPill :item="{ name: c.name, icon: c.icon }" />
-        </div>
+      <div class="flex flex-wrap gap-4 justify-center md:justify-start">
+        <NuxtLink
+          v-for="pet in activePetTypes"
+          :key="pet.id"
+          :to="`/products?pet=${pet.slug}`"
+          class="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-card hover:border-secondary hover:shadow-md transition-all w-24 md:w-28"
+        >
+          <img
+            v-if="pet.image_url"
+            :src="pet.image_url"
+            :alt="pet.name"
+            class="h-14 w-14 object-contain rounded-full"
+          />
+          <div v-else class="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
+            <Icon name="lucide:paw-print" class="w-7 h-7 text-muted-foreground" />
+          </div>
+          <span class="text-sm font-medium text-center text-foreground">{{ pet.name }}</span>
+        </NuxtLink>
       </div>
     </section>
 

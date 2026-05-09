@@ -186,8 +186,15 @@ const deleteFlavour = async (label: string) => {
 }
 
 const { options, setCategory, clearCategory, getVisibleKeys: getVisibleKeysFromCtx, getDependents, context } = useCategories()
+
+const { fetchActivePetTypes } = usePetTypes()
+const { data: petTypesData } = await useLazyAsyncData('pet-types-form', fetchActivePetTypes, { server: true })
+const dbPetOptions = computed<CategoryOption[]>(() =>
+  (petTypesData.value ?? []).map(p => ({ id: p.slug, label: p.name }))
+)
+
 const optionMap: Record<CategoryKey, ComputedRef<CategoryOption[]>> = {
-  pet: options('pet'),
+  pet: dbPetOptions,
   type: options('type'),
   age: options('age'),
   unit: options('unit'),

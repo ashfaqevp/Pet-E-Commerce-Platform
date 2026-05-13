@@ -260,31 +260,52 @@ onMounted(() => {
     </section>
 
     <!-- Shop by Brand -->
-    <section v-if="featuredBrands.length" class="container mx-auto px-4 py-12 border-t">
-      <div class="flex items-center justify-between mb-8">
-        <h3 class="text-xl font-semibold">Shop by Brand</h3>
+    <section v-if="featuredBrands.length" class="container mx-auto px-4 py-16 border-t">
+      <div class="flex items-center justify-between mb-10">
+        <div class="space-y-1">
+          <h3 class="text-2xl font-bold tracking-tight">Shop by Brand</h3>
+          <p class="text-sm text-muted-foreground">Discover quality products from your favorite brands</p>
+        </div>
+        <NuxtLink :to="{ path: '/brands' }" class="hidden md:block">
+          <Button variant="outline" size="sm" class="rounded-full">View All Brands</Button>
+        </NuxtLink>
       </div>
-      <div class="flex items-start gap-8 md:gap-16 overflow-x-auto pb-4 no-scrollbar">
+      
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
         <NuxtLink
           v-for="brand in (featuredBrands as any[])"
           :key="brand.id"
           :to="`/brands/${brand.slug}`"
-          class="flex flex-col items-center gap-3 min-w-[120px] md:min-w-[140px] group shrink-0"
+          class="flex flex-col items-center gap-4 group transition-all duration-300"
         >
-          <div class="h-20 w-full flex items-center justify-center">
+          <div class="relative aspect-square w-full flex items-center justify-center p-6 bg-white border-secondary/10  border  rounded-3xl group-hover:bg-white group-hover:border-secondary/20 group-hover:shadow-xl group-hover:shadow-secondary/5 transition-all duration-500 overflow-hidden">
+            <!-- Subtle background decorative element -->
+            <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-secondary/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            
             <img
               v-if="brand.logo_url"
               :src="brand.logo_url"
               :alt="brand.name"
-              class="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
+              class="relative z-10 max-h-full max-w-full object-contain transition-all duration-500 group-hover:scale-110"
             />
-            <span v-else class="text-sm font-bold text-center text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-tight">{{ brand.name }}</span>
+            <span v-else class="relative z-10 text-sm font-bold text-center text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-tight">{{ brand.name }}</span>
           </div>
-          <div class="text-center">
-            <span class="text-[11px] md:text-xs font-semibold text-black tracking-wider transition-colors group-hover:text-secondary">
-              {{ brand.name }} ({{ brand.product_count || 0 }})
-            </span>
+          
+          <div class="text-center space-y-0.5">
+            <h4 class="text-sm font-bold text-foreground group-hover:text-secondary transition-colors duration-300">
+              {{ brand.name }}
+            </h4>
+            <p class="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-widest">
+              {{ brand.product_count || 0 }} Products
+            </p>
           </div>
+        </NuxtLink>
+      </div>
+
+      <!-- Mobile See All -->
+      <div class="mt-10 flex justify-center md:hidden">
+        <NuxtLink :to="{ path: '/brands' }">
+          <Button variant="outline" class="rounded-full px-8">View All Brands</Button>
         </NuxtLink>
       </div>
     </section>

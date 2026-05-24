@@ -266,9 +266,9 @@ onMounted(() => {
           <h3 class="text-2xl font-bold tracking-tight">Shop by Brand</h3>
           <p class="text-sm text-muted-foreground">Discover quality products from your favorite brands</p>
         </div>
-        <NuxtLink :to="{ path: '/brands' }" class="hidden md:block">
+        <!-- <NuxtLink :to="{ path: '/brands' }" class="hidden md:block">
           <Button variant="outline" size="sm" class="rounded-full">View All Brands</Button>
-        </NuxtLink>
+        </NuxtLink> -->
       </div>
       
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6 lg:gap-8">
@@ -304,9 +304,9 @@ onMounted(() => {
 
       <!-- Mobile See All -->
       <div class="mt-10 flex justify-center md:hidden">
-        <NuxtLink :to="{ path: '/brands' }">
+        <!-- <NuxtLink :to="{ path: '/brands' }">
           <Button variant="outline" class="rounded-full px-8">View All Brands</Button>
-        </NuxtLink>
+        </NuxtLink> -->
       </div>
     </section>
   </div>

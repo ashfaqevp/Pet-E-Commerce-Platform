@@ -28,6 +28,7 @@ const logoPreview = ref<string | null>(null)
 const existingLogoUrl = ref<string | null>(null)
 const submitting = ref(false)
 const slugManuallyEdited = ref(false)
+const fileInputKey = ref(0)
 
 function resetForm() {
   name.value = ''
@@ -44,6 +45,7 @@ function resetForm() {
 
 watch(() => props.open, (isOpen) => {
   if (isOpen) {
+    fileInputKey.value++
     if (props.brand) {
       name.value = props.brand.name ?? ''
       slug.value = props.brand.slug ?? ''
@@ -52,6 +54,8 @@ watch(() => props.open, (isOpen) => {
       isFeatured.value = props.brand.is_featured ?? false
       isActive.value = props.brand.is_active ?? true
       existingLogoUrl.value = props.brand.logo_url ?? null
+      logoFile.value = null
+      logoPreview.value = null
       slugManuallyEdited.value = true
     } else {
       resetForm()
@@ -158,7 +162,7 @@ const onSubmit = async () => {
                 <img v-else-if="existingLogoUrl" :src="existingLogoUrl" alt="logo" class="h-full w-full object-contain" />
                 <Icon v-else name="lucide:image" class="h-6 w-6 text-muted-foreground" />
               </div>
-              <Input type="file" accept="image/*" class="flex-1" @change="onLogoChange" />
+              <Input :key="fileInputKey" type="file" accept="image/*" class="flex-1" @change="onLogoChange" />
             </div>
           </div>
 

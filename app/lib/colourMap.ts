@@ -64,3 +64,31 @@ export const COLOUR_SWATCH: Record<string, string> = {
   transparent: "transparent",
   multicolor: "linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)",
 };
+
+/**
+ * "black,red" -> ['black','red']   "red" -> ['red']   "" / null -> []
+ */
+export function parseColours(raw?: string | null): string[] {
+  if (!raw) return []
+  return raw
+    .split(',')
+    .map(c => c.trim().toLowerCase())
+    .filter(Boolean)
+}
+
+/**
+ * Lowercased, trimmed, de-duplicated, sorted, comma-joined.
+ * ['Red','black','RED'] -> "black,red"
+ * Returns null for an empty selection.
+ */
+export function buildColourValue(colours: string[]): string | null {
+  const clean = Array.from(
+    new Set(colours.map(c => c.trim().toLowerCase()).filter(Boolean)),
+  ).sort()
+  return clean.length ? clean.join(',') : null
+}
+
+/** Hex for a single colour key, with a neutral fallback. */
+export function colourHex(colour: string): string {
+  return COLOUR_SWATCH[colour.trim().toLowerCase()] ?? '#d1d5db'
+}

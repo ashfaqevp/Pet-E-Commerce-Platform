@@ -11,7 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import PageHeader from "@/components/common/PageHeader.vue";
 import { formatOMR } from "@/utils";
 import { CATEGORY_CONFIG } from "~/domain/categories/category.config";
-import { COLOUR_SWATCH } from "~/lib/colourMap";
+import { parseColours, colourHex } from "~/lib/colourMap";
+import { formatDimensionLabel } from "~/lib/dimension";
 import ProductCard from "@/components/product/ProductCard.vue";
 import { useProfile } from "@/composables/useProfile";
 
@@ -24,6 +25,7 @@ type VariantOption = {
   value: string | number;
   priceDelta?: number;
   inStock?: boolean;
+  colours?: string[];
 };
 
 type VariantGroup = {
@@ -196,11 +198,13 @@ function buildGroups() {
   const colourSet = new Map<string, VariantOption>();
   for (const r of rows) {
     if (r.colour) {
-      colourSet.set(r.colour, {
-        id: r.colour,
-        label: r.colour.charAt(0).toUpperCase() + r.colour.slice(1),
-        value: r.colour,
-      });
+      const list = parseColours(r.colour)
+      if (list.length) {
+        const label = list
+          .map(c => c.charAt(0).toUpperCase() + c.slice(1))
+          .join(' + ')
+        colourSet.set(r.colour, { id: r.colour, label, value: r.colour, colours: list });
+      }
     }
     if (r.flavour) {
       const label = flavourLabelMap.value[r.flavour] || r.flavour;
@@ -216,7 +220,7 @@ function buildGroups() {
         }
       } else if (unit === 'dimension') {
         const raw = String(r.size)
-        const label = raw.split('x').join(' × ')
+        const label = formatDimensionLabel(raw)
         sizeSet.set(raw, { id: raw, label, value: raw })
       } else {
         const raw = String(r.size)
@@ -642,7 +646,7 @@ const availableSizeOptions = computed<VariantOption[]>(() => {
     }
     if (unit === 'dimension') {
       const raw = String(id)
-      const label = raw.split('x').join(' × ')
+      const label = formatDimensionLabel(raw)
       map.set(raw, { id: raw, label, value: raw })
       continue
     }
@@ -725,11 +729,10 @@ const availableColourOptions = computed<VariantOption[]>(() => {
     if (s && r.size !== s) continue;
     if (a && r.age !== a) continue;
     if (!r.colour) continue;
-    map.set(r.colour, {
-      id: r.colour,
-      label: r.colour.charAt(0).toUpperCase() + r.colour.slice(1),
-      value: r.colour,
-    });
+    const list = parseColours(r.colour)
+    if (!list.length) continue
+    const label = list.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(' + ')
+    map.set(r.colour, { id: r.colour, label, value: r.colour, colours: list });
   }
   const arr = Array.from(map.values());
   const sel = selectedColour.value;
@@ -928,15 +931,22 @@ watch([selectedFlavour, selectedSize, selectedAge, variantRows], () => {
               :title="opt.label ?? String(opt.value)"
               :aria-label="opt.label ?? String(opt.value)"
               :class="[
-                'w-8 h-8 rounded-full border-0 transition-all focus:outline-none',
+                'flex items-center rounded-full p-1 transition-all focus:outline-none',
                 selectedColour?.id === opt.id
-                  ? ' ring-2 ring-accent ring-offset-2 scale-110'
-                  : 'border-transparent hover:border-gray-300',
-                String(opt.value).toLowerCase() === 'white' ? 'border-gray-200' : '',
+                  ? 'ring-2 ring-accent ring-offset-2 scale-105'
+                  : 'ring-1 ring-border hover:ring-gray-300',
               ]"
-              :style="{ backgroundColor: COLOUR_SWATCH[String(opt.value).toLowerCase()] ?? '#d1d5db' }"
               @click="onSelectVariant('colour', opt)"
-            />
+            >
+              <span class="flex -space-x-1.5">
+                <span
+                  v-for="c in (opt.colours ?? [])"
+                  :key="c"
+                  class="h-6 w-6 rounded-full border-2 border-white"
+                  :style="{ backgroundColor: colourHex(c) }"
+                />
+              </span>
+            </button>
             <span v-if="selectedColour" class="text-sm text-muted-foreground ml-1">
               {{ selectedColour.label ?? selectedColour.value }}
             </span>

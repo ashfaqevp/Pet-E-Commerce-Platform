@@ -8,7 +8,8 @@ import type { Ref, ComputedRef } from 'vue'
 import type { CategoryKey, CategoryContext, CategoryOption } from '@/domain/categories'
 import { useCategories, isCategoryRequired, getCategoryLabel } from '@/domain/categories'
 import { CATEGORY_CONFIG } from '@/domain/categories/category.config'
-import { COLOUR_SWATCH } from '@/lib/colourMap'
+import { COLOUR_SWATCH, parseColours, buildColourValue, colourHex } from '@/lib/colourMap'
+import { DIMENSION_UNITS, parseDimension, buildDimensionValue, type DimensionUnit } from '@/lib/dimension'
 
 interface Emits {
   (e: 'update:open', v: boolean): void
@@ -214,7 +215,7 @@ const schema = toTypedSchema(
       unit: z.string().optional(),
       size: z.union([z.number().min(0), z.string()]).optional(),
       flavour: z.string().optional(),
-      colour: z.string().optional(),
+      colour: z.array(z.string()).optional(),
       price: z.number().min(0),
       wholesale_price: z.number().min(0).optional(),
       offer_percentage: z.number().min(0).max(90).optional(),
@@ -252,7 +253,7 @@ const schema = toTypedSchema(
 const { handleSubmit, isSubmitting, setValues, submitCount, resetForm } = useForm({
   validationSchema: schema,
   initialValues: {
-    name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined, colour: undefined,
+    name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined, colour: [],
     price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
   },
 })
@@ -267,8 +268,9 @@ const { value: size, errorMessage: sizeError, meta: sizeMeta } = useField<number
 const dimensionLength = ref<number | undefined>(undefined)
 const dimensionWidth = ref<number | undefined>(undefined)
 const dimensionHeight = ref<number | undefined>(undefined)
+const dimensionUnit = ref<DimensionUnit>('cm')
 const { value: flavour, errorMessage: flavourError, meta: flavourMeta } = useField<string | undefined>('flavour')
-const { value: colour, errorMessage: colourError, meta: colourMeta } = useField<string | undefined>('colour')
+const { value: colour, errorMessage: colourError, meta: colourMeta } = useField<string[]>('colour')
 const { value: price, errorMessage: priceError, meta: priceMeta } = useField<number>('price')
 const { value: wholesalePrice, errorMessage: wholesalePriceError, meta: wholesalePriceMeta } = useField<number | undefined>('wholesale_price')
 const { value: offerPct, errorMessage: offerPctError, meta: offerPctMeta } = useField<number | undefined>('offer_percentage')
@@ -310,13 +312,6 @@ const colourOptions = computed(() => {
     }))
 })
 
-const colourValue = computed({
-  get: () => colour.value || '__none__',
-  set: (val: string) => {
-    colour.value = val === '__none__' ? undefined : val
-  }
-})
-
 watch(() => props.open, async (open) => {
   if (open) {
     initializing.value = true
@@ -325,7 +320,7 @@ watch(() => props.open, async (open) => {
     const initialUnit = props.initial?.unit ?? undefined
     
     const initialFlavour = props.initial?.flavour ?? undefined
-    const initialColour = props.initial?.colour ?? undefined
+    const initialColour = parseColours(props.initial?.colour)
     const initialAge = props.initial?.age ?? undefined
     if (initialPetArray && initialPetArray.length) setCategory('pet', initialPetArray); else clearCategory('pet')
     await nextTick()
@@ -345,7 +340,7 @@ watch(() => props.open, async (open) => {
       unit: initialUnit ?? undefined,
       size: initialSizeMatch ? Number(initialSizeMatch[0]) : undefined,
       flavour: initialFlavour ?? undefined,
-      colour: initialColour ?? undefined,
+      colour: initialColour,
       price: Number(props.initial?.retail_price ?? 0),
       wholesale_price: props.initial?.wholesale_price != null ? Number(props.initial.wholesale_price) : undefined,
       offer_percentage: undefined,
@@ -361,10 +356,11 @@ watch(() => props.open, async (open) => {
       size.value = initialSizeRaw
     }
     if (initialUnit === 'dimension' && initialSizeRaw) {
-      const parts = String(initialSizeRaw).split('x')
-      dimensionLength.value = parts[0] ? Number(parts[0]) : undefined
-      dimensionWidth.value = parts[1] ? Number(parts[1]) : undefined
-      dimensionHeight.value = parts[2] ? Number(parts[2]) : undefined
+      const { nums, unit: parsedUnit } = parseDimension(String(initialSizeRaw))
+      dimensionLength.value = nums[0] ? Number(nums[0]) : undefined
+      dimensionWidth.value  = nums[1] ? Number(nums[1]) : undefined
+      dimensionHeight.value = nums[2] ? Number(nums[2]) : undefined
+      dimensionUnit.value   = parsedUnit ?? 'cm'
     } else {
       dimensionLength.value = undefined
       dimensionWidth.value = undefined
@@ -385,7 +381,7 @@ watch(() => props.open, async (open) => {
     initializing.value = true
     resetForm({
       values: {
-        name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined, colour: undefined,
+        name: '', description: '', pet: [], type: '', age: undefined, unit: undefined, size: undefined, flavour: undefined, colour: [],
         price: 0, wholesale_price: undefined, offer_percentage: undefined, stock_quantity: 1000, default_rating: 4.5, product_kind: 'base', base_product_id: undefined,
       },
     })
@@ -393,6 +389,7 @@ watch(() => props.open, async (open) => {
     dimensionLength.value = undefined
     dimensionWidth.value = undefined
     dimensionHeight.value = undefined
+    dimensionUnit.value = 'cm'
     existingThumbnailUrl.value = null
     thumbnailFile.value = null
     thumbnailPreview.value = null
@@ -507,7 +504,7 @@ const onSubmit = async () => {
       unit: values.unit,
       size: typeof values.size === 'number' ? formatSizeToString(values.size) : (typeof values.size === 'string' ? values.size : undefined),
       flavour: values.flavour,
-      colour: values.colour ? values.colour.trim().toLowerCase() : null,
+      colour: buildColourValue(values.colour ?? []),
       retail_price: values.price,
       wholesale_price: values.wholesale_price ?? null,
       stock_quantity: 1000,
@@ -532,13 +529,14 @@ const parseSizeToNumber = (s?: string | null) => {
 const formatSizeToString = (n?: number) => {
   return typeof n === 'number' ? n.toFixed(2) : undefined
 }
-watch([dimensionLength, dimensionWidth, dimensionHeight], () => {
+watch([dimensionLength, dimensionWidth, dimensionHeight, dimensionUnit], () => {
   if (unit.value !== 'dimension') return
-  const l = dimensionLength.value
-  const w = dimensionWidth.value
-  const h = dimensionHeight.value
-  if (!l || !w) { size.value = undefined; return }
-  size.value = (h != null ? `${l}x${w}x${h}` : `${l}x${w}`) as unknown as number
+  size.value = buildDimensionValue(
+    dimensionLength.value,
+    dimensionWidth.value,
+    dimensionHeight.value,
+    dimensionUnit.value,
+  ) as unknown as number
 })
 
 watch(() => unit.value, (v, oldV) => {
@@ -550,6 +548,7 @@ watch(() => unit.value, (v, oldV) => {
     dimensionLength.value = undefined
     dimensionWidth.value = undefined
     dimensionHeight.value = undefined
+    dimensionUnit.value = 'cm'
     size.value = undefined
   }
   if (v === 'dimension' && typeof size.value === 'number') {
@@ -816,38 +815,46 @@ const filteredBaseProducts = computed(() => {
           </div>
               <div class="flex flex-col gap-1.5">
                 <Label for="colour">Colour</Label>
-                <Select v-model="colourValue">
+                <Select v-model="colour" multiple>
                   <SelectTrigger id="colour" class="w-full">
                     <div class="flex items-center gap-2">
-                      <div
-                        v-if="colour && COLOUR_SWATCH[colour.toLowerCase()]"
-                        class="h-4 w-4 rounded-full border border-border"
-                        :style="{ backgroundColor: COLOUR_SWATCH[colour.toLowerCase()] }"
-                      />
-                      <SelectValue placeholder="Select colour" />
+                      <div v-if="colour?.length" class="flex -space-x-1">
+                        <span
+                          v-for="c in colour"
+                          :key="c"
+                          class="h-4 w-4 rounded-full border border-white ring-1 ring-border"
+                          :style="{ backgroundColor: colourHex(c) }"
+                        />
+                      </div>
+                      <SelectValue placeholder="Select colour(s)" />
                     </div>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">No Colour</SelectItem>
                     <SelectItem v-for="opt in colourOptions" :key="opt.id" :value="opt.id">
                       <div class="flex items-center gap-2">
-                        <div
-                          class="h-4 w-4 rounded-full border border-border"
-                          :style="{ backgroundColor: opt.hex }"
-                        />
+                        <span class="h-4 w-4 rounded-full border border-border" :style="{ backgroundColor: opt.hex }" />
                         <span>{{ opt.label }}</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
                 </Select>
+                <!-- <p class="text-xs text-muted-foreground">Pick every colour this variant includes. Create a separate variant for a different combination.</p> -->
                 <p v-if="colourError && colourMeta.touched" class="text-destructive text-xs">{{ colourError }}</p>
               </div>
               <div class="flex flex-col gap-1.5">
                 <Label for="size">Size</Label>
-                <div v-if="unit === 'dimension'" class="grid grid-cols-3 gap-2">
-                  <Input type="number" step="0.01" min="0" v-model.number="dimensionLength" placeholder="Length" class="w-full" />
-                  <Input type="number" step="0.01" min="0" v-model.number="dimensionWidth" placeholder="Width" class="w-full" />
-                  <Input type="number" step="0.01" min="0" v-model.number="dimensionHeight" placeholder="Height" class="w-full" />
+                <div v-if="unit === 'dimension'" class="flex flex-col gap-2">
+                  <div class="grid grid-cols-3 gap-2">
+                    <Input type="number" step="0.01" min="0" v-model.number="dimensionLength" placeholder="Length" class="w-full" />
+                    <Input type="number" step="0.01" min="0" v-model.number="dimensionWidth" placeholder="Width" class="w-full" />
+                    <Input type="number" step="0.01" min="0" v-model.number="dimensionHeight" placeholder="Height" class="w-full" />
+                  </div>
+                  <Select v-model="dimensionUnit">
+                    <SelectTrigger class="w-full"><SelectValue placeholder="Measurement unit" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem v-for="u in DIMENSION_UNITS" :key="u.id" :value="u.id">{{ u.label }}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div v-else-if="unit === 'size_label'">
                   <Select v-model="sizeStr">
@@ -862,7 +869,7 @@ const filteredBaseProducts = computed(() => {
                   <span class="text-xs text-muted-foreground">{{ unit || 'unit' }}</span>
                 </div>
                 <p v-if="unit === 'dimension' && dimensionLength && dimensionWidth" class="text-xs text-muted-foreground">
-                  Stored as: {{ dimensionLength }}x{{ dimensionWidth }}{{ dimensionHeight ? `x${dimensionHeight}` : '' }}
+                  Stored as: {{ dimensionLength }}×{{ dimensionWidth }}{{ dimensionHeight ? `×${dimensionHeight}` : '' }} {{ dimensionUnit }}
                 </p>
                 <p v-if="sizeError && sizeMeta.touched" class="text-destructive text-xs">{{ sizeError }}</p>
               </div>

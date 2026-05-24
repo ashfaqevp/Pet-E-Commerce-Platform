@@ -761,7 +761,8 @@ watch(user, () => {
           </div>
         </div>
         <div class="my-8 md:mb-0 pt-8 border-t text-center text-sm text-muted-foreground">
-          © {{ new Date().getFullYear() }} BlackHorse. All Rights Reserved.
+          © {{ new Date().getFullYear() }} LINKAGE INVESTEMENT. All Rights Reserved.
+          <span class="block mt-1">C.R. No: 1459802</span>
         </div>
       </div>
     </footer>

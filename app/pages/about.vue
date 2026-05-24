@@ -12,7 +12,7 @@ const breadcrumbs = [{ label: 'Home', href: '/' }, { label: 'About' }]
 
 useSeoMeta({
   title: 'About Us | Buypets.om',
-  description: 'Learn about Black Horse Authentic LLC — pet shop in Oman, Al Seeb Souq.',
+  description: 'Learn about LINKAGE INVESTEMENT — pet shop in Oman, Al Seeb Souq.',
 })
 
 interface ProductType { id: string; label: string }
@@ -32,13 +32,14 @@ const PRODUCT_TYPES: ReadonlyArray<ProductType> = [
     <PageHeader :title="'About'" :items="breadcrumbs" />
     <Card class="mt-4">
       <CardHeader>
-        <CardTitle class="text-[#0f766e]">Black Horse Authentic LLC</CardTitle>
+        <CardTitle class="text-[#0f766e]">LINKAGE INVESTEMENT</CardTitle>
       </CardHeader>
       <CardContent>
         <div class="space-y-3 text-sm sm:text-base text-muted-foreground">
-          <p class="text-foreground">Parent company: Black Horse Authentic LLC</p>
-          <p class="text-foreground">Pets shop — Sultanate of Oman</p>
-          <p class="text-foreground">Location: Al Seeb Souq</p>
+          <p class="text-foreground">Parent company: LINKAGE INVESTEMENT</p>
+          <p class="text-foreground">C.R. No: 1459802</p>
+          <p class="text-foreground">Pets shop — Black Horse Authentic LLC</p>
+          <p class="text-foreground">Location: Al Seeb Souq, Muscat, Oman</p>
           <p class="text-foreground">WhatsApp: +968 7918 8368</p>
         </div>
         <div class="mt-6 flex flex-wrap gap-3">

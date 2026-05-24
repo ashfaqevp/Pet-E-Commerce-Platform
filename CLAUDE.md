@@ -31,13 +31,14 @@ Use **pnpm only** — no npm or yarn. No test suite exists yet.
 | `app/pages/` | File-based routing. `/admin/**` is middleware-protected. |
 | `app/components/ui/` | shadcn-vue components — auto-imported, use as `<Button />` |
 | `app/components/admin/` | Admin dashboard components. CRUD modals use a Sheet pattern: `BrandSheet.vue`, `PetTypeSheet.vue` |
-| `app/stores/` | Pinia stores (auto-imported) — auth dialog state (`useAuthStore`), cart count (`useCartStore`) |
+| `app/stores/` | Pinia stores (auto-imported) — `useAuthStore` (auth dialog state), `useCartStore` (navbar badge count), `useProductsStore` |
 | `app/composables/` | Business logic — auth, cart, orders, profile, addresses, brands, pet types |
 | `app/domain/categories/` | Config-driven category system (partially migrated to DB — see below) |
 | `app/layouts/` | `default.vue` (main), `admin.vue` (sidebar), `admin-auth.vue` |
 | `app/middleware/` | `admin.ts` (route guard), two `.global.ts` guards |
 | `app/plugins/` | `auth.client.ts` (session restore + guest cart sync), `seo.global.ts` |
-| `app/lib/utils.ts` | `formatOMR()`, `formatOmanPhone()`, status helpers |
+| `app/lib/utils.ts` | `cn()` — clsx + tailwind-merge helper for conditional classes |
+| `app/utils/index.ts` | `formatOMR()`, `formatOmanPhone()`, `orderStatusStyle()`, `paymentStatusStyle()`, `canOrderTransition()` — auto-imported |
 | `app/assets/css/main.css` | Tailwind v4 with OKLch CSS variables, dark mode |
 | `server/api/` | Server routes using Supabase service role (secure) |
 | `server/api/paytabs/` | Payment gateway: create, verify, webhook |
@@ -107,6 +108,14 @@ Key helpers in `category.helpers.ts` (must import explicitly from `app/domain/`)
 - `getDependents(key)` — find downstream fields to reset when a parent changes
 
 Use `useCategories()` composable for reactive form context. Never hardcode category values.
+
+### Order status transitions
+
+`canOrderTransition(from, to, payment_status, payment_method?)` in `app/utils/index.ts` enforces the allowed state machine. Always call this before updating order status — it handles COD vs. online payment rules (e.g. COD orders can ship unpaid, online orders require payment before `confirmed`). The full transition graph is defined in `ALLOWED_TRANSITIONS` inside that file.
+
+### Toast notifications
+
+Use `vue-sonner` via the `<Toaster />` component (mounted in the default layout). Call `toast.success()`, `toast.error()`, etc. — these are auto-imported from `vue-sonner`.
 
 ### Brands
 

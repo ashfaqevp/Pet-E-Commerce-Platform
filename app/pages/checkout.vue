@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { toast } from 'vue-sonner'
@@ -39,7 +39,7 @@ watchEffect(() => {
 })
 
 const { loadCartWithProducts } = useCart()
-const { listAddresses, setDefault } = useAddresses()
+const { listAddresses } = useAddresses()
 const { getProfile } = useProfile()
 
 const { data: itemsData, pending: itemsPending, error: itemsError, refresh: refreshItems } = await useLazyAsyncData(
@@ -87,19 +87,57 @@ const addressForm = ref({
 watchEffect(() => {
   if (!selectedAddressId.value) selectedAddressId.value = defaultAddress.value?.id || null
 })
-const hasDefaultAddress = computed(() => addresses.value.some(a => a.is_default))
 const selectedAddress = computed(() => addresses.value.find(a => a.id === selectedAddressId.value) || null)
-const goToProfile = () => navigateTo('/profile')
-const setSelectedAsDefault = async () => {
-  if (!selectedAddressId.value) return
-  await setDefault(selectedAddressId.value)
-  await refreshAddresses()
-}
 
-const onAddressSaved = async () => {
+const onAddressSaved = async (saved?: AddressRow) => {
   addressDialogOpen.value = false
   await refreshAddresses()
-  selectedAddressId.value = addresses.value[0]?.id || null
+  // Select the address that was just saved (deterministic), not a guess at [0].
+  selectedAddressId.value = saved?.id || addresses.value[0]?.id || null
+}
+
+const { loading: locating, fetchAddress } = useCurrentLocation()
+
+const resetAddressForm = () => {
+  addressForm.value = {
+    full_name: '',
+    phone: '',
+    address_line_1: '',
+    address_line_2: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country: 'Oman',
+    is_default: addresses.value.length === 0,
+  }
+}
+
+const openAddDialog = () => {
+  resetAddressForm()
+  addressDialogOpen.value = true
+}
+
+const addWithLocation = async () => {
+  resetAddressForm()
+  try {
+    const a = await fetchAddress()
+    // Merge location fields only — name/phone are auto-filled inside the form.
+    addressForm.value = {
+      ...addressForm.value,
+      address_line_1: a.address_line_1 || '',
+      address_line_2: a.address_line_2 || '',
+      city: a.city || '',
+      state: a.state || '',
+      postal_code: a.postal_code || '',
+      country: a.country || 'Oman',
+    }
+    toast.success('Location filled in. Add your name and phone, then save.')
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : 'Could not get your location.')
+  } finally {
+    // Open the dialog either way so the user can review or type manually.
+    addressDialogOpen.value = true
+  }
 }
 
 const round3 = (v: number) => Math.round(v * 1000) / 1000
@@ -235,36 +273,17 @@ const placeOrder = async () => {
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{{ addressesError.message }}</AlertDescription>
             </Alert>
-            <div v-else-if="addresses.length === 0" class="space-y-3">
-              <TableEmpty>No addresses found.</TableEmpty>
-              <Dialog v-model:open="addressDialogOpen">
-                <DialogTrigger as-child>
-                  <Button variant="default" class="w-full">Add Delivery Address</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle class="text-secondary">Add Delivery Address</DialogTitle>
-                  </DialogHeader>
-                  <AddressFormContent v-model="addressForm" @save="onAddressSaved" />
-                </DialogContent>
-              </Dialog>
-            </div>
-            <div v-else class="space-y-3">
-              <!-- <Label class="text-sm">Select address</Label> -->
+            <template v-else>
+              <div v-if="addresses.length" class="space-y-3">
+              <Label class="text-sm text-muted-foreground">Deliver to</Label>
               <Select v-model="selectedAddressId">
-                <SelectTrigger class="bg-white">
+                <SelectTrigger class="w-full bg-white">
                   <SelectValue placeholder="Choose address" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem v-for="a in addresses" :key="a.id" :value="a.id">{{ a.full_name }} — {{ a.city }}</SelectItem>
                 </SelectContent>
               </Select>
-              <Alert v-if="!hasDefaultAddress" variant="default">
-                <AlertTitle>No default address</AlertTitle>
-                <AlertDescription>
-                  Select an address and set it as default for faster checkout.
-                </AlertDescription>
-              </Alert>
               <div v-if="selectedAddressId" class="text-sm text-muted-foreground rounded-lg border bg-muted/20 p-3 space-y-2">
                 <div class="flex items-center gap-2">
                   <Icon name="lucide:user" class="w-4 h-4" />
@@ -290,11 +309,37 @@ const placeOrder = async () => {
                   <span>{{ selectedAddress?.country }}</span>
                 </div>
               </div>
-              <div v-if="selectedAddressId" class="flex flex-wrap items-center gap-2">
-                <Button variant="default" class="flex-1" size="sm" @click="setSelectedAsDefault">Use selected address</Button>
-                <Button variant="outline" class="flex-1" size="sm" @click="goToProfile">Manage addresses in Profile</Button>
               </div>
-            </div>
+              <TableEmpty v-else>No addresses found.</TableEmpty>
+
+              <div class="flex flex-col sm:flex-row gap-2 pt-1">
+                <Button variant="outline" class="flex-1" :disabled="locating" @click="openAddDialog">
+                  <Icon name="lucide:plus" class="w-4 h-4" />
+                  Add new address
+                </Button>
+                <Button
+                  variant="outline"
+                  class="flex-1 gap-2 border-secondary text-secondary hover:bg-secondary/10 hover:text-secondary"
+                  :disabled="locating"
+                  @click="addWithLocation"
+                >
+                  <Icon
+                    :name="locating ? 'lucide:loader-circle' : 'lucide:map-pin'"
+                    :class="locating ? 'animate-spin' : ''"
+                  />
+                  {{ locating ? 'Getting location…' : 'Use current location' }}
+                </Button>
+              </div>
+            </template>
+
+            <Dialog v-model:open="addressDialogOpen">
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle class="text-secondary">Add Delivery Address</DialogTitle>
+                </DialogHeader>
+                <AddressFormContent v-model="addressForm" :show-location-button="false" @save="onAddressSaved" />
+              </DialogContent>
+            </Dialog>
           </CardContent>
         </Card>
 

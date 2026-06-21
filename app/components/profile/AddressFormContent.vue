@@ -7,20 +7,23 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { toTypedSchema } from '@vee-validate/zod'
 import { useForm, useField } from 'vee-validate'
 import { useLazyAsyncData, useSupabaseClient, useSupabaseUser } from '#imports'
-import type { AddressInput } from '@/composables/useAddresses'
+import type { AddressInput, AddressRow } from '@/composables/useAddresses'
 import { useAddresses } from '@/composables/useAddresses'
 import { z } from 'zod'
 import { toast } from 'vue-sonner'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   modelValue: AddressInput
   submitting?: boolean
   addressId?: string
-}>()
+  showLocationButton?: boolean
+}>(), {
+  showLocationButton: true,
+})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', v: AddressInput): void
-  (e: 'save'): void
+  (e: 'save', address: AddressRow): void
 }>()
 
 const supabase = useSupabaseClient()
@@ -112,6 +115,23 @@ watch(state, (v) => emit('update:modelValue', { ...props.modelValue, state: v })
 watch(postalCode, (v) => emit('update:modelValue', { ...props.modelValue, postal_code: v }))
 watch(isDefault, (v) => emit('update:modelValue', { ...props.modelValue, is_default: !!v }))
 
+const { loading: locating, fetchAddress } = useCurrentLocation()
+
+const useMyLocation = async () => {
+  try {
+    const a = await fetchAddress()
+    // Only merge location fields — never touch full_name, phone, or is_default.
+    if (a.address_line_1) address1.value = a.address_line_1
+    if (a.address_line_2) address2.value = a.address_line_2
+    if (a.city) city.value = a.city
+    if (a.state) state.value = a.state
+    if (a.postal_code) postalCode.value = a.postal_code
+    toast.success('Location filled in. Please double-check before saving.')
+  } catch (e) {
+    toast.error(e instanceof Error ? e.message : 'Could not get your location.')
+  }
+}
+
 const onSubmit = handleSubmit(async (values) => {
   if (!user.value) {
     toast.error('Please sign in')
@@ -129,14 +149,15 @@ const onSubmit = handleSubmit(async (values) => {
       country: 'Oman',
       is_default: !!values.is_default,
     }
+    let saved: AddressRow
     if (props.addressId) {
-      await updateAddress(props.addressId, payload)
+      saved = await updateAddress(props.addressId, payload)
       toast.success('Address updated')
     } else {
-      await createAddress(payload)
+      saved = await createAddress(payload)
       toast.success('Address added')
     }
-    emit('save')
+    emit('save', saved)
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Save failed'
     toast.error(msg)
@@ -167,6 +188,20 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
       <p v-if="phoneError && phoneMeta.touched" class="text-xs text-red-600">{{ phoneError }}</p>
     </div>
+    <Button
+      v-if="props.showLocationButton"
+      type="button"
+      variant="outline"
+      class="w-full gap-2"
+      :disabled="locating"
+      @click="useMyLocation"
+    >
+      <Icon
+        :name="locating ? 'lucide:loader-circle' : 'lucide:map-pin'"
+        :class="locating ? 'animate-spin' : ''"
+      />
+      {{ locating ? 'Getting location…' : 'Use current location' }}
+    </Button>
     <div class="space-y-2">
       <Label class="text-sm">Address line 1</Label>
       <Textarea v-model="address1" placeholder="Address line 1" />

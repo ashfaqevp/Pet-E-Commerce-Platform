@@ -1,4 +1,4 @@
-const PIXEL_ID = '1761195768388887'
+const PIXEL_ID = '2066815523926231'
 
 declare global {
   interface Window {

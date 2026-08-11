@@ -13,7 +13,7 @@ export default defineNuxtPlugin(() => {
     script: [
       {
         key: 'meta-pixel',
-        children: `!function(f,b,e,v,n,t,s)
+        innerHTML: `!function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
 n.callMethod.apply(n,arguments):n.queue.push(arguments)};
 if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
@@ -28,7 +28,7 @@ fbq('track', 'PageView');`,
     noscript: [
       {
         key: 'meta-pixel-noscript',
-        children: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1" />`,
+        innerHTML: `<img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=${PIXEL_ID}&ev=PageView&noscript=1" />`,
       },
     ],
   })

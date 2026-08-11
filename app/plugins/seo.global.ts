@@ -21,7 +21,7 @@ export default defineNuxtPlugin(() => {
         {
           type: 'application/ld+json',
           key: 'ld-website',
-          children: JSON.stringify({
+          innerHTML: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'WebSite',
             name: appConfig.site?.name || 'Buypets.om',

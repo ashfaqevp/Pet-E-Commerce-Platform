@@ -201,6 +201,20 @@ const { data: bannersData, pending: bannersPending, error: bannersError, refresh
   { server: true }
 )
 
+const { release: releaseFiles, sweep: sweepStorage } = useStorageCleanup()
+
+/** Banner images live in the product-images bucket under banners/. Read the row
+ *  back before replacing, so a stale form cannot orphan the wrong file. */
+const currentBannerImages = async (id: string): Promise<{ mobile: string | null; desktop: string | null }> => {
+  const supabase = useSupabaseClient()
+  const { data } = await supabase
+    .from('banners')
+    .select('mobile, desktop')
+    .eq('id', id)
+    .maybeSingle<{ mobile: string | null; desktop: string | null }>()
+  return { mobile: data?.mobile ?? null, desktop: data?.desktop ?? null }
+}
+
 const addOpen = ref(false)
 const editOpen = ref(false)
 const editing = ref<BannerRow | null>(null)
@@ -228,6 +242,7 @@ const openAddBanner = () => {
   setBannerField('name', '')
   mobileFile.value = null
   desktopFile.value = null
+  clearUploadStatus('banner-mobile', 'banner-desktop')
 }
 
 const openEditBanner = (row: BannerRow) => {
@@ -237,13 +252,21 @@ const openEditBanner = (row: BannerRow) => {
   setBannerField('name', row.name)
   mobileEditFile.value = null
   desktopEditFile.value = null
+  clearUploadStatus('banner-mobile-edit', 'banner-desktop-edit')
 }
 
+/** Takes a file already through `prepareUpload` — the callers compress both
+ *  banner images up front, so a bad one fails the save before either is
+ *  written. */
 const uploadImage = async (path: string, file: File): Promise<string> => {
   const supabase = useSupabaseClient()
   const storage = supabase.storage.from('product-images')
-  const { error } = await storage.upload(path, file, { upsert: true, contentType: file.type })
-  if (error) throw error
+  const { error } = await storage.upload(path, file, {
+    upsert: true,
+    contentType: file.type,
+    cacheControl: UPLOAD_CACHE_CONTROL,
+  })
+  if (error) throw storageUploadError(error)
   const { data } = storage.getPublicUrl(path)
   return data.publicUrl
 }
@@ -255,14 +278,19 @@ const onCreateBanner = bannerSubmit(async (values) => {
       toast.error('Upload both mobile and desktop images')
       return
     }
-    const extM = mobileFile.value.name.includes('.') ? mobileFile.value.name.substring(mobileFile.value.name.lastIndexOf('.')) : ''
-    const extD = desktopFile.value.name.includes('.') ? desktopFile.value.name.substring(desktopFile.value.name.lastIndexOf('.')) : ''
-    const mobileUrl = await uploadImage(`banners/${Date.now()}-mobile${extM}`, mobileFile.value)
-    const desktopUrl = await uploadImage(`banners/${Date.now()}-desktop${extD}`, desktopFile.value)
+    // Both compressed before either is uploaded — 1920 is wasted on a phone
+    // slot that is never rendered wider than 1080.
+    const mobile = await prepareUpload(mobileFile.value, UPLOAD_PRESETS.bannerMobile, 'banner-mobile')
+    const desktop = await prepareUpload(desktopFile.value, UPLOAD_PRESETS.bannerDesktop, 'banner-desktop')
+    const extM = mobile.name.includes('.') ? mobile.name.substring(mobile.name.lastIndexOf('.')) : ''
+    const extD = desktop.name.includes('.') ? desktop.name.substring(desktop.name.lastIndexOf('.')) : ''
+    const mobileUrl = await uploadImage(`banners/${Date.now()}-mobile${extM}`, mobile)
+    const desktopUrl = await uploadImage(`banners/${Date.now()}-desktop${extD}`, desktop)
     const { error: e } = await supabase
       .from('banners')
       .insert([{ name: values.name, mobile: mobileUrl, desktop: desktopUrl }] as unknown as never)
     if (e) throw e
+    sweepStorage()
     toast.success('Banner added')
     addOpen.value = false
     resetBannerForm()
@@ -270,6 +298,9 @@ const onCreateBanner = bannerSubmit(async (values) => {
     desktopFile.value = null
     await refreshBanners()
   } catch (e) {
+    // Otherwise the status line still reads as a completed optimisation while
+    // the toast says the save failed.
+    clearUploadStatus('banner-mobile', 'banner-desktop')
     const msg = e instanceof Error ? e.message : 'Failed to add banner'
     toast.error(msg)
   }
@@ -279,21 +310,33 @@ const onUpdateBanner = bannerSubmit(async (values) => {
   const supabase = useSupabaseClient()
   try {
     if (!editing.value) return
+    const previous = await currentBannerImages(editing.value.id)
     let mobileUrl = editing.value.mobile
     let desktopUrl = editing.value.desktop
-    if (mobileEditFile.value) {
-      const ext = mobileEditFile.value.name.includes('.') ? mobileEditFile.value.name.substring(mobileEditFile.value.name.lastIndexOf('.')) : ''
-      mobileUrl = await uploadImage(`banners/${editing.value.id}-${Date.now()}-mobile${ext}`, mobileEditFile.value)
+    // Compress first, upload second, for the same reason as create.
+    const mobile = mobileEditFile.value
+      ? await prepareUpload(mobileEditFile.value, UPLOAD_PRESETS.bannerMobile, 'banner-mobile-edit')
+      : null
+    const desktop = desktopEditFile.value
+      ? await prepareUpload(desktopEditFile.value, UPLOAD_PRESETS.bannerDesktop, 'banner-desktop-edit')
+      : null
+    if (mobile) {
+      const ext = mobile.name.includes('.') ? mobile.name.substring(mobile.name.lastIndexOf('.')) : ''
+      mobileUrl = await uploadImage(`banners/${editing.value.id}-${Date.now()}-mobile${ext}`, mobile)
     }
-    if (desktopEditFile.value) {
-      const ext = desktopEditFile.value.name.includes('.') ? desktopEditFile.value.name.substring(desktopEditFile.value.name.lastIndexOf('.')) : ''
-      desktopUrl = await uploadImage(`banners/${editing.value.id}-${Date.now()}-desktop${ext}`, desktopEditFile.value)
+    if (desktop) {
+      const ext = desktop.name.includes('.') ? desktop.name.substring(desktop.name.lastIndexOf('.')) : ''
+      desktopUrl = await uploadImage(`banners/${editing.value.id}-${Date.now()}-desktop${ext}`, desktop)
     }
     const { error: e } = await supabase
       .from('banners')
       .update({ name: values.name, mobile: mobileUrl, desktop: desktopUrl } as unknown as never)
       .eq('id', editing.value.id)
     if (e) throw e
+    // Only after the write succeeded — a failed update must leave the files alone.
+    const dropped = [previous.mobile, previous.desktop].filter(u => !!u && u !== mobileUrl && u !== desktopUrl)
+    if (dropped.length) await releaseFiles(dropped)
+    sweepStorage()
     toast.success('Banner updated')
     editOpen.value = false
     resetBannerForm()
@@ -302,6 +345,9 @@ const onUpdateBanner = bannerSubmit(async (values) => {
     editing.value = null
     await refreshBanners()
   } catch (e) {
+    // Otherwise the status line still reads as a completed optimisation while
+    // the toast says the save failed.
+    clearUploadStatus('banner-mobile-edit', 'banner-desktop-edit')
     const msg = e instanceof Error ? e.message : 'Failed to update banner'
     toast.error(msg)
   }
@@ -310,11 +356,14 @@ const onUpdateBanner = bannerSubmit(async (values) => {
 const onDeleteBanner = async (row: BannerRow) => {
   const supabase = useSupabaseClient()
   try {
+    const previous = await currentBannerImages(row.id)
     const { error: e } = await supabase
       .from('banners')
       .delete()
       .eq('id', row.id)
     if (e) throw e
+    await releaseFiles([previous.mobile, previous.desktop])
+    sweepStorage()
     toast.success('Banner deleted')
     await refreshBanners()
   } catch (e) {
@@ -362,7 +411,8 @@ onMounted(() => {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div class="space-y-2">
                     <Label for="mobile-upload">Mobile Image</Label>
-                    <Input id="mobile-upload" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; mobileFile = f }" />
+                    <Input id="mobile-upload" type="file" accept="image/*" @change="(e: Event) => { clearUploadStatus('banner-mobile'); const f = (e.target as HTMLInputElement).files?.[0] || null; mobileFile = f }" />
+                    <AdminUploadStatus for="banner-mobile" />
                     <p class="text-xs text-muted-foreground">800 × 450 px — 16:9</p>
                     <div class="border rounded-md w-full aspect-[16/9] overflow-hidden bg-muted/20">
                       <img v-if="mobilePreview" :src="mobilePreview" alt="Mobile preview" class="w-full h-full object-cover" />
@@ -370,7 +420,8 @@ onMounted(() => {
                   </div>
                   <div class="space-y-2">
                     <Label for="desktop-upload">Desktop Image</Label>
-                    <Input id="desktop-upload" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; desktopFile = f }" />
+                    <Input id="desktop-upload" type="file" accept="image/*" @change="(e: Event) => { clearUploadStatus('banner-desktop'); const f = (e.target as HTMLInputElement).files?.[0] || null; desktopFile = f }" />
+                    <AdminUploadStatus for="banner-desktop" />
                     <p class="text-xs text-muted-foreground">1920 × 720 px — 16:6 (8:3)</p>
                     <div class="border rounded-md w-full aspect-[8/3] overflow-hidden bg-muted/20">
                       <img v-if="desktopPreview" :src="desktopPreview" alt="Desktop preview" class="w-full h-full object-cover" />
@@ -462,7 +513,8 @@ onMounted(() => {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div class="space-y-2">
                     <Label for="mobile-upload-edit">Mobile Image</Label>
-                    <Input id="mobile-upload-edit" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; mobileEditFile = f }" />
+                    <Input id="mobile-upload-edit" type="file" accept="image/*" @change="(e: Event) => { clearUploadStatus('banner-mobile-edit'); const f = (e.target as HTMLInputElement).files?.[0] || null; mobileEditFile = f }" />
+                    <AdminUploadStatus for="banner-mobile-edit" />
                     <p class="text-xs text-muted-foreground">800 × 450 px — 16:9</p>
                     <div class="border rounded-md w-full aspect-[16/9] overflow-hidden bg-muted/20">
                       <img v-if="mobileEditPreview" :src="mobileEditPreview" alt="Mobile preview" class="w-full h-full object-cover" />
@@ -471,7 +523,8 @@ onMounted(() => {
                   </div>
                   <div class="space-y-2">
                     <Label for="desktop-upload-edit">Desktop Image</Label>
-                    <Input id="desktop-upload-edit" type="file" accept="image/*" @change="(e: Event) => { const f = (e.target as HTMLInputElement).files?.[0] || null; desktopEditFile = f }" />
+                    <Input id="desktop-upload-edit" type="file" accept="image/*" @change="(e: Event) => { clearUploadStatus('banner-desktop-edit'); const f = (e.target as HTMLInputElement).files?.[0] || null; desktopEditFile = f }" />
+                    <AdminUploadStatus for="banner-desktop-edit" />
                     <p class="text-xs text-muted-foreground">1920 × 720 px — 16:6 (8:3)</p>
                     <div class="border rounded-md w-full aspect-[8/3] overflow-hidden bg-muted/20">
                       <img v-if="desktopEditPreview" :src="desktopEditPreview" alt="Desktop preview" class="w-full h-full object-cover" />

@@ -38,7 +38,7 @@ interface Emits {
   }): void
 }
 
-const props = defineProps<{ open?: boolean; initial?: AdminProduct | null }>()
+const props = defineProps<{ open?: boolean; initial?: AdminProduct | null; saving?: boolean }>()
 const emit = defineEmits<Emits>()
 const supabase = useSupabaseClient()
 
@@ -314,6 +314,7 @@ const colourOptions = computed(() => {
 
 watch(() => props.open, async (open) => {
   if (open) {
+    clearUploadStatus('product-thumbnail', 'product-gallery')
     initializing.value = true
     const initialPetArray = Array.isArray(props.initial?.pet_type) ? (props.initial!.pet_type as string[]) : ([])
     const initialType = props.initial?.product_type ?? ''
@@ -493,7 +494,20 @@ watch(productKind, (v) => {
   if (v === 'base') baseProductId.value = undefined
 })
 
+// The parent owns the save (compress, upload, insert/update), so vee-validate's
+// isSubmitting only covers validation — it flips back the instant `emit` returns.
+// `props.saving` is what keeps the button dead for the real duration.
+const busy = computed(() => isSubmitting.value || props.saving === true)
+
+// Swallow every close request while the parent is still writing: the header X,
+// the footer Cancel, Escape and the overlay all funnel through this one emit.
+const onOpenChange = (v: boolean) => {
+  if (!v && props.saving) return
+  emit('update:open', v)
+}
+
 const onSubmit = async () => {
+  if (busy.value) return
   await handleSubmit(async (values) => {
     emit('submit', {
       name: values.name,
@@ -575,6 +589,7 @@ const galleryPreviews = ref<string[]>([])
 const existingGalleryUrls = ref<string[]>([])
 
 const onThumbChange = (e: Event) => {
+  clearUploadStatus('product-thumbnail')
   const target = e.target as HTMLInputElement
   const file = target.files?.[0] || null
   if (file) {
@@ -595,6 +610,7 @@ const clearThumbnail = () => {
 }
 
 const onGalleryChange = (e: Event) => {
+  clearUploadStatus('product-gallery')
   const target = e.target as HTMLInputElement
   const files = Array.from(target.files || [])
   galleryFiles.value = [...galleryFiles.value, ...files]
@@ -638,13 +654,13 @@ const filteredBaseProducts = computed(() => {
 </script>
 
 <template>
-  <Sheet :open="props.open" @update:open="(v) => emit('update:open', v)">
+  <Sheet :open="props.open" @update:open="onOpenChange">
     <SheetContent class="sm:max-w-xl p-0 h-full gap-0" :showCloseButton="false">
       <SheetHeader class="sticky top-0 z-10 bg-secondary/10 border-b px-6 py-4 shadow-sm">
         <div class="flex items-center justify-between">
           <SheetTitle>{{ props.initial?.id ? 'Edit Product' : 'Add Product' }}</SheetTitle>
           <SheetClose as-child>
-            <Button variant="ghost" size="icon" aria-label="Close">
+            <Button variant="ghost" size="icon" aria-label="Close" :disabled="busy">
               <Icon name="lucide:x" class="h-4 w-4" />
             </Button>
           </SheetClose>
@@ -673,6 +689,7 @@ const filteredBaseProducts = computed(() => {
                     <Button variant="outline" @click.prevent="clearThumbnail">Remove</Button>
                   </div>
                 </div>
+                <AdminUploadStatus for="product-thumbnail" />
                 
               </div>
               <div class="flex flex-col gap-1.5 md:col-span-2">
@@ -927,6 +944,7 @@ const filteredBaseProducts = computed(() => {
                 <div class="flex items-center gap-2">
                   <Input id="gallery" type="file" multiple accept="image/*" class="w-64" @change="onGalleryChange" />
                 </div>
+                <AdminUploadStatus for="product-gallery" />
                 <div class="flex flex-wrap gap-3 mt-2">
                   <div v-for="(url, i) in existingGalleryUrls" :key="`existing-${i}`" class="flex items-center gap-2">
                     <Avatar class="size-16">
@@ -950,11 +968,11 @@ const filteredBaseProducts = computed(() => {
           <SheetFooter class="sticky bottom-0 bg-background border-t px-0">
             <div class="w-full flex justify-end gap-2">
               <SheetClose as-child class="flex-1">
-                <Button variant="outline" size="lg">Cancel</Button>
+                <Button variant="outline" size="lg" :disabled="busy">Cancel</Button>
               </SheetClose>
-              <Button type="submit" :disabled="isSubmitting" size="lg" class="bg-secondary text-white flex-1">
-                <Icon v-if="isSubmitting" name="lucide:loader-2" class="h-4 w-4 mr-2 animate-spin" />
-                {{ props.initial?.id ? (isSubmitting ? 'Updating...' : 'Update') : (isSubmitting ? 'Creating...' : 'Create') }}
+              <Button type="submit" :disabled="busy" size="lg" class="bg-secondary text-white flex-1">
+                <Icon v-if="busy" name="lucide:loader-2" class="h-4 w-4 mr-2 animate-spin" />
+                {{ props.initial?.id ? (busy ? 'Updating...' : 'Update') : (busy ? 'Creating...' : 'Create') }}
               </Button>
             </div>
           </SheetFooter>

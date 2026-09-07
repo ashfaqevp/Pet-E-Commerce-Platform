@@ -3,10 +3,14 @@ type Target = { bucket: string; path: string }
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
 
-  const body = await readBody<{ mode?: 'selected' | 'all_orphans'; items?: Target[] }>(event)
+  const body = await readBody<{ mode?: 'selected' | 'all_orphans'; items?: Target[]; minAgeMinutes?: number }>(event)
   const supabase = adminSupabase()
 
-  const { data, error } = await supabase.rpc('admin_storage_orphans')
+  // Files younger than this are never eligible, so a delete cannot take an image
+  // someone uploaded a minute ago in another tab and has not saved yet.
+  const minAgeMinutes = Math.min(Math.max(Number(body?.minAgeMinutes ?? 60) || 0, 0), 10080)
+
+  const { data, error } = await supabase.rpc('admin_storage_orphans', { p_min_age_minutes: minAgeMinutes })
   if (error) throw createError({ statusCode: 500, statusMessage: error.message })
 
   const orphans = (data ?? []) as { bucket: string; path: string; bytes: number }[]
@@ -24,7 +28,7 @@ export default defineEventHandler(async (event) => {
     if (refused.length) {
       throw createError({
         statusCode: 409,
-        statusMessage: `${refused.length} selected file(s) are still in use — nothing was deleted.`,
+        statusMessage: `${refused.length} selected file(s) are either still in use or newer than the ${minAgeMinutes} minute safety window — nothing was deleted.`,
       })
     }
     targets = asked.map(i => byKey.get(`${i.bucket}/${i.path}`)!)

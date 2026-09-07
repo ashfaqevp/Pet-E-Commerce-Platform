@@ -32,7 +32,12 @@ const { data: bannersData, pending: bannersPending, error: bannersError, refresh
   },
   { server: true }
 )
-const banners = computed(() => (bannersData.value ?? []).map(b => ({ mobile: b.mobile, desktop: b.desktop })))
+// A banner row can be missing one of its two images — an admin deleted that file,
+// or only ever uploaded one side. Fall back to the other rather than binding a
+// null src, which renders as a broken slide, and drop a row that has neither.
+const banners = computed(() => (bannersData.value ?? [])
+  .map(b => ({ mobile: b.mobile || b.desktop, desktop: b.desktop || b.mobile }))
+  .filter(b => !!b.mobile && !!b.desktop))
 
   
 const { fetchActivePetTypes } = usePetTypes()

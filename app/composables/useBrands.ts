@@ -22,6 +22,7 @@ export interface BrandSummary {
 
 export function useBrands() {
   const supabase = useSupabaseClient()
+  const { release, sweep } = useStorageCleanup()
 
   async function fetchActiveBrands(): Promise<BrandSummary[]> {
     const { data, error } = await supabase
@@ -70,10 +71,16 @@ export function useBrands() {
       .select()
       .single()
     if (error) throw error
+    sweep()
     return data as unknown as Brand
   }
 
   async function updateBrand(id: string, payload: Record<string, unknown>): Promise<Brand> {
+    // Read the old logo from the row, not from the form — the form may be stale.
+    // Only when the caller is actually changing the logo; toggling is_active is not.
+    const replacesLogo = Object.hasOwn(payload, 'logo_url')
+    const previousLogo = replacesLogo ? await currentLogo(id) : null
+
     const { data, error } = await supabase
       .from('brands')
       .update(payload as unknown as never)
@@ -81,21 +88,45 @@ export function useBrands() {
       .select()
       .single()
     if (error) throw error
-    return data as unknown as Brand
+
+    // Only after the write succeeded — a failed update must leave the file alone.
+    const brand = data as unknown as Brand
+    if (previousLogo && previousLogo !== brand.logo_url) await release([previousLogo])
+    sweep()
+    return brand
   }
 
   async function deleteBrand(id: string) {
+    const previousLogo = await currentLogo(id)
     const { error } = await supabase.from('brands').delete().eq('id', id)
     if (error) throw error
+    if (previousLogo) await release([previousLogo])
+    sweep()
+  }
+
+  async function currentLogo(id: string): Promise<string | null> {
+    const { data } = await supabase
+      .from('brands')
+      .select('logo_url')
+      .eq('id', id)
+      .maybeSingle<{ logo_url: string | null }>()
+    return data?.logo_url ?? null
   }
 
   async function uploadLogo(file: File, brandSlug: string): Promise<string> {
-    const ext = file.name.split('.').pop()
+    // SVG logos come back untouched — they are already tiny and rasterising one
+    // would throw away the only reason to use it.
+    const logo = await prepareUpload(file, UPLOAD_PRESETS.brandLogo, 'brand-logo')
+    const ext = logo.name.split('.').pop()
     const path = `${brandSlug}-${Date.now()}.${ext}`
     const { error } = await supabase.storage
       .from('brand-logos')
-      .upload(path, file, { upsert: true })
-    if (error) throw error
+      .upload(path, logo, {
+        upsert: true,
+        contentType: logo.type,
+        cacheControl: UPLOAD_CACHE_CONTROL,
+      })
+    if (error) throw storageUploadError(error)
     const { data } = supabase.storage.from('brand-logos').getPublicUrl(path)
     return data.publicUrl
   }

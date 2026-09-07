@@ -51,7 +51,7 @@ Use **pnpm only** — no npm or yarn. No test suite exists yet.
 ### Auto-import rules
 
 - **Never manually import** from `app/` — Nuxt auto-imports all composables, stores, utils, and components.
-- Components in `app/components/**` are available globally without prefix (`<ProductCard />`, not `<ProductsProductCard />`).
+- Components in `app/components/**` are auto-imported under a **path-prefixed** name — Nuxt's default, since the `components` option in `nuxt.config.ts` is commented out. `app/components/admin/brands/BrandSheet.vue` is `<AdminBrandsBrandSheet />`, `app/components/admin/storage/CompressSheet.vue` is `<AdminStorageCompressSheet />`. Only components directly in `app/components/` keep a bare name.
 - `app/domain/` is **NOT auto-imported** — must be explicitly imported when used.
 - `@iconify/vue` icons are wrapped in `<Icon name="lucide:..." />` — use that component, not the raw `Icon` from iconify.
 
@@ -124,6 +124,38 @@ Use `vue-sonner` via the `<Toaster />` component (mounted in the default layout)
 ### Pet types (DB-driven)
 
 `usePetTypes()` composable wraps all CRUD operations for the `pet_types` table. Images upload to the `pet-type-images` Supabase storage bucket. The admin UI uses `PetTypeSheet.vue` for create/edit. `sort_order` controls display order; `is_active` gates visibility on the storefront.
+
+### Image uploads
+
+All admin image uploads pass through `useImageCompression` before reaching Storage (WebP, max edge per surface). Buckets enforce a 1 MB limit and an image-only MIME allowlist. When an image is replaced or its row deleted, the old object must be released via `/api/admin/storage/release` — Storage is not cascade-deleted by the database. `/admin/storage` shows the current state and sweeps anything missed.
+
+`useUploadImage` holds the policy layer: call `prepareUpload(file, preset, statusKey)` (or `prepareUploads` for a set) inside the upload function, never in the form — the composable is the choke point, so no form can bypass it.
+
+| Surface | Bucket | Preset |
+|---|---|---|
+| Product thumbnail + gallery | `product-images` | `UPLOAD_PRESETS.product` — 1400 px, q80 |
+| Brand logo | `brand-logos` | `UPLOAD_PRESETS.brandLogo` — 800 px, q85 |
+| Pet type tile | `pet-type-images` | `UPLOAD_PRESETS.petType` — 800 px, q85 |
+| Banner desktop | `product-images/banners` | `UPLOAD_PRESETS.bannerDesktop` — 1920 px, q80 |
+| Banner mobile | `product-images/banners` | `UPLOAD_PRESETS.bannerMobile` — 1080 px, q80 |
+
+Rules the upload path relies on:
+
+- **Filenames never change.** A compressed file keeps its original name and suffix while its content type says WebP — browsers go by the header. The `products/<id>/` path shape is what the storage classifier matches on.
+- **SVG and GIF pass through untouched** — canvas would rasterise one and flatten the other.
+- **An unreadable file is rejected; a failed encode is not.** `compressBlob` tags its errors `UNDECODABLE` (corrupt or empty — the save fails, nothing is written) or `ENCODE_FAILED` (the original uploads instead, with a console warning). An admin is never left unable to save a product because a browser's encoder gave up.
+- Uploads set `contentType` from the prepared file and `cacheControl: UPLOAD_CACHE_CONTROL` (1 year).
+- `<AdminUploadStatus for="…" />` renders the `Optimising… 8.4 MB → 480 KB` line under a file input; it reads a shared ref keyed by input, so the upload composable does not thread a callback back through the form.
+- Storage rejections go through `storageUploadError()`, which maps 413/415 to a message the admin can act on and passes anything else through unchanged.
+
+The bucket limits are the backstop, applied in the SQL editor **after** the back-catalogue compression has finished:
+
+```sql
+update storage.buckets
+set file_size_limit = 1048576,   -- 1 MB
+    allowed_mime_types = array['image/jpeg','image/png','image/webp','image/svg+xml']
+where id in ('product-images', 'brand-logos', 'pet-type-images');
+```
 
 ### Middleware
 

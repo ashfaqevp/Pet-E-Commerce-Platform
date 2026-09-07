@@ -56,7 +56,7 @@ const status = ref('')
 const search = ref('')
 const page = ref(1)
 const limit = 60
-const selected = ref(new Set<string>())
+const selected = ref(new Map<string, StorageObject>())
 const busy = ref(false)
 const message = ref('')
 
@@ -102,18 +102,42 @@ const thumb = (o: StorageObject) => {
   return supabase.storage.from(o.bucket).getPublicUrl(o.path, options).data.publicUrl
 }
 
+// Any file can be selected: unused ones get deleted, in-use ones get compressed.
+// The whole row is stored, not just its key, so a selection made on page 1 still
+// carries its bucket, size and status once the grid has moved on to page 2.
 const toggle = (o: StorageObject) => {
-  if (o.status === 'in_use') return
   const key = keyOf(o)
   if (selected.value.has(key)) selected.value.delete(key)
-  else selected.value.add(key)
-  selected.value = new Set(selected.value)
+  else selected.value.set(key, o)
+  selected.value = new Map(selected.value)
 }
 
-const selectAllOnPage = () => {
-  items.value.filter(o => o.status !== 'in_use').forEach(o => selected.value.add(keyOf(o)))
-  selected.value = new Set(selected.value)
+const selectOnPage = (match: (o: StorageObject) => boolean) => {
+  items.value.filter(match).forEach(o => selected.value.set(keyOf(o), o))
+  selected.value = new Map(selected.value)
 }
+const selectUnusedOnPage = () => selectOnPage(o => o.status !== 'in_use')
+const selectInUseOnPage = () => selectOnPage(o => o.status === 'in_use')
+const clearSelection = () => { selected.value = new Map() }
+
+const selectedRows = computed(() => [...selected.value.values()])
+const selectedInUse = computed(() => selectedRows.value.filter(o => o.status === 'in_use'))
+
+// What the admin is about to change on the live site. The classifier already
+// tells us which product each file belongs to, so naming them costs no request.
+// Files outside the product tables (brand logos, banners) have no product name —
+// fall back to the file's own name so every entry is identifiable.
+const affectedNames = computed(() => {
+  const names = new Set<string>()
+  for (const o of selectedInUse.value) {
+    names.add(o.product_name || o.path.split('/').pop() || o.path)
+  }
+  return [...names]
+})
+
+const compressOpen = ref(false)
+const openCompress = () => { if (selectedInUse.value.length) compressOpen.value = true }
+const onCompressed = () => Promise.all([refreshSummary(), refreshList()])
 
 const applySearch = () => {
   page.value = 1
@@ -124,6 +148,10 @@ const setStatus = (value: string) => {
   status.value = value
   page.value = 1
 }
+
+// Never take a file younger than this, even on an explicit click — someone may
+// have uploaded it a minute ago in another tab and not saved the row yet.
+const MIN_AGE_MINUTES = 60
 
 async function runDelete(payload: { mode: 'selected' | 'all_orphans'; items?: { bucket: string; path: string }[] }) {
   busy.value = true
@@ -138,7 +166,7 @@ async function runDelete(payload: { mode: 'selected' | 'all_orphans'; items?: { 
       const res = await $fetch<DeleteResult>('/api/admin/storage/delete', {
         method: 'POST',
         headers: headers(),
-        body: payload,
+        body: { ...payload, minAgeMinutes: MIN_AGE_MINUTES },
       })
       deleted += res.deleted
       bytes += res.bytes
@@ -160,7 +188,7 @@ async function runDelete(payload: { mode: 'selected' | 'all_orphans'; items?: { 
       message.value = `Deleted ${deleted} files — ${formatBytes(bytes)} freed. Supabase usage updates within the hour.`
       if (leftover) message.value += ` ${leftover} of the selected files were left — run the delete again to finish them.`
     }
-    selected.value = new Set()
+    clearSelection()
     await Promise.all([refreshSummary(), refreshList()])
   }
   catch (e: unknown) {
@@ -172,20 +200,55 @@ async function runDelete(payload: { mode: 'selected' | 'all_orphans'; items?: { 
   }
 }
 
-const deleteSelected = () => {
-  if (!selected.value.size) return
-  if (!confirm(`Delete ${selected.value.size} file(s)? This cannot be undone.`)) return
-  const targets = [...selected.value].map((k) => {
-    const i = k.indexOf('/')
-    return { bucket: k.slice(0, i), path: k.slice(i + 1) }
-  })
-  runDelete({ mode: 'selected', items: targets })
+// Both delete paths are confirmed by an AlertDialog in the template, matching the
+// rest of the admin. Nothing here runs until the dialog's action is clicked.
+
+/**
+ * Deletes whatever is selected, in use or not. An in-use file is first removed
+ * from the product, brand, pet type or banner that shows it — the same thing
+ * deleting the image from the product page would do — so nothing is ever left
+ * pointing at a file that no longer exists.
+ */
+async function deleteSelected() {
+  const targets = selectedRows.value.map(o => ({ bucket: o.bucket, path: o.path }))
+  if (!targets.length) return
+
+  busy.value = true
+  message.value = ''
+  try {
+    let deleted = 0
+    let detached = 0
+    const problems: string[] = []
+
+    // The server takes 300 at a time; a selection can span several pages.
+    for (let i = 0; i < targets.length; i += 300) {
+      const res = await $fetch<{ deleted: number; detached: number; failures: string[] }>(
+        '/api/admin/storage/force-delete',
+        { method: 'POST', headers: headers(), body: { items: targets.slice(i, i + 300) } },
+      )
+      deleted += res.deleted
+      detached += res.detached
+      problems.push(...res.failures)
+    }
+
+    message.value = `Deleted ${deleted} file(s)`
+      + (detached ? `, and removed them from ${detached} record(s).` : '.')
+    if (problems.length) message.value += ` Some steps failed: ${problems.join(' · ')}`
+
+    clearSelection()
+    await Promise.all([refreshSummary(), refreshList()])
+  }
+  catch (e: unknown) {
+    const err = e as { data?: { statusMessage?: string }; statusMessage?: string; message?: string }
+    message.value = err?.data?.statusMessage || err?.statusMessage || err?.message || 'Delete failed'
+  }
+  finally {
+    busy.value = false
+  }
 }
 
 const cleanUpAll = () => {
-  const n = summary.value?.reclaimable.files ?? 0
-  if (!n) return
-  if (!confirm(`Delete all ${n} unused files? Nothing on the storefront references them.`)) return
+  if (!summary.value?.reclaimable.files) return
   runDelete({ mode: 'all_orphans' })
 }
 </script>
@@ -215,9 +278,27 @@ const cleanUpAll = () => {
         <p class="text-xs text-muted-foreground">{{ summary.reclaimable.files }} unused files</p>
       </div>
       <div class="rounded-lg border p-4 flex items-center">
-        <Button class="w-full" :disabled="busy || !summary.reclaimable.files" @click="cleanUpAll">
-          {{ busy ? 'Working…' : 'Clean up unused files' }}
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger as-child>
+            <Button class="w-full" :disabled="busy || !summary.reclaimable.files">
+              {{ busy ? 'Working…' : 'Clean up unused files' }}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete all {{ summary.reclaimable.files }} unused files?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This frees {{ formatBytes(summary.reclaimable.bytes) }}. Nothing on the storefront
+                references these files, and anything uploaded in the last hour is left alone.
+                This cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction class="bg-destructive text-white" @click="cleanUpAll">Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
 
@@ -249,12 +330,69 @@ const cleanUpAll = () => {
     <!-- Bulk bar -->
     <div class="flex flex-wrap items-center gap-3 text-sm">
       <span class="text-muted-foreground">{{ total }} files</span>
-      <Button variant="outline" size="sm" @click="selectAllOnPage">Select unused on this page</Button>
-      <template v-if="selected.size">
-        <span>{{ selected.size }} selected</span>
-        <Button variant="destructive" size="sm" :disabled="busy" @click="deleteSelected">Delete selected</Button>
-        <Button variant="ghost" size="sm" @click="selected = new Set()">Clear</Button>
-      </template>
+      <Button variant="outline" size="sm" @click="selectUnusedOnPage">Select unused on this page</Button>
+      <Button variant="outline" size="sm" @click="selectInUseOnPage">Select all in use on this page</Button>
+      <span class="text-muted-foreground">{{ selected.size }} selected</span>
+
+      <!-- Both actions stay on screen so it is always obvious which one applies to
+           the selection. Each is disabled until its own subset has something in it,
+           rather than appearing and disappearing as the selection changes. -->
+      <Button size="sm" class="bg-secondary text-white" :disabled="!selectedInUse.length" @click="openCompress">
+        Compress {{ selectedInUse.length }}
+      </Button>
+      <AlertDialog>
+        <AlertDialogTrigger as-child>
+          <Button variant="destructive" size="sm" :disabled="busy || !selected.size">
+            Delete {{ selected.size }}
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <!-- In-use deletes change the live site, so they get their own warning
+               and name what is affected. Unused deletes keep the plain wording. -->
+          <AlertDialogHeader v-if="selectedInUse.length">
+            <AlertDialogTitle>
+              Remove {{ selectedInUse.length }} image{{ selectedInUse.length === 1 ? '' : 's' }}
+              from the live site?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {{ selectedInUse.length === 1 ? 'This image is' : 'These images are' }} showing on
+              the storefront right now.
+              {{ selectedInUse.length === 1 ? 'It' : 'They' }} will be taken off the record that
+              displays {{ selectedInUse.length === 1 ? 'it' : 'them' }} and then deleted, so
+              {{ selectedInUse.length === 1 ? 'it' : 'they' }} will disappear from the site
+              immediately. This cannot be undone.
+            </AlertDialogDescription>
+            <div class="rounded-md border bg-muted/40 px-3 py-2 max-h-40 overflow-y-auto">
+              <p class="text-xs font-medium mb-1">Affected:</p>
+              <ul class="text-xs text-muted-foreground space-y-0.5">
+                <li v-for="name in affectedNames" :key="name" class="truncate">{{ name }}</li>
+              </ul>
+            </div>
+            <p v-if="selected.size > selectedInUse.length" class="text-xs text-muted-foreground">
+              The other {{ selected.size - selectedInUse.length }} selected
+              file{{ selected.size - selectedInUse.length === 1 ? ' is' : 's are' }} unused and
+              will be deleted too.
+            </p>
+          </AlertDialogHeader>
+
+          <AlertDialogHeader v-else>
+            <AlertDialogTitle>
+              Delete {{ selected.size }} file{{ selected.size === 1 ? '' : 's' }}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              None of these are in use. Nothing on the storefront references them.
+              This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction class="bg-destructive text-white" @click="deleteSelected">
+              {{ selectedInUse.length ? 'Remove and delete' : 'Delete' }}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <Button variant="ghost" size="sm" :disabled="!selected.size" @click="clearSelection">Clear</Button>
     </div>
 
     <!-- Grid -->
@@ -266,8 +404,10 @@ const cleanUpAll = () => {
         :key="keyOf(o)"
         class="rounded-lg border overflow-hidden bg-card transition"
         :class="[
-          selected.has(keyOf(o)) ? 'ring-2 ring-destructive' : '',
-          o.status !== 'in_use' ? 'cursor-pointer' : '',
+          'cursor-pointer',
+          selected.has(keyOf(o))
+            ? (o.status === 'in_use' ? 'ring-2 ring-secondary' : 'ring-2 ring-destructive')
+            : '',
         ]"
         @click="toggle(o)"
       >
@@ -294,5 +434,11 @@ const cleanUpAll = () => {
       <span class="text-sm text-muted-foreground">Page {{ page }} of {{ pages }}</span>
       <Button variant="outline" size="sm" :disabled="page >= pages" @click="page++">Next</Button>
     </div>
+
+    <AdminStorageCompressSheet
+      v-model:open="compressOpen"
+      :files="selectedInUse"
+      @finished="onCompressed"
+    />
   </div>
 </template>

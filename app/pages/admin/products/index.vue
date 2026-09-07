@@ -305,12 +305,21 @@ watch(petType, (val) => {
   }
 })
 
+// Set synchronously before the first await, so a double click cannot get a
+// second save past it — the disabled button alone is only a next-tick guard.
+const savingProduct = ref(false)
+
 const onSubmitSheet = async (payload: { name: string; description?: string; pet_type: string[]; product_type: string; age?: string; unit?: string; size?: string; flavour?: string; colour?: string | null; retail_price: number; wholesale_price?: number | null; stock_quantity: number; default_rating: number | null; is_base_product: boolean; base_product_id?: string | null; thumbnailFile?: File | null; galleryFiles?: File[]; existingThumbnailUrl?: string | null; existingGalleryUrls?: string[]; brand?: string | null; brand_id?: string | null }) => {
-  const { create, update, uploadProductImages } = useAdminProducts()
+  if (savingProduct.value) return
+  savingProduct.value = true
+  const { create, update, prepareProductImages, uploadProductImages } = useAdminProducts()
   try {
+    // Compress before anything is written. A file that is not a readable image
+    // fails here, leaving neither a half-filled product row nor stray objects.
+    const prepared = await prepareProductImages({ thumbnail: payload.thumbnailFile ?? null, gallery: payload.galleryFiles ?? [] })
     if (editProduct.value?.id) {
       const productId = editProduct.value.id
-      const uploaded = await uploadProductImages(productId, { thumbnail: payload.thumbnailFile ?? null, gallery: payload.galleryFiles ?? [] })
+      const uploaded = await uploadProductImages(productId, prepared)
       const thumbUrl = uploaded.thumbnail_url || payload.existingThumbnailUrl || editProduct.value.thumbnail_url || null
       const existingGallery = payload.existingGalleryUrls ?? editProduct.value.image_urls ?? []
       const finalGallery = [...existingGallery, ...(uploaded.image_urls || [])]
@@ -354,7 +363,7 @@ const onSubmitSheet = async (payload: { name: string; description?: string; pet_
         default_rating: payload.default_rating ?? null,
         base_product_id: payload.is_base_product ? null : (payload.base_product_id ?? null),
       })
-      const uploaded = await uploadProductImages(created.id, { thumbnail: payload.thumbnailFile ?? null, gallery: payload.galleryFiles ?? [] })
+      const uploaded = await uploadProductImages(created.id, prepared)
       await update(created.id, {
         base_product_id: payload.is_base_product ? created.id : (payload.base_product_id ?? null),
         thumbnail_url: uploaded.thumbnail_url ?? null,
@@ -363,12 +372,21 @@ const onSubmitSheet = async (payload: { name: string; description?: string; pet_
       toast.success('Product created')
     }
     sheetOpen.value = false
-    refresh()
-    await refreshBrands()
   } catch (e) {
+    // The status line would otherwise still read as a completed optimisation
+    // while the toast says the save failed.
+    clearUploadStatus('product-thumbnail', 'product-gallery')
     const msg = e instanceof Error ? e.message : 'Operation failed'
     toast.error(msg)
+    return
+  } finally {
+    // Cleared in finally: on the error path the sheet stays open, and the admin
+    // has to be able to fix the input and save again.
+    savingProduct.value = false
   }
+  // Outside the guard — the list refresh must not keep the next sheet disabled.
+  refresh()
+  await refreshBrands()
 }
 
 const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean) => {
@@ -633,7 +651,7 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
       </CardFooter>
     </Card>
 
-    <ProductSheet v-model:open="sheetOpen" :initial="editProduct || null" @submit="onSubmitSheet" />
+    <ProductSheet v-model:open="sheetOpen" :initial="editProduct || null" :saving="savingProduct" @submit="onSubmitSheet" />
 
     <ProductDeleteConfirm :open="!!deletingId" @confirm="deleteProduct" @cancel="deletingId = null" />
   </div>

@@ -46,6 +46,7 @@ function resetForm() {
 watch(() => props.open, (isOpen) => {
   if (isOpen) {
     fileInputKey.value++
+    clearUploadStatus('brand-logo')
     if (props.brand) {
       name.value = props.brand.name ?? ''
       slug.value = props.brand.slug ?? ''
@@ -74,6 +75,7 @@ watch(name, (n) => {
 })
 
 const onLogoChange = (e: Event) => {
+  clearUploadStatus('brand-logo')
   const file = (e.target as HTMLInputElement).files?.[0] ?? null
   logoFile.value = file
   logoPreview.value = file ? URL.createObjectURL(file) : null
@@ -113,6 +115,9 @@ const onSubmit = async () => {
     emit('saved')
     emit('update:open', false)
   } catch (e) {
+    // Otherwise the status line still reads as a completed optimisation while
+    // the toast says the save failed.
+    clearUploadStatus('brand-logo')
     toast.error(e instanceof Error ? e.message : 'Save failed')
   } finally {
     submitting.value = false
@@ -164,6 +169,7 @@ const onSubmit = async () => {
               </div>
               <Input :key="fileInputKey" type="file" accept="image/*" class="flex-1" @change="onLogoChange" />
             </div>
+            <AdminUploadStatus for="brand-logo" />
           </div>
 
           <div class="flex flex-col gap-1.5">

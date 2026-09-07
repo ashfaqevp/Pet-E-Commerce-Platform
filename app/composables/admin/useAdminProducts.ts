@@ -47,10 +47,29 @@ export interface AdminProductInput {
   is_featured?: boolean
 }
 
+/** Files that have been through compression and are ready for Storage. */
+export interface PreparedProductImages {
+  thumbnail: File | null
+  gallery: File[]
+}
+
 export const useAdminProducts = () => {
   const supabase = useSupabaseClient()
+  const { release, releasePrefix, sweep } = useStorageCleanup()
   const pending = ref(false)
   const error = ref<string | null>(null)
+
+  /** Old image values straight from the row. The form is not a reliable source —
+   *  it only knows what it was handed when the sheet opened. */
+  const currentImages = async (id: string): Promise<string[]> => {
+    const { data } = await supabase
+      .from('products')
+      .select('thumbnail_url, image_urls')
+      .eq('id', id)
+      .maybeSingle<{ thumbnail_url: string | null; image_urls: string[] | null }>()
+    if (!data) return []
+    return [data.thumbnail_url, ...(data.image_urls ?? [])].filter((u): u is string => !!u)
+  }
 
   const list = async (params: {
     search?: string
@@ -102,10 +121,15 @@ export const useAdminProducts = () => {
       .select()
       .single()
     if (e) throw e
+    sweep()
     return data as unknown as AdminProduct
   }
 
   const update = async (id: string, input: Partial<AdminProductInput>): Promise<AdminProduct> => {
+    // Only diff when the caller is actually rewriting the images.
+    const touchesImages = Object.hasOwn(input, 'thumbnail_url') || Object.hasOwn(input, 'image_urls')
+    const before = touchesImages ? await currentImages(id) : []
+
     const { data, error: e } = await supabase
       .from('products')
       .update(input as unknown as never)
@@ -113,7 +137,16 @@ export const useAdminProducts = () => {
       .select()
       .single()
     if (e) throw e
-    return data as unknown as AdminProduct
+
+    // Only after the write succeeded — a failed update must leave the files alone.
+    const product = data as unknown as AdminProduct
+    if (before.length) {
+      const after = new Set([product.thumbnail_url, ...(product.image_urls ?? [])].filter(Boolean))
+      const dropped = before.filter(u => !after.has(u))
+      if (dropped.length) await release(dropped)
+    }
+    sweep()
+    return product
   }
 
   const countFeatured = async (): Promise<number> => {
@@ -126,36 +159,75 @@ export const useAdminProducts = () => {
   }
 
   const remove = async (id: string): Promise<void> => {
+    const before = await currentImages(id)
     const { error: e } = await supabase.from('products').delete().eq('id', id)
     if (e) throw e
+    // The folder, not just image_urls — gallery files are not always all listed
+    // there. The server still skips anything an order_item snapshotted.
+    await releasePrefix(`products/${id}`)
+    if (before.length) await release(before)
+    sweep()
   }
 
+  /**
+   * Resize and re-encode the picked files. Kept separate from the upload so a
+   * caller can run it *before* the product row is written: a file that turns
+   * out not to be a readable image then fails the save with nothing written at
+   * all — no row, no objects — instead of leaving a product behind with no
+   * images. Compression is here rather than in the form so no form can skip it.
+   */
+  const prepareProductImages = async (
+    files: { thumbnail?: File | null; gallery?: File[] | null }
+  ): Promise<PreparedProductImages> => ({
+    thumbnail: files.thumbnail
+      ? await prepareUpload(files.thumbnail, UPLOAD_PRESETS.product, 'product-thumbnail')
+      : null,
+    // One at a time — decoding a dozen full-resolution photos at once is what
+    // exhausts the tab's memory.
+    gallery: files.gallery?.length
+      ? await prepareUploads(files.gallery, UPLOAD_PRESETS.product, 'product-gallery')
+      : [],
+  })
+
+  /**
+   * Upload files already through `prepareProductImages`. Names are carried over
+   * untouched, so the products/<id>/ path the storage classifier reads holds.
+   */
   const uploadProductImages = async (
     productId: string,
-    files: { thumbnail?: File | null; gallery?: File[] | null }
+    prepared: PreparedProductImages
   ): Promise<{ thumbnail_url?: string; image_urls?: string[] }> => {
     const storage = supabase.storage.from('product-images')
 
     const urls: { thumbnail_url?: string; image_urls?: string[] } = {}
+    const { thumbnail, gallery } = prepared
 
-    if (files.thumbnail) {
-      const ext = files.thumbnail.name.includes('.') ? files.thumbnail.name.substring(files.thumbnail.name.lastIndexOf('.')) : ''
+    if (thumbnail) {
+      const ext = thumbnail.name.includes('.') ? thumbnail.name.substring(thumbnail.name.lastIndexOf('.')) : ''
       const path = `products/${productId}/thumbnail-${Date.now()}${ext}`
-      const { error: upErr } = await storage.upload(path, files.thumbnail, { upsert: true, contentType: files.thumbnail.type })
-      if (upErr) throw upErr
+      const { error: upErr } = await storage.upload(path, thumbnail, {
+        upsert: true,
+        contentType: thumbnail.type,
+        cacheControl: UPLOAD_CACHE_CONTROL,
+      })
+      if (upErr) throw storageUploadError(upErr)
       const { data } = storage.getPublicUrl(path)
       urls.thumbnail_url = data.publicUrl
     }
 
-    if (files.gallery && files.gallery.length) {
+    if (gallery.length) {
       const galleryUrls: string[] = []
       await Promise.all(
-        files.gallery.map(async (file, idx) => {
+        gallery.map(async (file, idx) => {
           const ext = file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : ''
           const key = Math.random().toString(36).slice(2)
           const path = `products/${productId}/gallery-${key}-${idx}${ext}`
-          const { error: gErr } = await storage.upload(path, file, { upsert: true, contentType: file.type })
-          if (gErr) throw gErr
+          const { error: gErr } = await storage.upload(path, file, {
+            upsert: true,
+            contentType: file.type,
+            cacheControl: UPLOAD_CACHE_CONTROL,
+          })
+          if (gErr) throw storageUploadError(gErr)
           const { data } = storage.getPublicUrl(path)
           galleryUrls.push(data.publicUrl)
         })
@@ -166,5 +238,5 @@ export const useAdminProducts = () => {
     return urls
   }
 
-  return { pending: readonly(pending), error: readonly(error), list, create, update, remove, uploadProductImages, countFeatured }
+  return { pending: readonly(pending), error: readonly(error), list, create, update, remove, prepareProductImages, uploadProductImages, countFeatured }
 }

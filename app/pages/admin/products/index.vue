@@ -522,7 +522,7 @@ const setServerSort = (key: 'created_at' | 'name' | 'retail_price', asc: boolean
               <TableCell class="py-3 text-left">
                 <div class="flex items-center gap-3 relative">
                   <div class=" h-10 w-10 rounded-sm overflow-hidden border bg-muted grid place-items-center">
-                    <img v-if="getThumbnail(row.original)" :src="getThumbnail(row.original)" alt="" class="h-full w-full object-cover" />
+                    <img v-if="getThumbnail(row.original)" :src="transformedImage(getThumbnail(row.original), 'adminThumb')" alt="" loading="lazy" decoding="async" class="h-full w-full object-cover" />
                     <Icon v-else name="lucide:image" class="h-5 w-5 text-muted-foreground" />
 
                   </div>

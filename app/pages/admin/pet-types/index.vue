@@ -105,7 +105,7 @@ watch(() => route.query.new, (newVal) => {
               <TableRow v-else v-for="pt in petTypes" :key="pt.id">
                 <TableCell>
                   <div class="h-10 w-10 rounded-full border bg-muted grid place-items-center overflow-hidden">
-                    <img v-if="pt.image_url" :src="pt.image_url" :alt="pt.name" class="h-full w-full object-cover rounded-full" />
+                    <img v-if="pt.image_url" :src="transformedImage(pt.image_url, 'adminThumb')" :alt="pt.name" loading="lazy" decoding="async" class="h-full w-full object-cover rounded-full" />
                     <Icon v-else name="lucide:paw-print" class="h-4 w-4 text-muted-foreground" />
                   </div>
                 </TableCell>

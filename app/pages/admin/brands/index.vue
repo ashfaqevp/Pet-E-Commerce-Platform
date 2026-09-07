@@ -114,7 +114,7 @@ watch(() => route.query.new, (newVal) => {
               <TableRow v-else v-for="brand in brands" :key="brand.id">
                 <TableCell>
                   <div class="h-10 w-10 rounded border bg-muted grid place-items-center overflow-hidden">
-                    <img v-if="brand.logo_url" :src="brand.logo_url" :alt="brand.name" class="h-full w-full object-contain" />
+                    <img v-if="brand.logo_url" :src="transformedImage(brand.logo_url, 'adminThumb')" :alt="brand.name" loading="lazy" decoding="async" class="h-full w-full object-contain" />
                     <Icon v-else name="lucide:image" class="h-4 w-4 text-muted-foreground" />
                   </div>
                 </TableCell>

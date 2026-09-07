@@ -398,7 +398,7 @@ const formatDate = (iso: string | Date | null | undefined) => {
               <TableRow v-else v-for="it in items" :key="it.id">
                 <TableCell>
                   <div class="flex items-center gap-3">
-                    <img v-if="it.product_thumbnail" :src="it.product_thumbnail" alt="" class="h-10 w-10 rounded object-cover" />
+                    <img v-if="it.product_thumbnail" :src="transformedImage(it.product_thumbnail, 'orderThumb')" alt="" loading="lazy" decoding="async" class="h-10 w-10 rounded object-cover" />
                     <span class="font-medium">{{ it.product_name }}</span>
                   </div>
                 </TableCell>

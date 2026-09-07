@@ -5,7 +5,7 @@
   >
     <div class="relative">
       <img
-        :src="product.image || placeholder"
+        :src="productImage(product.image, 'productCard')"
         loading="lazy"
         decoding="async"
         alt=""
@@ -46,8 +46,6 @@ import { Button } from '@/components/ui/button'
 import { formatOMR } from '@/utils'
 import { useCart } from '@/composables/useCart'
 import { toast } from 'vue-sonner'
-import { useLazyAsyncData, useSupabaseUser } from '#imports'
-import { useProfile } from '@/composables/useProfile'
 
 interface Product {
   id: string
@@ -62,20 +60,11 @@ interface Product {
 }
 
 const props = defineProps<{ product: Product }>()
-const placeholder = '/images/placeholder.svg'
 
-const supabaseUser = useSupabaseUser()
-const { getProfile } = useProfile()
-const { data: roleData } = await useLazyAsyncData(
-  'card-user-role',
-  async () => {
-    if (!supabaseUser.value) return 'customer'
-    const p = await getProfile()
-    return (p?.role || 'customer') as string
-  },
-  { server: true }
-)
-const userRole = computed(() => (roleData.value || 'customer') as 'customer' | 'wholesaler' | 'admin')
+// Resolved once per session by the auth plugin. Reading it synchronously is what
+// keeps this component non-async: an `await` here made every card in the grid a
+// suspense boundary that had to settle before the page could paint.
+const userRole = useUserRole()
 
 const displayPrice = computed(() => {
   const w = props.product.wholesale_price

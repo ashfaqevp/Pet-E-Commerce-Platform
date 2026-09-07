@@ -190,7 +190,7 @@ const goCheckout = () => {
                     >
                       <Icon name="lucide:trash"/>
                     </Button>
-                    <img :src="item.product.thumbnail_url || '/images/placeholder.svg'" alt="Product image" class="w-20 h-20 object-cover rounded-lg" />
+                    <img :src="productImage(item.product.thumbnail_url, 'cartThumb')" alt="Product image" width="80" height="80" loading="lazy" decoding="async" class="w-20 h-20 object-cover rounded-lg" />
                     <div class="flex-1">
                       <h4 class="font-medium text-foreground">{{ item.product.name }}</h4>
                       <p class="text-sm text-muted-foreground">{{ formatOMR(unitPriceOf(item.product)) }}</p>

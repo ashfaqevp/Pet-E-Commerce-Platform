@@ -10,6 +10,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "typecheck": "nuxt typecheck",
+    "icons": "node scripts/build-icon-bundle.mjs",
+    "fonts": "node scripts/build-fonts.mjs",
     "lint": "eslint . --fix 2>/dev/null || true"
   },
   "dependencies": {

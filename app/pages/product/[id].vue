@@ -786,10 +786,15 @@ watch([selectedFlavour, selectedSize, selectedAge, variantRows], () => {
           @init-api="onInitApi"
         >
           <CarouselContent>
-            <CarouselItem v-for="src in product.images ?? ['/images/placeholder.svg']" :key="src">
+            <!--
+              The first frame is this page's LCP. Every slide sits in the DOM, so
+              only that one is eager — the rest stay lazy and load as they scroll in.
+            -->
+            <CarouselItem v-for="(src, idx) in product.images ?? ['/images/placeholder.svg']" :key="src">
               <img
-                :src="src"
-                loading="lazy"
+                :src="productImage(src, 'productGallery')"
+                :loading="idx === 0 ? 'eager' : 'lazy'"
+                :fetchpriority="idx === 0 ? 'high' : 'auto'"
                 decoding="async"
                 alt="Product image"
                 class="w-full h-80 md:h-[70vh] object-contain rounded-2xl bg-white"

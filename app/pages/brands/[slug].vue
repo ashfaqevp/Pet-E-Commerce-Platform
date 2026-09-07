@@ -70,8 +70,9 @@ const products = computed<CardProduct[]>(() =>
       <div class="flex flex-col items-center gap-4 mb-8">
         <img
           v-if="brand.logo_url"
-          :src="brand.logo_url"
+          :src="transformedImage(brand.logo_url, 'brandHero')"
           :alt="brand.name"
+          decoding="async"
           class="max-h-24 object-contain"
         />
         <h1 class="text-3xl font-semibold text-foreground">{{ brand.name }}</h1>

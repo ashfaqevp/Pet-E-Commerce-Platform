@@ -104,7 +104,7 @@ const pageTitle = computed(() => typeof route.meta?.title === 'string' ? (route.
     <Sidebar side="left" variant="sidebar" collapsible="offcanvas" class="bg-white text-foreground !z-45 bg-white">
       <SidebarHeader class="bg-white px-4 py-5">
         <NuxtLink to="/admin" class="flex items-center gap-2">
-          <img src="/images/logo-name.png" alt="Logo" class="h-13 w-auto" />
+          <img src="/images/logo-name.webp" alt="Buypets.om" width="169" height="52" class="h-13 w-auto" />
         </NuxtLink>
       </SidebarHeader>
       <SidebarContent class="bg-white px-3 py-3 ">

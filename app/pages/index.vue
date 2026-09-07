@@ -6,7 +6,6 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import Autoplay from 'embla-carousel-autoplay'
 import type { UnwrapRefCarouselApi } from '@/components/ui/carousel/interface'
 const supabase = useSupabaseClient()
-import { useWindowSize } from '@vueuse/core'
 import { useSeoMeta } from '#imports'
 
 interface BannerRow {
@@ -150,8 +149,6 @@ const { data: featuredBrandsData } = await useLazyAsyncData(
 )
 const featuredBrands = computed(() => featuredBrandsData.value ?? [])
 
-const { width } = useWindowSize()
-const isMobile = computed(() => width.value < 768)
 
 useSeoMeta({
   title: 'Buypets.om — Quality Pet Products',
@@ -191,13 +188,31 @@ onMounted(() => {
         >
           <CarouselContent>
             <CarouselItem v-for="(b, idx) in banners" :key="idx">
-              <img
-                :src="isMobile ? b.mobile : b.desktop"
-                loading="lazy"
-                decoding="async"
-                alt="Promotion banner"
-                class="w-full aspect-[16/9] md:aspect-[8/3] object-cover rounded-2xl"
-              />
+              <!--
+                The banner is the LCP element. Two things used to hold it back:
+                the source was picked by `isMobile`, so the browser could not
+                start the request until JS had measured the window, and every
+                slide was `loading="lazy"`, which includes the visible one.
+
+                `<picture>` puts the choice in a media query the preload scanner
+                can read, and only the first slide is eager — Embla keeps all of
+                them in the DOM, so eager across the board would fetch the whole
+                carousel before first paint.
+              -->
+              <picture>
+                <source
+                  media="(min-width: 768px)"
+                  :srcset="transformedImage(b.desktop, 'bannerDesktop')"
+                />
+                <img
+                  :src="transformedImage(b.mobile, 'bannerMobile')"
+                  :loading="idx === 0 ? 'eager' : 'lazy'"
+                  :fetchpriority="idx === 0 ? 'high' : 'auto'"
+                  decoding="async"
+                  alt="Promotion banner"
+                  class="w-full aspect-[16/9] md:aspect-[8/3] object-cover rounded-2xl"
+                />
+              </picture>
             </CarouselItem>
           </CarouselContent>
           <div class="flex justify-center gap-2 mt-3">
@@ -232,8 +247,12 @@ onMounted(() => {
         >
           <img
             v-if="pet.image_url"
-            :src="pet.image_url"
+            :src="transformedImage(pet.image_url, 'petTile')"
             :alt="pet.name"
+            width="56"
+            height="56"
+            loading="lazy"
+            decoding="async"
             class="h-14 w-14 object-contain"
           />
           <div v-else class="h-14 w-14 rounded-full bg-muted flex items-center justify-center">
@@ -289,8 +308,10 @@ onMounted(() => {
             
             <img
               v-if="brand.logo_url"
-              :src="brand.logo_url"
+              :src="transformedImage(brand.logo_url, 'brandTile')"
               :alt="brand.name"
+              loading="lazy"
+              decoding="async"
               class="relative z-10 max-h-full max-w-full object-contain transition-all duration-500 group-hover:scale-110"
             />
             <span v-else class="relative z-10 text-sm font-bold text-center text-muted-foreground group-hover:text-foreground transition-colors uppercase tracking-tight">{{ brand.name }}</span>

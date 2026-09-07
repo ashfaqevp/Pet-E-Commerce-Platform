@@ -13,7 +13,6 @@ import {
   AccordionTrigger,
   AccordionContent,
 } from "@/components/ui/accordion";
-import Logo from "@/components/common/Logo.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -255,7 +254,7 @@ watch(user, () => {
         <!-- Mobile: Logo + optional search input (shown on the right) -->
         <div v-if="isMobile && (isHome || (!isProductDetail && !pageTitle))" class="md:hidden flex-1 flex items-center gap-2 w-full">
           <NuxtLink to="/" aria-label="Home">
-            <img src="/images/logo-name.png" alt="Logo" class="h-11 w-auto" />
+            <img src="/images/logo-name.webp" alt="Buypets.om" width="143" height="44" fetchpriority="high" class="h-11 w-auto" />
           </NuxtLink>
         </div>
 
@@ -319,7 +318,7 @@ watch(user, () => {
         <!-- Desktop: Logo -->
         <div v-if="!isMobile" class="hidden md:flex md:items-center w-fit">
           <NuxtLink to="/" aria-label="Home">
-            <img src="/images/logo-name.png" alt="Logo" class="h-12 w-auto" />
+            <img src="/images/logo-name.webp" alt="Buypets.om" width="156" height="48" fetchpriority="high" class="h-12 w-auto" />
           </NuxtLink>
         </div>
 
@@ -491,7 +490,7 @@ watch(user, () => {
         >
           <div class="max-w-sm">
             <NuxtLink to="/" aria-label="Home">
-              <img src="/images/logo-name.png" alt="Logo" class="h-14 w-auto" />
+              <img src="/images/logo-name.webp" alt="Buypets.om" width="182" height="56" loading="lazy" class="h-14 w-auto" />
             </NuxtLink>
             <p class=" text-sm text-muted-foreground">
               Your one-stop shop for all pet needs. High-quality food, supplements, and

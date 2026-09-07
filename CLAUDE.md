@@ -125,6 +125,44 @@ Use `vue-sonner` via the `<Toaster />` component (mounted in the default layout)
 
 `usePetTypes()` composable wraps all CRUD operations for the `pet_types` table. Images upload to the `pet-type-images` Supabase storage bucket. The admin UI uses `PetTypeSheet.vue` for create/edit. `sort_order` controls display order; `is_active` gates visibility on the storefront.
 
+### Rendering stored images
+
+**Never bind a raw `/storage/v1/object/public/` URL to an `<img>`.** Two measured
+reasons: that endpoint returns the upload at full size, and it answers
+`cache-control: no-cache` regardless of what the object was stored with — an
+object written with `cacheControl: 31536000` still comes back `no-cache` there.
+
+Go through `transformedImage(url, preset)` / `productImage(url, preset)` in
+`app/utils/image.ts` (auto-imported). They rewrite the URL onto
+`/storage/v1/render/image/public/`, which resizes, re-encodes to WebP, and does
+honour the stored `cacheControl`. Measured against production objects: banner
+1.5 MB -> 47 KB, product card 493 KB -> 19 KB, pet tile 4.4 MB -> 8 KB.
+
+- Add a named entry to `IMAGE_PRESETS` per surface rather than passing sizes
+  inline. Size it at ~2x the largest CSS box the element renders.
+- **Always give both width and height.** A width on its own keeps the source's
+  original height (a 1672x941 banner asked for `width=800` returns 800x941,
+  squashed).
+- `resize` must match the CSS: `object-contain` -> `contain`,
+  `object-cover` -> `cover`.
+- Local paths, `blob:` previews and SVG pass through untouched.
+
+Transforms are a Supabase Pro-plan feature. Objects predating
+`UPLOAD_CACHE_CONTROL` carry Supabase's 3600 default, so their transforms are
+cacheable for an hour; the `/admin/storage` compression sweep re-uploads with
+`31536000` and lifts them to a year.
+
+### Icons
+
+`<Icon name="lucide:..." />` renders from `app/assets/icons/offline.json`, which
+is registered by `app/plugins/iconify.client.ts` (`enforce: 'pre'` — it has to
+run before `auth.client.ts`, which awaits session restore). An icon missing from
+the bundle silently falls back to fetching api.iconify.design at runtime, so
+after adding a new `<Icon name="...">` run `pnpm icons` to regenerate.
+
+`pnpm fonts` does the equivalent for the self-hosted Poppins files in
+`public/fonts/`, declared as `@font-face` in `app/assets/css/main.css`.
+
 ### Image uploads
 
 All admin image uploads pass through `useImageCompression` before reaching Storage (WebP, max edge per surface). Buckets enforce a 1 MB limit and an image-only MIME allowlist. When an image is replaced or its row deleted, the old object must be released via `/api/admin/storage/release` — Storage is not cascade-deleted by the database. `/admin/storage` shows the current state and sweeps anything missed.

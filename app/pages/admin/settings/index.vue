@@ -458,12 +458,12 @@ onMounted(() => {
                 <TableCell>{{ b.name }}</TableCell>
                 <TableCell>
                   <div class="border rounded-md w-32 md:w-40 aspect-[16/9] overflow-hidden bg-muted/20">
-                    <img :src="b.mobile" alt="Mobile" class="w-full h-full object-cover" />
+                    <img :src="transformedImage(b.mobile, 'adminBannerMobile')" alt="Mobile" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                   </div>
                 </TableCell>
                 <TableCell>
                   <div class="border rounded-md w-32 md:w-48 aspect-[8/3] overflow-hidden bg-muted/20">
-                    <img :src="b.desktop" alt="Desktop" class="w-full h-full object-cover" />
+                    <img :src="transformedImage(b.desktop, 'adminBannerDesktop')" alt="Desktop" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                   </div>
                 </TableCell>
                 <TableCell class="text-right">
@@ -518,7 +518,7 @@ onMounted(() => {
                     <p class="text-xs text-muted-foreground">800 × 450 px — 16:9</p>
                     <div class="border rounded-md w-full aspect-[16/9] overflow-hidden bg-muted/20">
                       <img v-if="mobileEditPreview" :src="mobileEditPreview" alt="Mobile preview" class="w-full h-full object-cover" />
-                      <img v-else :src="editing?.mobile || ''" alt="Mobile" class="w-full h-full object-cover" />
+                      <img v-else :src="transformedImage(editing?.mobile, 'adminBannerMobile')" alt="Mobile" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                     </div>
                   </div>
                   <div class="space-y-2">
@@ -528,7 +528,7 @@ onMounted(() => {
                     <p class="text-xs text-muted-foreground">1920 × 720 px — 16:6 (8:3)</p>
                     <div class="border rounded-md w-full aspect-[8/3] overflow-hidden bg-muted/20">
                       <img v-if="desktopEditPreview" :src="desktopEditPreview" alt="Desktop preview" class="w-full h-full object-cover" />
-                      <img v-else :src="editing?.desktop || ''" alt="Desktop" class="w-full h-full object-cover" />
+                      <img v-else :src="transformedImage(editing?.desktop, 'adminBannerDesktop')" alt="Desktop" loading="lazy" decoding="async" class="w-full h-full object-cover" />
                     </div>
                   </div>
                 </div>

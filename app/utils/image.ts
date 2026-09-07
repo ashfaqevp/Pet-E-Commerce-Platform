@@ -1,20 +1,27 @@
 /**
- * Every storefront image comes out of Supabase Storage, and `/object/public/`
- * hands back the file exactly as it was uploaded: back-catalogue product photos
- * are 0.5–3.6 MB PNGs sent with `cache-control: no-cache`, so a phone re-downloads
- * the full-resolution original on every visit.
+ * No `<img>` binds a raw Supabase Storage URL. Two measured reasons, both about
+ * `/storage/v1/object/public/`:
  *
- * `/render/image/public/` is the same object resized and re-encoded by Supabase —
- * WebP whenever the browser asks for it — and served with a cache lifetime. A
- * 3.6 MB thumbnail becomes ~12 KB at the size a card actually draws.
+ * - **It hands back the upload untouched.** Back-catalogue product photos are
+ *   0.5–3.6 MB PNGs behind a card that draws at 290 px.
+ * - **It always answers `cache-control: no-cache`.** Not a stale value we could
+ *   fix by re-uploading: an object written with `cacheControl: 31536000` still
+ *   comes back `no-cache` on this endpoint, so a phone re-downloads the
+ *   full-resolution original on every visit.
  *
- * So no `<img>` binds a raw storage URL. It asks for the size of the box it fills,
- * via a preset, and everything else (local `/images/*`, `blob:` previews from a
- * file picker, an already-transformed URL) passes through untouched.
+ * `/storage/v1/render/image/public/` is the same object resized and re-encoded
+ * by Supabase — WebP whenever the browser asks for it — and it *does* honour the
+ * object's stored `cacheControl`. So the transform is the cache fix as much as
+ * the size fix: a 1.5 MB banner becomes 47 KB, and it becomes cacheable at all.
  *
- * This does not replace the compression sweep in `/admin/storage`: that fixes the
- * stored originals — their weight and their `no-cache` header — which is what an
- * unsized surface and the renderer's own source read still pay for.
+ * What the object was stored with therefore still matters. Everything uploaded
+ * before `UPLOAD_CACHE_CONTROL` existed carries Supabase's 3600 default, so
+ * transforms of it are cacheable for an hour; re-writing those through the
+ * compression sweep in `/admin/storage` (which uploads with `31536000`) is what
+ * lifts them to a year. New uploads already go out with the long value.
+ *
+ * Everything that is not a storage object — local `/images/*`, `blob:` previews
+ * from a file picker, an already-transformed URL — passes through untouched.
  */
 
 const OBJECT_SEGMENT = '/storage/v1/object/public/'
@@ -64,6 +71,10 @@ export const IMAGE_PRESETS = {
   petTile: { width: 112, height: 112, resize: 'contain', quality: 80 },
   /** Admin table and grid thumbnails — small, and never the LCP. */
   adminThumb: { width: 128, height: 128, resize: 'contain', quality: 65 },
+  /** Admin banner list, mobile column: `w-32 md:w-40 aspect-[16/9] object-cover`. */
+  adminBannerMobile: { width: 320, height: 180, resize: 'cover', quality: 65 },
+  /** Admin banner list, desktop column: `w-32 md:w-48 aspect-[8/3] object-cover`. */
+  adminBannerDesktop: { width: 384, height: 144, resize: 'cover', quality: 65 },
 } as const satisfies Record<string, ImagePreset>
 
 export type ImagePresetName = keyof typeof IMAGE_PRESETS
@@ -72,8 +83,11 @@ export type ImagePresetName = keyof typeof IMAGE_PRESETS
  * The transformed URL for a Supabase Storage object, or the input unchanged.
  *
  * Left alone: anything empty, anything not on the `/object/public/` path (local
- * files, `blob:` previews, a URL already pointing at the renderer), and SVG —
- * the renderer passes SVG through as-is, so routing it there buys nothing.
+ * files, `blob:` previews, a URL already pointing at the renderer), and SVG.
+ *
+ * SVG is the deliberate one. The renderer currently hands an SVG back untouched,
+ * which would win it a cache lifetime — but that is undocumented behaviour, and
+ * the day it changes it rasterises a logo. The files are ~1 KB; not worth it.
  */
 export function transformedImage(
   url: string | null | undefined,
@@ -81,7 +95,7 @@ export function transformedImage(
 ): string {
   if (!url) return ''
   if (!url.includes(OBJECT_SEGMENT)) return url
-  if (/\.svgx?(\?|$)/i.test(url)) return url
+  if (/\.svg(\?|$)/i.test(url)) return url
 
   const opts: ImagePreset = typeof preset === 'string' ? IMAGE_PRESETS[preset] : preset
 

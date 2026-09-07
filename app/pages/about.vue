@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import PageHeader from '@/components/common/PageHeader.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', title: 'About' })
 useHead({ title: 'About' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'About'

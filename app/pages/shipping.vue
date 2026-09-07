@@ -3,7 +3,7 @@ import { useHead, useSeoMeta, definePageMeta, useState } from '#imports'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import PageHeader from '@/components/common/PageHeader.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', title: 'Shipping' })
 useHead({ title: 'Shipping' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'Shipping'

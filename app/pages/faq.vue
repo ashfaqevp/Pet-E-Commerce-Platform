@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion'
 import PageHeader from '@/components/common/PageHeader.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', title: 'FAQ' })
 useHead({ title: 'FAQ' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'FAQ'

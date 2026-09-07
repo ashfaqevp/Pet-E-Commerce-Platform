@@ -12,7 +12,9 @@ const supabaseOrigin = (() => {
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  ssr: false,
+
+  // The storefront is server-rendered; see `routeRules` for what is not.
+  ssr: true,
 
     // app: {
     // head: {
@@ -104,11 +106,17 @@ export default defineNuxtConfig({
         { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
         { rel: 'manifest', href: '/site.webmanifest' },
 
-        // Every first paint needs Supabase twice over — the API call that fetches
-        // the page's data, then the images that call points at. Opening the
-        // connection alongside the entry bundle takes DNS + TLS off that chain.
+        // Supabase serves this project's API and its image renderer from the same
+        // origin, and first paint needs both: the storefront queries it, then
+        // loads every image it named. `preconnect` opens the socket alongside the
+        // entry bundle; `dns-prefetch` is the fallback for browsers that drop a
+        // preconnect under connection pressure, which is exactly when a phone on
+        // a slow link needs it.
         ...(supabaseOrigin
-          ? [{ rel: 'preconnect', href: supabaseOrigin, crossorigin: '' }]
+          ? ([
+              { rel: 'preconnect', href: supabaseOrigin, crossorigin: 'anonymous' },
+              { rel: 'dns-prefetch', href: supabaseOrigin },
+            ] as const)
           : []),
 
         // Poppins is self-hosted (see app/assets/css/main.css). Body text is 400
@@ -123,11 +131,11 @@ export default defineNuxtConfig({
           crossorigin: 'anonymous',
         },
 
-        // The header logo is the first image on every route, and with `ssr: false`
-        // the `<img>` does not exist until Vue has mounted — so the request cannot
-        // start from the markup. Preloading it from the static head runs it
-        // alongside the entry bundle instead of after it.
-        { rel: 'preload', as: 'image', href: '/images/logo-name.webp' },
+        // No preload for the header logo any more. Under `ssr: false` its `<img>`
+        // did not exist until Vue mounted, so a preload was the only way to start
+        // it early; now the tag is in the server-rendered HTML and the preload
+        // scanner finds it unaided. Keeping it would only make a 14 KB logo
+        // compete with the banner preload, which is the LCP.
       ],
     },
   },
@@ -151,6 +159,23 @@ export default defineNuxtConfig({
     '/images/**': {
       headers: { 'cache-control': 'public, max-age=2592000, stale-while-revalidate=31536000' },
     },
+
+    /**
+     * Admin stays a pure SPA. Nothing under it benefits from a server render —
+     * it is behind a login, it is not indexed, and server-rendering it would put
+     * the route guard on the server where a redirect races the session read.
+     */
+    '/admin/**': { ssr: false },
+
+    /**
+     * These read `localStorage` inside the render path (`last_order_id`), so the
+     * server would render one branch and the browser the other — a hydration
+     * mismatch that makes Vue throw away the server HTML. They are `noindex`
+     * transactional pages with nothing to gain from SSR, so they opt out rather
+     * than being restructured. Price-bearing pages deliberately stay rendered.
+     */
+    '/payment/**': { ssr: false },
+    '/orders/**': { ssr: false },
   },
 
   typescript: {

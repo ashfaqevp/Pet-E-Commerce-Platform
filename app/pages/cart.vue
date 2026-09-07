@@ -8,11 +8,10 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
-import { useProfile } from '@/composables/useProfile'
 import { toast } from 'vue-sonner'
 import PageHeader from '@/components/common/PageHeader.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', title: 'Cart' })
 useHead({ title: 'Cart' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'Cart'
@@ -26,7 +25,6 @@ useSeoMeta({
 
 const { loadCartWithProducts, updateQty, removeFromCart, refreshCart } = useCart()
 const supabaseUser = useSupabaseUser()
-const { getProfile } = useProfile()
 
 const { data: serverData, pending: serverPending, error: serverError, refresh: refreshServer } = await useLazyAsyncData(
   'cart-items',
@@ -46,15 +44,6 @@ const { data: guestData, pending: guestPending, error: guestError, refresh: refr
   { server: false }
 )
 
-const { data: roleData } = await useLazyAsyncData(
-  'cart-user-role',
-  async () => {
-    if (!supabaseUser.value) return 'customer'
-    const p = await getProfile()
-    return (p?.role || 'customer') as string
-  },
-  { server: true }
-)
 
 const refreshCartList = async () => {
   if (supabaseUser.value) await refreshServer()
@@ -62,16 +51,41 @@ const refreshCartList = async () => {
   await refreshCart()
 }
 
-watchEffect(() => { refreshCartList() })
-refreshCartList()
+/**
+ * Client-only. The `useLazyAsyncData` calls above already resolved the right list
+ * during the server render; refreshing again there re-marks them pending, so the
+ * server writes a loading skeleton into HTML whose own payload already carries
+ * the items. Vue then finds a skeleton where it expects a cart and discards the
+ * server render.
+ */
+if (import.meta.client) {
+  watchEffect(() => { refreshCartList() })
+}
 
 // Sync is handled globally by auth plugin to avoid double merges
 
-const pending = computed(() => (supabaseUser.value ? serverPending.value : guestPending.value))
+const hydrated = ref(false)
+onMounted(() => { hydrated.value = true })
+/**
+ * A guest's cart lives in localStorage, which the server cannot read — so its
+ * `useLazyAsyncData` is `server: false` and there is genuinely nothing to render
+ * until the browser takes over. Reporting "loading" until then is what makes the
+ * server's HTML and the browser's first pass agree; without it the server writes
+ * an empty cart and the client hydrates a skeleton over it.
+ *
+ * A signed-in cart is fetched server-side and needs none of this.
+ */
+const pending = computed(() => {
+  if (!supabaseUser.value) return !hydrated.value || guestPending.value
+  return serverPending.value
+})
 const error = computed(() => (supabaseUser.value ? serverError.value : guestError.value))
 const items = computed(() => (supabaseUser.value ? (serverData.value as CartItemWithProduct[]) || [] : (guestData.value as CartItemWithProduct[]) || []))
 
-const userRole = computed(() => (roleData.value || 'customer') as 'customer' | 'wholesaler' | 'admin')
+// Same session-wide role the product cards read, resolved server-side before the
+// HTML is written. This page used to query `profiles` itself under a separate
+// asyncData key, which duplicated the lookup and could disagree with a card.
+const userRole = useUserRole()
 
 const qtyById = ref<Record<string, number>>({})
 watchEffect(() => {

@@ -149,6 +149,46 @@ const { data: featuredBrandsData } = await useLazyAsyncData(
 )
 const featuredBrands = computed(() => featuredBrandsData.value ?? [])
 
+/**
+ * Preload the hero banner.
+ *
+ * The banner query resolves during the server render (`useLazyAsyncData` is
+ * awaited via `onServerPrefetch`), so by the time this runs the real URLs are
+ * known and go into the head — ahead of the entry bundle, and ahead of the
+ * `<img>` in the body. The browser starts the LCP image on the first packet of
+ * HTML instead of after the markup that references it.
+ *
+ * Two links, not one. The banner is a `<picture>` with genuinely different mobile
+ * and desktop sources, so a single `href` preload would fetch the wrong one on
+ * half of all devices — or both, on some. `media` splits them on the same
+ * breakpoint the `<source>` uses, and `imagesrcset` is what pairs a preload with
+ * a responsive element rather than duplicating the request.
+ */
+const heroBanner = computed(() => banners.value[0])
+useHead(() => {
+  const hero = heroBanner.value
+  if (!hero) return {}
+  return {
+    link: [
+      {
+        rel: 'preload',
+        as: 'image',
+        imagesrcset: transformedImage(hero.mobile, 'bannerMobile'),
+        media: '(max-width: 767px)',
+        fetchpriority: 'high',
+        key: 'hero-banner-mobile',
+      },
+      {
+        rel: 'preload',
+        as: 'image',
+        imagesrcset: transformedImage(hero.desktop, 'bannerDesktop'),
+        media: '(min-width: 768px)',
+        fetchpriority: 'high',
+        key: 'hero-banner-desktop',
+      },
+    ],
+  }
+})
 
 useSeoMeta({
   title: 'Buypets.om — Quality Pet Products',
@@ -189,26 +229,36 @@ onMounted(() => {
           <CarouselContent>
             <CarouselItem v-for="(b, idx) in banners" :key="idx">
               <!--
-                The banner is the LCP element. Two things used to hold it back:
-                the source was picked by `isMobile`, so the browser could not
-                start the request until JS had measured the window, and every
-                slide was `loading="lazy"`, which includes the visible one.
+                The LCP element, and it is now in the server-rendered HTML with
+                its real URL — the banner query resolves before the render, so
+                the preload scanner sees this tag on the first parse.
 
-                `<picture>` puts the choice in a media query the preload scanner
-                can read, and only the first slide is eager — Embla keeps all of
-                them in the DOM, so eager across the board would fetch the whole
-                carousel before first paint.
+                `<picture>` rather than a JS-chosen `src`: the choice belongs in a
+                media query the scanner can read without waiting for the bundle.
+                Only the first slide is eager, because Embla keeps every slide in
+                the DOM and `eager` across the board would pull the whole carousel
+                ahead of first paint. `decoding` is left at the default for the
+                first slide — `async` lets the browser defer the paint that
+                actually counts.
+
+                width/height are the mobile preset's box (the `<img>` is the
+                mobile source); they give the element an intrinsic ratio so the
+                reserved space is right even before CSS applies.
               -->
               <picture>
                 <source
                   media="(min-width: 768px)"
                   :srcset="transformedImage(b.desktop, 'bannerDesktop')"
+                  width="1600"
+                  height="600"
                 />
                 <img
                   :src="transformedImage(b.mobile, 'bannerMobile')"
                   :loading="idx === 0 ? 'eager' : 'lazy'"
                   :fetchpriority="idx === 0 ? 'high' : 'auto'"
-                  decoding="async"
+                  :decoding="idx === 0 ? 'auto' : 'async'"
+                  width="1080"
+                  height="608"
                   alt="Promotion banner"
                   class="w-full aspect-[16/9] md:aspect-[8/3] object-cover rounded-2xl"
                 />

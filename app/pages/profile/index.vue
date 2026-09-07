@@ -19,7 +19,7 @@ import AddressFormContent from '@/components/profile/AddressFormContent.vue'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import PageHeader from '@/components/common/PageHeader.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', title: 'Profile' })
 useHead({ title: 'Profile' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'Profile'
@@ -224,11 +224,16 @@ const canCancel = (o: OrderRow): boolean => {
 watch(user, async (u) => {
   if (!u) {
     useAuthStore().requireAuth()
-  } else {
-    await refreshProfile()
-    await refreshAddresses()
-    await refreshOrders()
+    return
   }
+  // These three are already resolved by `useLazyAsyncData` during the server
+  // render. Refreshing there re-marks them pending, which paints skeletons into
+  // HTML whose payload already holds the data — a hydration mismatch on every
+  // signed-in load.
+  if (import.meta.server) return
+  await refreshProfile()
+  await refreshAddresses()
+  await refreshOrders()
 }, { immediate: true })
 
 const profile = computed(() => profileData.value as ProfileRow | null)

@@ -14,9 +14,8 @@ import { CATEGORY_CONFIG } from "~/domain/categories/category.config";
 import { parseColours, colourHex } from "~/lib/colourMap";
 import { formatDimensionLabel } from "~/lib/dimension";
 import ProductCard from "@/components/product/ProductCard.vue";
-import { useProfile } from "@/composables/useProfile";
 
-definePageMeta({ layout: "default" });
+definePageMeta({ layout: "default", title: "Details" });
 const pageTitle = useState<string>("pageTitle", () => "")
 
 type VariantOption = {
@@ -92,17 +91,9 @@ function normalizeProductRow(row: ProductRow): ProductRow {
 }
 
 const supabaseUser = useSupabaseUser()
-const { getProfile } = useProfile()
-const { data: roleData } = await useLazyAsyncData(
-  'product-user-role',
-  async () => {
-    if (!supabaseUser.value) return 'customer'
-    const p = await getProfile()
-    return (p?.role || 'customer') as string
-  },
-  { server: true }
-)
-const userRole = computed(() => (roleData.value || 'customer') as 'customer' | 'wholesaler' | 'admin')
+// The one session-wide role, resolved server-side before any price is rendered.
+// This page used to run its own `profiles` lookup under a third asyncData key.
+const userRole = useUserRole()
 
 const mapRowToCard = (row: ProductRow): CardProduct => ({
   id: String(row.id),

@@ -21,7 +21,7 @@ import { useProfile } from '@/composables/useProfile'
 import PageHeader from '@/components/common/PageHeader.vue'
 import AddressFormContent from '@/components/profile/AddressFormContent.vue'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', title: 'Checkout' })
 useHead({ title: 'Checkout' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'Checkout'
@@ -60,12 +60,16 @@ const { data: addressesData, pending: addressesPending, error: addressesError, r
   { server: true }
 )
 
-watchEffect(async () => {
-  if (user.value) {
-    await refreshItems()
-    await refreshAddresses()
-  }
-})
+// Client-only: both queries are already resolved server-side, and refreshing
+// during the render re-marks them pending — see the note in cart.vue.
+if (import.meta.client) {
+  watchEffect(async () => {
+    if (user.value) {
+      await refreshItems()
+      await refreshAddresses()
+    }
+  })
+}
 
 const items = computed(() => (itemsData.value as CartItemWithProduct[]) || [])
 const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
@@ -310,7 +314,7 @@ const placeOrder = async () => {
                 </div>
               </div>
               </div>
-              <TableEmpty v-else>No addresses found.</TableEmpty>
+              <div v-else class="py-10 text-center text-sm text-foreground">No addresses found.</div>
 
               <div class="flex flex-col sm:flex-row gap-2 pt-1">
                 <Button variant="outline" class="flex-1" :disabled="locating" @click="openAddDialog">
@@ -371,12 +375,15 @@ const placeOrder = async () => {
                     </Alert>
                   </TableCell>
                 </TableRow>
-                <TableRow v-else-if="items.length === 0">
-                  <TableCell colspan="4">
-                    <TableEmpty>Your cart is empty</TableEmpty>
-                  </TableCell>
-                </TableRow>
-                <TableRow v-else v-for="i in items" :key="i.id">
+                <!--
+                  TableEmpty renders its own <tr><td>, so it stands in for a row
+                  rather than sitting inside one. Wrapping it in a TableRow +
+                  TableCell emitted <tr><td><tr><td>, which the HTML parser hoists
+                  back out — leaving a server DOM that no vdom could ever match.
+                -->
+                <TableEmpty v-else-if="items.length === 0" :colspan="4">Your cart is empty</TableEmpty>
+                <template v-else>
+                <TableRow v-for="i in items" :key="i.id">
                   <TableCell>
                     <div class="flex items-center gap-4 min-w-0">
                       <Avatar class="size-10 rounded-md">
@@ -390,6 +397,7 @@ const placeOrder = async () => {
                   <TableCell class="text-right w-24 whitespace-nowrap">{{ formatOMR(unitPriceOf(i.product)) }}</TableCell>
                   <TableCell class="text-right w-28 whitespace-nowrap">{{ formatOMR(unitPriceOf(i.product) * Number(i.quantity || 1)) }}</TableCell>
                 </TableRow>
+                </template>
               </TableBody>
             </Table>
             <div class="sm:hidden space-y-3">
@@ -400,10 +408,12 @@ const placeOrder = async () => {
                 <AlertTitle>Error</AlertTitle>
                 <AlertDescription>{{ itemsError.message }}</AlertDescription>
               </Alert>
-              <div v-else-if="items.length === 0">
-                <TableEmpty>Your cart is empty</TableEmpty>
+              <!-- The mobile list is not a table, so it must not borrow a table row. -->
+              <div v-else-if="items.length === 0" class="py-10 text-center text-sm text-foreground">
+                Your cart is empty
               </div>
-              <div v-else v-for="i in items" :key="i.id" class="flex items-center justify-between gap-3">
+              <template v-else>
+              <div v-for="i in items" :key="i.id" class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                   <Avatar class="size-10 rounded-md">
                     <AvatarImage v-if="i.product.thumbnail_url" :src="String(i.product.thumbnail_url)" alt="product" />
@@ -419,6 +429,7 @@ const placeOrder = async () => {
                   <div class="text-sm">{{ formatOMR(unitPriceOf(i.product) * Number(i.quantity || 1)) }}</div>
                 </div>
               </div>
+              </template>
             </div>
           </CardContent>
         </Card>

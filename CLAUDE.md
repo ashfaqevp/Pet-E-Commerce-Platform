@@ -17,7 +17,49 @@ Use **pnpm only** — no npm or yarn. No test suite exists yet.
 
 ## Architecture
 
-**Nuxt 4 SPA** (`ssr: false`) — Vue 3 + TypeScript strict mode. All code lives under `app/` (Nuxt's app directory convention). The backend is serverless: Supabase for auth/DB and Nuxt server routes for secure operations.
+**Nuxt 4, server-rendered storefront** — Vue 3 + TypeScript strict mode. All code lives under `app/` (Nuxt's app directory convention). The backend is serverless: Supabase for auth/DB and Nuxt server routes for secure operations.
+
+### Rendering (SSR)
+
+`ssr: true` globally; `routeRules` opts specific trees out:
+
+| Tree | Mode | Why |
+|---|---|---|
+| storefront | SSR | prices and product copy must be in the HTML |
+| `/admin/**` | SPA | behind a login, not indexed |
+| `/payment/**`, `/orders/**` | SPA | read `localStorage` in the render path |
+
+Four invariants hold this together — breaking any one is a bug:
+
+1. **Auth reaches the server through cookies.** `@nuxtjs/supabase` defaults to
+   `useSsrCookies: true`, so `useSupabaseUser()` is populated during the render.
+2. **Role resolves before any price is written.** `app/plugins/user-role.ts`
+   awaits it server-side into `useState`; `useUserRole()` is the single source.
+   It uses `useRequestFetch()` — a bare `$fetch` drops the request's cookies and
+   would silently return `customer`, quoting retail prices to a wholesale buyer.
+   **Never add a second role lookup**; three pages used to have their own.
+3. **Rendered HTML is never cached.** `server/plugins/no-store-html.ts` sets
+   `private, no-store` on every rendered response. Never put `swr`/`isr`/cache
+   headers on a route that renders prices, cart state or user data.
+4. **No hydration mismatches.** Zero is the standard, verified across the
+   storefront signed-out and signed-in.
+
+Patterns that caused real mismatches here, all worth avoiding:
+
+- **`v-if` on a JS-measured breakpoint.** The header used `v-if="isMobile"` from
+  `onMounted`; the server sent the desktop branch to phones. Use the `md:` classes.
+- **Watchers that build render state.** They do not run during SSR — the catalogue
+  page derived its list in one and shipped "No products found". Derive with
+  `computed` instead.
+- **Refreshing already-resolved `useLazyAsyncData` on the server.** Re-marks it
+  pending, so the server paints a skeleton over data its own payload holds. Guard
+  eager `refresh()` calls with `import.meta.client`.
+- **State a page sets that the layout renders.** Page setup runs after the
+  layout's, so the header title comes from `definePageMeta({ title })` now.
+- **`localStorage` in the render path.** The guest cart reports `pending` until
+  mounted; the cart badge is in `<ClientOnly>`.
+- **`TableEmpty` inside a `TableRow`/`TableCell`.** It renders its own `<tr><td>`;
+  nesting produced HTML the parser re-shaped, which no vdom could match.
 
 ### Path aliases
 
@@ -36,7 +78,7 @@ Use **pnpm only** — no npm or yarn. No test suite exists yet.
 | `app/domain/categories/` | Config-driven category system (partially migrated to DB — see below) |
 | `app/layouts/` | `default.vue` (main), `admin.vue` (sidebar), `admin-auth.vue` |
 | `app/middleware/` | `admin.ts` (route guard), two `.global.ts` guards |
-| `app/plugins/` | `auth.client.ts` (session restore + guest cart sync), `seo.global.ts` |
+| `app/plugins/` | `auth.client.ts` (session restore + guest cart sync), `user-role.ts` (resolves role server-side), `iconify.ts`, `seo.global.ts` |
 | `app/lib/utils.ts` | `cn()` — clsx + tailwind-merge helper for conditional classes |
 | `app/utils/index.ts` | `formatOMR()`, `formatOmanPhone()`, `orderStatusStyle()`, `paymentStatusStyle()`, `canOrderTransition()` — auto-imported |
 | `app/assets/css/main.css` | Tailwind v4 with OKLch CSS variables, dark mode |
@@ -78,7 +120,7 @@ Three roles: **admin**, **wholesale**, **retail** (default).
 - Wholesale: email/password (accounts created by admin only)
 - Role is fetched server-side via `/api/auth/get-role` using the service role key
 - `admin.ts` middleware protects all `/admin/**` routes; on failure redirects to `/admin/login?redirect=<path>`
-- `auth.client.ts` plugin handles session restore and syncs guest cart to server on login (non-blocking via `queueMicrotask`)
+- `auth.client.ts` plugin handles session restore and syncs guest cart to server on login (non-blocking via `queueMicrotask`), and refreshes the role on each auth change. `admin-logout.global.ts` is client-only — its `$fetch` would 401 during SSR
 
 ### Cart architecture
 

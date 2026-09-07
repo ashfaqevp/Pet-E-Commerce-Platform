@@ -23,12 +23,40 @@ const suggestionsLoading = ref(false);
 const suggestionsError = ref<string | null>(null);
 const showSearch = ref(false);
 const suggestionsOpen = ref(false);
-const pageTitle = useState<string>('pageTitle', () => '')
+/**
+ * The mobile header's title, and it has to be knowable *before* the page renders.
+ *
+ * Pages assign `useState('pageTitle')` in their own setup, which runs after the
+ * layout's — fine in a SPA, but under SSR the header markup is emitted with the
+ * old value while the payload serialises the new one. The browser then hydrates
+ * a header that disagrees with the server's, and Vue discards the page.
+ *
+ * `route.meta.title` (set via `definePageMeta`) is resolved from the route record
+ * before any component renders, so the server and the first client render always
+ * agree. The state is still honoured once mounted, which is what lets the product
+ * page swap in a product name it only learns after fetching.
+ */
+const routeTitle = computed(() => typeof route.meta?.title === 'string' ? route.meta.title : '')
+const dynamicTitle = useState<string>('pageTitle', () => '')
+const hydrated = ref(false)
+onMounted(() => { hydrated.value = true })
+const pageTitle = computed(() => hydrated.value ? (dynamicTitle.value || routeTitle.value) : routeTitle.value)
 const mobileSearchContainer = ref<HTMLElement | null>(null)
 const desktopSearchContainer = ref<HTMLElement | null>(null)
 let onDocPointerDown: ((e: PointerEvent) => void) | undefined
 
-// SSR-safe mobile breakpoint tracking
+/**
+ * Behaviour only — never layout.
+ *
+ * The header used to pick its mobile and desktop branches with `v-if="isMobile"`,
+ * measured in `onMounted`. Under SSR that renders the desktop header to a phone
+ * and swaps it after hydration. The branches already carried `md:hidden` /
+ * `hidden md:flex`, which encode the same breakpoint in CSS and are correct in
+ * the very first byte, so the `v-if`s are gone and the classes do the work.
+ *
+ * What is left here genuinely needs a measurement: hiding the header on scroll
+ * down, and the mobile search toggle.
+ */
 const isMobile = ref(false);
 let updateMobile: (() => void) | undefined;
 const headerHidden = ref(false);
@@ -252,14 +280,14 @@ watch(user, () => {
         class="container mx-auto px-2 md:px-4 flex h-16 items-center justify-between gap-6"
       >
         <!-- Mobile: Logo + optional search input (shown on the right) -->
-        <div v-if="isMobile && (isHome || (!isProductDetail && !pageTitle))" class="md:hidden flex-1 flex items-center gap-2 w-full">
+        <div v-if="isHome || (!isProductDetail && !pageTitle)" class="md:hidden flex-1 flex items-center gap-2 w-full">
           <NuxtLink to="/" aria-label="Home">
             <img src="/images/logo-name.webp" alt="Buypets.om" width="143" height="44" fetchpriority="high" class="h-11 w-auto" />
           </NuxtLink>
         </div>
 
         <!-- Mobile: page header with back and title -->
-        <div v-if="isMobile && pageTitle && !isHome && !showSearch" class="md:hidden flex items-center justify-between w-full">
+        <div v-if="pageTitle && !isHome && !showSearch" class="md:hidden flex items-center justify-between w-full">
           <div class="flex items-center gap-2">
             <Button variant="ghost" size="icon" class="rounded-full border bg-background shadow-sm" @click="goBack">
               <Icon name="lucide:arrow-left" class="h-5 w-5 text-foreground" />
@@ -269,7 +297,7 @@ watch(user, () => {
         </div>
 
         <!-- Mobile searchbar: rounded pill with suggestions and actions -->
-        <div v-show="isMobile && (isProductsPage || isHome) && showSearch" class="md:hidden flex flex-col gap-2 w-full">
+        <div v-show="(isProductsPage || isHome) && showSearch" class="md:hidden flex flex-col gap-2 w-full">
           <div class="flex items-center gap-2 w-full">
             <div ref="mobileSearchContainer" class="relative flex-1">
               <Input
@@ -316,14 +344,14 @@ watch(user, () => {
         </div>
 
         <!-- Desktop: Logo -->
-        <div v-if="!isMobile" class="hidden md:flex md:items-center w-fit">
+        <div class="hidden md:flex md:items-center w-fit">
           <NuxtLink to="/" aria-label="Home">
             <img src="/images/logo-name.webp" alt="Buypets.om" width="156" height="48" fetchpriority="high" class="h-12 w-auto" />
           </NuxtLink>
         </div>
 
         <!-- Desktop: Search with suggestions and action button -->
-        <div v-if="!isMobile" class="hidden md:flex flex-1 items-center justify-center mx-auto w-full">
+        <div class="hidden md:flex flex-1 items-center justify-center mx-auto w-full">
           <div ref="desktopSearchContainer" class="w-full max-w-xl relative">
             <Input
               v-model="searchQuery"
@@ -379,7 +407,7 @@ watch(user, () => {
         </div>
 
         <Button
-          v-if="isMobile && (isProductsPage || isHome)"
+          v-if="isProductsPage || isHome"
           variant="ghost"
           size="icon"
           class="md:hidden rounded-full border bg-background/80 shadow-sm hover:bg-secondary/10 text-foreground"
@@ -392,7 +420,7 @@ watch(user, () => {
         </Button>
 
         <!-- Actions -->
-        <div v-if="!isMobile" class="flex items-center gap-2">
+        <div class="hidden md:flex items-center gap-2">
           <!-- Mobile: only search trigger -->
 
           <!-- Desktop: actions -->
@@ -416,11 +444,21 @@ watch(user, () => {
                 >
                   <Icon name="lucide:shopping-cart" class="h-5 w-5" />
                 </Button>
-                <Badge
-                  v-if="cartCount > 0"
-                  variant="secondary"
-                  class="absolute -top-1 -right-1 h-4 min-w-[1rem] px-1 text-[10px]"
-                >{{ cartCount }}</Badge>
+                <!--
+                  Client-only by design. A guest's cart lives in localStorage,
+                  which the server cannot see, so the badge is the one piece of
+                  this header whose correct value is only knowable in the browser.
+                  Rendering it server-side would either show a guest an empty cart
+                  or, once `cart-count` were ever populated during SSR, mismatch
+                  and cost the whole page its server HTML.
+                -->
+                <ClientOnly>
+                  <Badge
+                    v-if="cartCount > 0"
+                    variant="secondary"
+                    class="absolute -top-1 -right-1 h-4 min-w-[1rem] px-1 text-[10px]"
+                  >{{ cartCount }}</Badge>
+                </ClientOnly>
               </div>
             </NuxtLink>
             <NuxtLink to="/profile">
@@ -471,11 +509,13 @@ watch(user, () => {
         >
           <div class="relative">
             <Icon :name="item.icon" class="h-6 w-6" />
-            <Badge
-              v-if="item.path === '/cart' && cartCount > 0"
-              variant="secondary"
-              class="absolute -top-1 -right-2 h-4 min-w-[1rem] px-1 text-[10px]"
-            >{{ cartCount }}</Badge>
+            <ClientOnly>
+              <Badge
+                v-if="item.path === '/cart' && cartCount > 0"
+                variant="secondary"
+                class="absolute -top-1 -right-2 h-4 min-w-[1rem] px-1 text-[10px]"
+              >{{ cartCount }}</Badge>
+            </ClientOnly>
           </div>
           <span>{{ item.label }}</span>
         </NuxtLink>

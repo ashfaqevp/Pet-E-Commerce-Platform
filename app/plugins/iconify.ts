@@ -14,6 +14,11 @@ import offlineIcons from '~/assets/icons/offline.json'
  * by which point the layout's icons have already queued an API batch. The
  * failure is invisible: the icons still render when the fetch lands.
  *
+ * Universal, not `.client`, and that matters under SSR: registered only in the
+ * browser, the server would render every icon as an empty placeholder and the
+ * client would fill it in, which is a hydration mismatch on every page that has
+ * an icon — that is, all of them. `addCollection` is environment-agnostic.
+ *
  * `app/assets/icons/offline.json` holds only the icons this app actually uses
  * (~15 KB for all of them). Regenerate it with `pnpm icons` after adding a new
  * `<Icon name="…" />` — an icon missing from the bundle silently falls back to

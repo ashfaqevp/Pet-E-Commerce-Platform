@@ -14,7 +14,7 @@ import { CATEGORY_CONFIG } from '~/domain/categories/category.config'
 import PageHeader from '@/components/common/PageHeader.vue'
 import { useSeoMeta } from '#imports'
 
-definePageMeta({ layout: 'default' })
+definePageMeta({ layout: 'default', title: 'Products' })
 useHead({ title: 'Products' })
 const pageTitle = useState<string>('pageTitle', () => '')
 pageTitle.value = 'Products'
@@ -77,10 +77,24 @@ const qFlavour = useRouteQuery<string>('flavour', '')
 const qBrand = useRouteQuery<string>('brand', '')
 
 // State
-const products = ref<CardProduct[]>([])
 const page = ref(1)
 const pageSize = 48
-const totalCount = ref(0)
+/**
+ * Pages the infinite scroll has pulled in, keyed by page number.
+ *
+ * This used to be a flat `products` ref that a `watch` on the fetched data
+ * appended to. Watchers do not run during a server render, so the server always
+ * saw an empty list — and with the list fetched `server: false` on top of that,
+ * the catalogue page shipped "No products found" in its HTML, then replaced it
+ * on hydration. That is both a hydration mismatch and the worst possible thing
+ * for a crawler to read.
+ *
+ * `products` is now derived, and it reads the *current* page straight off the
+ * fetched data rather than waiting for a watcher. That value exists during the
+ * server render and again in the payload at hydration, so both agree; the map
+ * only holds the earlier pages that infinite scroll has already appended.
+ */
+const loadedPages = ref<Record<number, CardProduct[]>>({})
 const initialLoading = computed(() => pending.value && products.value.length === 0)
 const loading = computed(() => pending.value && products.value.length > 0)
 const listContainer = ref<HTMLElement | null>(null)
@@ -268,19 +282,26 @@ const { data: pageData, pending, error, refresh } = await useLazyAsyncData(
     if (error) throw error
     return { items: (data ?? []) as ProductRow[], total: count ?? 0 }
   },
-  { watch: [params], server: false } 
+  { watch: [params], server: true }
 )
 
+// Keeps pages the scroll has already been through. The current page is not
+// stored here — `products` reads it from `pageData` so it is present server-side.
 watch(pageData, (val) => {
-  if (!val) return
-  totalCount.value = val.total
-  const newProducts = val.items.map(mapProductRow)
-  if (page.value === 1) products.value = newProducts
-  else {
-    const existing = new Set(products.value.map(p => p.id))
-    const unique = newProducts.filter(p => !existing.has(p.id))
-    products.value = [...products.value, ...unique]
-  }
+  if (val) loadedPages.value[page.value] = val.items.map(mapProductRow)
+})
+
+const totalCount = computed(() => pageData.value?.total ?? 0)
+
+const products = computed<CardProduct[]>(() => {
+  const pages: Record<number, CardProduct[]> = { ...loadedPages.value }
+  if (pageData.value) pages[page.value] = pageData.value.items.map(mapProductRow)
+  const seen = new Set<string>()
+  return Object.keys(pages)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .flatMap(n => pages[n] ?? [])
+    .filter(p => (seen.has(p.id) ? false : (seen.add(p.id), true)))
 })
 
 const loadNextPage = async () => {
@@ -427,14 +448,18 @@ function applyFilters() {
   mobileFilterOpen.value = false
 }
 
-onMounted(() => { resetAndRefresh() })
+onMounted(() => {
+  // The server already fetched page 1, so refetching here would double every
+  // first load. Only run when there is genuinely nothing yet.
+  if (!pageData.value) resetAndRefresh()
+})
 
 const resetAndRefresh = async () => {
   if (process.client) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
   page.value = 1
-  products.value = []
+  loadedPages.value = {}
   await refresh()
 }
 

@@ -6,24 +6,57 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { toast } from 'vue-sonner'
 import { useCart } from '@/composables/useCart'
+import { useAnalytics } from '@/composables/useAnalytics'
 
 definePageMeta({ layout: 'default' })
 
 const supabase = useSupabaseClient()
 const user = useSupabaseUser()
 const { refreshCart } = useCart()
+const { trackPurchase } = useAnalytics()
 
-const { data, pending, error } = await useLazyAsyncData(
+const { data, pending, error } = await useLazyAsyncData<{ cleared: boolean; orderDetails?: any }>(
   'orders-success-clear-cart',
   async () => {
     if (!user.value) return { cleared: false }
+    
+    const orderId = process.client ? localStorage.getItem('last_order_id') : null
+    let orderDetails = null
+    if (orderId) {
+      const { data: orderData } = await supabase
+        .from('orders')
+        .select('id, total, order_items(product_id, product_name, unit_price, quantity)')
+        .eq('id', orderId)
+        .single()
+        
+      if (orderData) {
+        orderDetails = orderData
+      }
+    }
+
     const { error: clearErr } = await supabase.from('cart_items').delete().eq('user_id', user.value.id)
     if (clearErr) throw clearErr
     await refreshCart()
-    return { cleared: true }
+    return { cleared: true, orderDetails }
   },
   { server: false }
 )
+
+watchEffect(() => {
+  if (data.value?.orderDetails) {
+    const o = data.value.orderDetails
+    trackPurchase({
+      transaction_id: o.id,
+      value: o.total,
+      items: (o.order_items || []).map((i: any) => ({
+        id: i.product_id,
+        name: i.product_name,
+        price: i.unit_price,
+        quantity: i.quantity
+      }))
+    })
+  }
+})
 
 let confettiTimer: ReturnType<typeof setTimeout> | null = null
 onMounted(async () => {

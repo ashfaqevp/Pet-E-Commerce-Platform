@@ -18,6 +18,7 @@ import { useCart, type CartItemWithProduct } from '@/composables/useCart'
 import { useAddresses, type AddressRow } from '@/composables/useAddresses'
 import { useCheckoutOrder } from '@/composables/useCheckoutOrder'
 import { useProfile } from '@/composables/useProfile'
+import { useAnalytics } from '@/composables/useAnalytics'
 import PageHeader from '@/components/common/PageHeader.vue'
 import AddressFormContent from '@/components/profile/AddressFormContent.vue'
 
@@ -73,6 +74,23 @@ if (import.meta.client) {
 
 const items = computed(() => (itemsData.value as CartItemWithProduct[]) || [])
 const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
+
+const { trackBeginCheckout } = useAnalytics()
+let checkoutTracked = false
+watch(items, (newItems) => {
+  if (newItems.length > 0 && !checkoutTracked && import.meta.client) {
+    checkoutTracked = true
+    trackBeginCheckout({
+      value: subtotal.value,
+      items: newItems.map(i => ({
+        id: i.product_id,
+        name: i.product.name,
+        price: unitPriceOf(i.product),
+        quantity: i.quantity ?? 1
+      }))
+    })
+  }
+}, { immediate: true })
 const defaultAddress = computed(() => addresses.value.find(a => a.is_default) || addresses.value[0] || null)
 const selectedAddressId = ref<string | null>(null)
 const paymentMethod = ref<'online' | 'cod'>('cod')

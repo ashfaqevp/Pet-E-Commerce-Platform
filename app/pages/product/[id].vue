@@ -3,6 +3,7 @@ import { computed, ref, watch, onMounted, onUnmounted, nextTick } from "vue";
 import { useRoute, useRouter, definePageMeta, useLazyAsyncData, useSupabaseClient, useSupabaseUser, useHead, useState, useSeoMeta, useRuntimeConfig } from "#imports";
 import { Button } from "@/components/ui/button";
 import { useCart, type CartItemWithProduct } from "@/composables/useCart";
+import { useAnalytics } from "@/composables/useAnalytics";
 import AddToCartButton from "@/components/AddToCartButton.vue";
 import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import type { UnwrapRefCarouselApi } from "@/components/ui/carousel/interface";
@@ -489,7 +490,13 @@ useHead({
     },
   ],
 })
-watch(product, (p) => { pageTitle.value = p?.name || 'Details' }, { immediate: true })
+const { trackViewItem } = useAnalytics();
+watch(product, (p) => {
+  pageTitle.value = p?.name || 'Details';
+  if (p && p.id && p.name && p.price != null && import.meta.client) {
+    trackViewItem({ id: String(p.id), name: p.name, price: p.price, brand: p.brand });
+  }
+}, { immediate: true })
 const productBreadcrumbs = computed(() => [{ label: 'Home', href: '/' }, { label: 'Products', href: '/products' }, { label: product.value?.name || 'Product' }])
 
 watch([product, cartItems], () => {
@@ -970,7 +977,7 @@ watch([selectedFlavour, selectedSize, selectedAge, variantRows], () => {
           </div>
 
           <div class="flex-1">
-            <AddToCartButton :product-id="product.id" :quantity="qty" />
+            <AddToCartButton :product-id="product.id" :quantity="qty" :name="product.name" :price="product.price" />
           </div>
         </div>
 

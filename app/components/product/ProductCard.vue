@@ -45,6 +45,7 @@ import { Card, CardContent, CardTitle, CardDescription } from '@/components/ui/c
 import { Button } from '@/components/ui/button'
 import { formatOMR } from '@/utils'
 import { useCart } from '@/composables/useCart'
+import { useAnalytics } from '@/composables/useAnalytics'
 import { toast } from 'vue-sonner'
 
 interface Product {
@@ -82,6 +83,7 @@ const originalPrice = computed(() => {
 
 const router = useRouter()
 const { addToCart, refreshCart } = useCart()
+const { trackAddToCart } = useAnalytics()
 const adding = ref(false)
 
 const goToProduct = () => {
@@ -94,6 +96,7 @@ const onAdd = async () => {
   try {
     await addToCart({ productId: props.product.id, quantity: 1 })
     await refreshCart()
+    trackAddToCart({ id: props.product.id, name: props.product.name, price: displayPrice.value, quantity: 1 })
     toast.success('Added to cart')
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Failed to add'

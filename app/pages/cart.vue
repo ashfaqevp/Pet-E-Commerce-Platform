@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useCart, type CartItemWithProduct } from '@/composables/useCart'
+import { useAnalytics } from '@/composables/useAnalytics'
 import { toast } from 'vue-sonner'
 import PageHeader from '@/components/common/PageHeader.vue'
 
@@ -24,6 +25,7 @@ useSeoMeta({
 })
 
 const { loadCartWithProducts, updateQty, removeFromCart, refreshCart } = useCart()
+const { trackRemoveFromCart } = useAnalytics()
 const supabaseUser = useSupabaseUser()
 
 const { data: serverData, pending: serverPending, error: serverError, refresh: refreshServer } = await useLazyAsyncData(
@@ -146,6 +148,7 @@ const onRemove = async (item: CartItemWithProduct) => {
   try {
     await removeFromCart(id)
     await refreshCartList()
+    trackRemoveFromCart({ id: item.product_id, name: item.product.name, price: unitPriceOf(item.product), quantity: item.quantity ?? 1 })
     toast.success('Removed from cart')
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Failed to remove'

@@ -38,7 +38,7 @@ const schema = toTypedSchema(
     address_line_2: z.string().optional(),
     city: z.string().min(2, 'City is required'),
     state: z.string().min(2, 'State is required'),
-    postal_code: z.string().min(2, 'Postal code is required'),
+    postal_code: z.string().optional(),
     is_default: z.boolean().optional(),
   })
 )
@@ -145,7 +145,7 @@ const onSubmit = handleSubmit(async (values) => {
       address_line_2: values.address_line_2 || '',
       city: values.city,
       state: values.state,
-      postal_code: values.postal_code,
+      postal_code: values.postal_code || '',
       country: 'Oman',
       is_default: !!values.is_default,
     }
@@ -224,7 +224,7 @@ const onSubmit = handleSubmit(async (values) => {
       </div>
     </div>
       <div class="space-y-2">
-        <Label class="text-sm">Postal code</Label>
+        <Label class="text-sm">Postal code <span class="text-muted-foreground">(optional)</span></Label>
         <Input v-model="postalCode" placeholder="Postal code" />
         <p v-if="postalCodeError && postalCodeMeta.touched" class="text-xs text-red-600">{{ postalCodeError }}</p>
       </div>

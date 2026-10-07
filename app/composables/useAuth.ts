@@ -1,11 +1,25 @@
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 
+export const AUTH_RETURN_KEY = 'bh-auth-return'
+
 export const useAuth = () => {
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
 
-  const loginWithGoogle = async () => {
+  /**
+   * `returnTo` survives the round trip to Google in localStorage rather than in
+   * `redirectTo`: Supabase only honours redirect URLs on its allowlist and
+   * silently falls back to the site URL otherwise. `auth.client.ts` reads it
+   * back on SIGNED_IN.
+   */
+  const loginWithGoogle = async (returnTo?: string | null) => {
     const supabase = useSupabaseClient()
+    try {
+      if (returnTo) localStorage.setItem(AUTH_RETURN_KEY, JSON.stringify({ path: returnTo, at: Date.now() }))
+      else localStorage.removeItem(AUTH_RETURN_KEY)
+    } catch {
+      // Without storage the user simply lands on the home page, as before.
+    }
 
     await supabase.auth.signInWithOAuth({
       provider: 'google',

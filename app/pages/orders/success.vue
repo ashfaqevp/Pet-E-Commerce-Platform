@@ -102,6 +102,9 @@ const continueShopping = () => navigateTo('/products')
           <p class="text-muted-foreground text-sm">
             {{ isGuestOrder ? 'Keep this order number for reference. Thank you for your purchase.' : 'Thank you for your purchase.' }}
           </p>
+          <p v-if="isGuestOrder" class="text-xs text-muted-foreground max-w-md mx-auto">
+            This order was placed as a guest, so it won't appear in an account. Sign in before your next order to track it from your profile.
+          </p>
           <div class="flex flex-col sm:flex-row gap-3 pt-1 justify-center">
             <Button v-if="!isGuestOrder" class="w-full sm:w-auto" @click="goOrders">View Orders</Button>
             <Button variant="outline" class="w-full sm:w-auto" @click="continueShopping">Continue Shopping</Button>

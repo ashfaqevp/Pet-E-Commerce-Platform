@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { navigateTo } from '#imports'
+import { AUTH_RETURN_KEY } from '@/composables/useAuth'
 const authStore = useAuthStore()
 const { loginWithGoogle, loginWithEmailPassword } = useAuth()
 const supabase = useSupabaseClient()
@@ -14,19 +15,34 @@ const router = useRouter()
 
 const onUpdateOpen = (v: boolean) => {
   authStore.showAuthDialog = v
-  if (!v && !router.currentRoute.value.path.startsWith('/reset-password')) navigateTo('/')
+  if (v) return
+  // Opened from a page the user is in the middle of: dismissing leaves them there.
+  if (authStore.returnTo) {
+    authStore.returnTo = null
+    return
+  }
+  if (!router.currentRoute.value.path.startsWith('/reset-password')) navigateTo('/')
+}
+
+const afterSignIn = (role: string | null) => {
+  // This path navigates itself; a leftover Google return path must not race it.
+  try { localStorage.removeItem(AUTH_RETURN_KEY) } catch {}
+  const returnTo = authStore.returnTo
+  authStore.returnTo = null
+  authStore.showAuthDialog = false
+  if (role === 'admin') navigateTo('/admin')
+  else if (returnTo) navigateTo(returnTo)
+  else if (role === 'wholesaler') navigateTo('/profile')
+  else navigateTo('/')
 }
 
 const onGoogle = async () => {
   try {
     signingIn.value = true
-    await loginWithGoogle()
+    await loginWithGoogle(authStore.returnTo)
     try {
       const { role } = await $fetch<{ role: string | null }>(`/api/auth/get-role`)
-      authStore.showAuthDialog = false
-      if (role === 'admin') navigateTo('/admin')
-      else if (role === 'wholesaler') navigateTo('/profile')
-      else navigateTo('/')
+      afterSignIn(role)
     } catch {
       authStore.showAuthDialog = false
     }
@@ -45,10 +61,7 @@ const onEmailPassword = async () => {
     signingIn.value = true
     await loginWithEmailPassword(e, p)
     const { role } = await $fetch<{ role: string | null }>(`/api/auth/get-role`)
-    authStore.showAuthDialog = false
-    if (role === 'admin') navigateTo('/admin')
-    else if (role === 'wholesaler') navigateTo('/profile')
-    else navigateTo('/')
+    afterSignIn(role)
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Sign in failed'
     errorMsg.value = msg

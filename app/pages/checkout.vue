@@ -117,22 +117,6 @@ const itemsError = computed(() => (usesGuestCart.value ? guestItemsError.value :
 const items = computed(() => ((usesGuestCart.value ? guestItemsData.value : serverItemsData.value) as CartItemWithProduct[]) || [])
 const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
 
-const { trackBeginCheckout } = useAnalytics()
-let checkoutTracked = false
-watch(items, (newItems) => {
-  if (newItems.length > 0 && !checkoutTracked && import.meta.client) {
-    checkoutTracked = true
-    trackBeginCheckout({
-      value: subtotal.value,
-      items: newItems.map(i => ({
-        id: i.product_id,
-        name: i.product.name,
-        price: unitPriceOf(i.product),
-        quantity: i.quantity ?? 1
-      }))
-    })
-  }
-}, { immediate: true })
 const defaultAddress = computed(() => addresses.value.find(a => a.is_default) || addresses.value[0] || null)
 const selectedAddressId = ref<string | null>(null)
 const paymentMethod = ref<'online' | 'cod'>('cod')
@@ -178,7 +162,38 @@ const resetAddressForm = () => {
 
 const openAddDialog = () => {
   resetAddressForm()
+  prefillFromGuestAddress()
   addressDialogOpen.value = true
+}
+
+/**
+ * Sign-in from checkout comes back to this same URL (Buy Now included), and the
+ * guest cart is merged into the account by `auth.client.ts`.
+ */
+const signIn = () => useAuthStore().requireAuth({ returnTo: route.fullPath })
+
+/**
+ * Someone who typed their details as a guest and then signed in should not have
+ * to type them again for their first saved address.
+ */
+const prefillFromGuestAddress = () => {
+  if (addresses.value.length) return
+  try {
+    const saved = JSON.parse(localStorage.getItem('bh-guest-address') || 'null') as Partial<GuestAddress> | null
+    if (!saved) return
+    addressForm.value = {
+      ...addressForm.value,
+      full_name: saved.full_name || '',
+      phone: saved.phone || '',
+      address_line_1: saved.address_line_1 || '',
+      address_line_2: saved.address_line_2 || '',
+      city: saved.city || '',
+      state: saved.state || '',
+      postal_code: saved.postal_code || '',
+    }
+  } catch {
+    // Nothing to prefill.
+  }
 }
 
 const addWithLocation = async () => {
@@ -247,6 +262,26 @@ const freeShippingRemaining = computed(() => {
 const tax = computed(() => round3(subtotal.value * siteConfig.value.tax_rate))
 const total = computed(() => round3(subtotal.value + shipping.value + tax.value))
 const taxLabel = computed(() => `Tax (${Math.round((siteConfig.value.tax_rate || 0) * 100)}%)`)
+
+// Below the price computeds on purpose: `immediate` runs this during setup, and
+// when items are already in the payload (Buy Now, a signed-in cart) it reads
+// `subtotal` / `unitPriceOf` straight away — declared later, they would throw.
+const { trackBeginCheckout } = useAnalytics()
+let checkoutTracked = false
+watch(items, (newItems) => {
+  if (newItems.length > 0 && !checkoutTracked && import.meta.client) {
+    checkoutTracked = true
+    trackBeginCheckout({
+      value: subtotal.value,
+      items: newItems.map(i => ({
+        id: i.product_id,
+        name: i.product.name,
+        price: unitPriceOf(i.product),
+        quantity: i.quantity ?? 1
+      }))
+    })
+  }
+}, { immediate: true })
 
 const { create, createGuest, creating } = useCheckoutOrder()
 const guestForm = ref<{ submit: () => Promise<GuestAddress | null> } | null>(null)
@@ -344,8 +379,22 @@ const placeOrder = async () => {
             <CardTitle class="text-secondary">Delivery Address</CardTitle>
           </CardHeader>
           <CardContent v-if="!user" class="space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 rounded-lg border border-secondary/30 bg-secondary/5 p-3">
+              <div class="flex items-start gap-3 flex-1">
+                <Icon name="lucide:user" class="w-5 h-5 mt-0.5 shrink-0 text-secondary" />
+                <div class="text-sm space-y-0.5">
+                  <p class="font-medium text-foreground">Want to track this order?</p>
+                  <p class="text-muted-foreground">
+                    Orders placed as a guest can't be tracked later. Sign in to see your orders in your profile, save your address, and keep your cart.
+                  </p>
+                </div>
+              </div>
+              <Button variant="outline" size="sm" class="shrink-0 border-secondary text-secondary hover:bg-secondary/10 hover:text-secondary" @click="signIn">
+                Sign in
+              </Button>
+            </div>
             <p class="text-sm text-muted-foreground">
-              No account needed. Enter where we should deliver, and pay in cash when your order arrives.
+              Or continue as a guest: enter where we should deliver, and pay in cash when your order arrives.
             </p>
             <CheckoutGuestAddressForm ref="guestForm" />
           </CardContent>

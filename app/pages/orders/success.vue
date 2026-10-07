@@ -1,62 +1,62 @@
 <script setup lang="ts">
-import { definePageMeta, useSupabaseClient, useSupabaseUser, useLazyAsyncData, navigateTo, onMounted, onUnmounted } from '#imports'
+import { definePageMeta, navigateTo, onMounted, onUnmounted } from '#imports'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { toast } from 'vue-sonner'
 import { useCart } from '@/composables/useCart'
 import { useAnalytics } from '@/composables/useAnalytics'
 
 definePageMeta({ layout: 'default' })
 
-const supabase = useSupabaseClient()
-const user = useSupabaseUser()
-const { refreshCart } = useCart()
+interface LastOrder {
+  id: string
+  total: number
+  guest: boolean
+  fromCart: boolean
+  handled?: boolean
+  items: { product_id: string; product_name: string; unit_price: number; quantity: number }[]
+}
+
+const { clearCart } = useCart()
 const { trackPurchase } = useAnalytics()
 
-const { data, pending, error } = await useLazyAsyncData<{ cleared: boolean; orderDetails?: any }>(
-  'orders-success-clear-cart',
+/**
+ * Checkout leaves the order summary in localStorage — a guest cannot read the
+ * order back from the database, so this page never queries it. The cart is
+ * emptied here rather than at checkout so a failed online payment keeps it, and
+ * only for a cart order: Buy Now leaves the cart alone. `handled` stops a reload
+ * from clearing the cart or counting the purchase twice.
+ */
+const { data, pending, error } = await useLazyAsyncData<LastOrder | null>(
+  'orders-success',
   async () => {
-    if (!user.value) return { cleared: false }
-    
-    const orderId = process.client ? localStorage.getItem('last_order_id') : null
-    let orderDetails = null
-    if (orderId) {
-      const { data: orderData } = await supabase
-        .from('orders')
-        .select('id, total, order_items(product_id, product_name, unit_price, quantity)')
-        .eq('id', orderId)
-        .single()
-        
-      if (orderData) {
-        orderDetails = orderData
-      }
+    let order: LastOrder | null = null
+    try {
+      order = JSON.parse(localStorage.getItem('last_order') || 'null') as LastOrder | null
+    } catch {
+      return null
     }
+    if (!order || order.handled) return order
 
-    const { error: clearErr } = await supabase.from('cart_items').delete().eq('user_id', user.value.id)
-    if (clearErr) throw clearErr
-    await refreshCart()
-    return { cleared: true, orderDetails }
+    if (order.fromCart) {
+      // The order is already placed; a cart that fails to clear must not hide that.
+      try { await clearCart() } catch (e) { console.warn('[orders:success] cart not cleared', e) }
+    }
+    trackPurchase({
+      transaction_id: order.id,
+      value: order.total,
+      items: order.items.map(i => ({ id: i.product_id, name: i.product_name, price: i.unit_price, quantity: i.quantity })),
+    })
+    order.handled = true
+    localStorage.setItem('last_order', JSON.stringify(order))
+    return order
   },
   { server: false }
 )
 
-watchEffect(() => {
-  if (data.value?.orderDetails) {
-    const o = data.value.orderDetails
-    trackPurchase({
-      transaction_id: o.id,
-      value: o.total,
-      items: (o.order_items || []).map((i: any) => ({
-        id: i.product_id,
-        name: i.product_name,
-        price: i.unit_price,
-        quantity: i.quantity
-      }))
-    })
-  }
-})
+const orderRef = computed(() => (data.value?.id ? data.value.id.slice(0, 8) : null))
+const isGuestOrder = computed(() => !!data.value?.guest)
 
 let confettiTimer: ReturnType<typeof setTimeout> | null = null
 onMounted(async () => {
@@ -98,9 +98,12 @@ const continueShopping = () => navigateTo('/products')
             </div>
           </div>
           <p class="text-foreground text-lg font-semibold">Your order has been placed successfully.</p>
-          <p class="text-muted-foreground text-sm">Thank you for your purchase.</p>
+          <p v-if="orderRef" class="text-sm">Order number <span class="font-semibold">#{{ orderRef }}</span></p>
+          <p class="text-muted-foreground text-sm">
+            {{ isGuestOrder ? 'Keep this order number for reference. Thank you for your purchase.' : 'Thank you for your purchase.' }}
+          </p>
           <div class="flex flex-col sm:flex-row gap-3 pt-1 justify-center">
-            <Button class="w-full sm:w-auto" @click="goOrders">View Orders</Button>
+            <Button v-if="!isGuestOrder" class="w-full sm:w-auto" @click="goOrders">View Orders</Button>
             <Button variant="outline" class="w-full sm:w-auto" @click="continueShopping">Continue Shopping</Button>
           </div>
         </div>

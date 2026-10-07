@@ -976,8 +976,16 @@ watch([selectedFlavour, selectedSize, selectedAge, variantRows], () => {
             </Button>
           </div>
 
-          <div class="flex-1">
+          <!-- Buy Now skips the cart: checkout orders just this product, signed in or not. -->
+          <div class="flex-1 grid grid-cols-2 gap-3">
             <AddToCartButton :product-id="product.id" :quantity="qty" :name="product.name" :price="product.price" />
+            <Button
+              as-child
+              size="lg"
+              class="w-full py-3 rounded-full font-bold bg-accent text-white hover:bg-accent/90"
+            >
+              <NuxtLink :to="{ path: '/checkout', query: { buy: product.id, qty } }">Buy Now</NuxtLink>
+            </Button>
           </div>
         </div>
 

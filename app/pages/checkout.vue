@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue'
-import { definePageMeta, useLazyAsyncData, useSupabaseUser, useSupabaseClient, navigateTo, useHead, useState, useSeoMeta } from '#imports'
+import { definePageMeta, useLazyAsyncData, useSupabaseUser, useSupabaseClient, navigateTo, useHead, useState, useSeoMeta, useRoute } from '#imports'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell, TableEmpty } from '@/components/ui/table'
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select'
@@ -14,10 +14,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { toast } from 'vue-sonner'
-import { useCart, type CartItemWithProduct } from '@/composables/useCart'
+import { useCart, type CartItemWithProduct, type ProductRow } from '@/composables/useCart'
 import { useAddresses, type AddressRow } from '@/composables/useAddresses'
-import { useCheckoutOrder } from '@/composables/useCheckoutOrder'
-import { useProfile } from '@/composables/useProfile'
+import { useCheckoutOrder, type GuestAddress } from '@/composables/useCheckoutOrder'
 import { useAnalytics } from '@/composables/useAnalytics'
 import PageHeader from '@/components/common/PageHeader.vue'
 import AddressFormContent from '@/components/profile/AddressFormContent.vue'
@@ -34,22 +33,57 @@ useSeoMeta({
   robots: 'noindex, nofollow',
 })
 
+// Signing in is optional: a guest checks out with delivery details only (COD).
 const user = useSupabaseUser()
-watchEffect(() => {
-  if (!user.value) useAuthStore().requireAuth()
-})
+const route = useRoute()
+
+/**
+ * `?buy=<productId>&qty=<n>` is Buy Now: order that one product and leave the
+ * cart untouched. It travels in the URL, not localStorage, so the server can
+ * render it.
+ */
+const buyNowId = computed(() => (typeof route.query.buy === 'string' && route.query.buy) || null)
+const buyNowQty = computed(() => Math.min(50, Math.max(1, Math.floor(Number(route.query.qty) || 1))))
+const isBuyNow = computed(() => !!buyNowId.value)
 
 const { loadCartWithProducts } = useCart()
 const { listAddresses } = useAddresses()
-const { getProfile } = useProfile()
 
-const { data: itemsData, pending: itemsPending, error: itemsError, refresh: refreshItems } = await useLazyAsyncData(
-  'checkout-cart',
+const loadBuyNowItem = async (productId: string, quantity: number): Promise<CartItemWithProduct[]> => {
+  // A hand-edited link is "unavailable", not a database error.
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(productId)) return []
+  const supabase = useSupabaseClient()
+  const { data, error } = await supabase
+    .from('products')
+    .select('id,name,thumbnail_url,retail_price,wholesale_price,default_rating,base_product_id,is_active')
+    .eq('id', productId)
+    .maybeSingle()
+  if (error) throw error
+  if (!data || (data as { is_active?: boolean | null }).is_active === false) return []
+  const product = data as unknown as ProductRow
+  return [{ id: product.id, product_id: product.id, quantity, product }]
+}
+
+// Buy Now and a signed-in cart can both be read during the server render.
+const { data: serverItemsData, pending: serverItemsPending, error: serverItemsError, refresh: refreshServerItems } = await useLazyAsyncData(
+  'checkout-items',
   async () => {
+    if (buyNowId.value) return await loadBuyNowItem(buyNowId.value, buyNowQty.value)
     if (!user.value) return []
     return await loadCartWithProducts()
   },
-  { server: true }
+  { server: true, watch: [buyNowId, buyNowQty] }
+)
+
+// A guest's cart lives in localStorage, which only the browser can read.
+const usesGuestCart = computed(() => !user.value && !isBuyNow.value)
+const { data: guestItemsData, pending: guestItemsPending, error: guestItemsError, refresh: refreshGuestItems } = await useLazyAsyncData(
+  'checkout-guest-cart',
+  async () => {
+    if (!usesGuestCart.value) return []
+    return await loadCartWithProducts()
+  },
+  { server: false, watch: [usesGuestCart] }
 )
 
 const { data: addressesData, pending: addressesPending, error: addressesError, refresh: refreshAddresses } = await useLazyAsyncData(
@@ -61,18 +95,26 @@ const { data: addressesData, pending: addressesPending, error: addressesError, r
   { server: true }
 )
 
-// Client-only: both queries are already resolved server-side, and refreshing
-// during the render re-marks them pending — see the note in cart.vue.
+// Client-only, and only on a change of identity: the queries above already
+// resolved server-side, and refreshing during the render re-marks them pending —
+// see the note in cart.vue.
 if (import.meta.client) {
-  watchEffect(async () => {
-    if (user.value) {
-      await refreshItems()
-      await refreshAddresses()
-    }
+  watch(() => user.value?.id, async () => {
+    await Promise.all([refreshServerItems(), refreshGuestItems(), refreshAddresses()])
   })
 }
 
-const items = computed(() => (itemsData.value as CartItemWithProduct[]) || [])
+/**
+ * Same reasoning as cart.vue: there is nothing to render for a guest cart until
+ * the browser has read localStorage, so it reports loading until mounted. That
+ * keeps the server HTML and the first client render identical.
+ */
+const hydrated = ref(false)
+onMounted(() => { hydrated.value = true })
+
+const itemsPending = computed(() => (usesGuestCart.value ? !hydrated.value || guestItemsPending.value : serverItemsPending.value))
+const itemsError = computed(() => (usesGuestCart.value ? guestItemsError.value : serverItemsError.value))
+const items = computed(() => ((usesGuestCart.value ? guestItemsData.value : serverItemsData.value) as CartItemWithProduct[]) || [])
 const addresses = computed(() => (addressesData.value as AddressRow[]) || [])
 
 const { trackBeginCheckout } = useAnalytics()
@@ -163,16 +205,8 @@ const addWithLocation = async () => {
 }
 
 const round3 = (v: number) => Math.round(v * 1000) / 1000
-const { data: roleData } = await useLazyAsyncData(
-  'checkout-user-role',
-  async () => {
-    if (!user.value) return 'customer'
-    const p = await getProfile()
-    return (p?.role || 'customer') as string
-  },
-  { server: true }
-)
-const userRole = computed(() => (roleData.value || 'customer') as 'customer' | 'wholesaler' | 'admin')
+// The session-wide role, resolved before the render — never a second lookup.
+const userRole = useUserRole()
 const unitPriceOf = (p: CartItemWithProduct['product']) => {
   const r = p.retail_price
   const w = p.wholesale_price
@@ -214,13 +248,13 @@ const tax = computed(() => round3(subtotal.value * siteConfig.value.tax_rate))
 const total = computed(() => round3(subtotal.value + shipping.value + tax.value))
 const taxLabel = computed(() => `Tax (${Math.round((siteConfig.value.tax_rate || 0) * 100)}%)`)
 
-const { create, creating } = useCheckoutOrder()
+const { create, createGuest, creating } = useCheckoutOrder()
+const guestForm = ref<{ submit: () => Promise<GuestAddress | null> } | null>(null)
 const isPlaceDisabled = computed(() => (
   creating.value ||
   itemsPending.value ||
-  addressesPending.value ||
   items.value.length === 0 ||
-  !selectedAddressId.value
+  (!!user.value && (addressesPending.value || !selectedAddressId.value))
 ))
 
 interface PayTabsCreateResponse {
@@ -245,31 +279,53 @@ const pay = async (orderId: string) => {
   navigateTo('/payment/return')
 }
 
+/**
+ * Handed to /orders/success through localStorage. `fromCart` tells it to empty
+ * the cart; a Buy Now order never does. The success page does the clearing so
+ * an online payment that fails leaves the cart intact.
+ */
+const rememberOrder = (order: { id: string; total: number; items: { product_id: string; product_name: string; unit_price: number; quantity: number }[] }) => {
+  localStorage.setItem('last_order_id', order.id)
+  localStorage.setItem('last_order', JSON.stringify({ ...order, guest: !user.value, fromCart: !isBuyNow.value }))
+}
+
 const placeOrder = async () => {
-  if (!user.value) {
-    toast.error('Please sign in')
-    return
-  }
   if (!items.value.length) {
-    toast.error('Cart is empty')
-    return
-  }
-  if (!selectedAddressId.value) {
-    toast.error('Select a delivery address')
+    toast.error('Your cart is empty')
     return
   }
   try {
-    const orderId = await create(selectedAddressId.value, { shippingFee: shipping.value, taxRate: siteConfig.value.tax_rate }, paymentMethod.value)
-    if (process.client) {
-      localStorage.setItem('last_order_id', orderId)
-    }
-    if (paymentMethod.value === 'online') {
-      toast.success('Order created')
-      await pay(orderId)
-    } else {
-      toast.success('Order created')
+    if (!user.value) {
+      const address = await guestForm.value?.submit()
+      if (!address) {
+        toast.error('Please complete your delivery details')
+        return
+      }
+      const res = await createGuest(address, items.value.map(i => ({ product_id: i.product_id, quantity: Number(i.quantity || 1) })))
+      rememberOrder({ id: res.orderId, total: res.total, items: res.items })
+      toast.success('Order placed')
       navigateTo('/orders/success')
+      return
     }
+
+    if (!selectedAddressId.value) {
+      toast.error('Select a delivery address')
+      return
+    }
+    const orderId = await create(
+      selectedAddressId.value,
+      { shippingFee: shipping.value, taxRate: siteConfig.value.tax_rate },
+      paymentMethod.value,
+      isBuyNow.value ? items.value : undefined,
+    )
+    rememberOrder({
+      id: orderId,
+      total: total.value,
+      items: items.value.map(i => ({ product_id: i.product_id, product_name: i.product.name, unit_price: unitPriceOf(i.product), quantity: Number(i.quantity || 1) })),
+    })
+    toast.success('Order created')
+    if (paymentMethod.value === 'online') await pay(orderId)
+    else navigateTo('/orders/success')
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Order failed'
     toast.error(msg)
@@ -287,7 +343,13 @@ const placeOrder = async () => {
           <CardHeader>
             <CardTitle class="text-secondary">Delivery Address</CardTitle>
           </CardHeader>
-          <CardContent class="space-y-3">
+          <CardContent v-if="!user" class="space-y-4">
+            <p class="text-sm text-muted-foreground">
+              No account needed. Enter where we should deliver, and pay in cash when your order arrives.
+            </p>
+            <CheckoutGuestAddressForm ref="guestForm" />
+          </CardContent>
+          <CardContent v-else class="space-y-3">
             <div v-if="addressesPending">
               <Skeleton class="h-10 w-full" />
             </div>
@@ -369,7 +431,7 @@ const placeOrder = async () => {
 
         <Card class="bg-white rounded-xl border">
           <CardHeader>
-            <CardTitle class="text-secondary">Cart Summary</CardTitle>
+            <CardTitle class="text-secondary">{{ isBuyNow ? 'Order Summary' : 'Cart Summary' }}</CardTitle>
           </CardHeader>
           <CardContent class="w-full ">
             <Table class="max-sm:hidden w-full table-fixed">
@@ -399,7 +461,7 @@ const placeOrder = async () => {
                   TableCell emitted <tr><td><tr><td>, which the HTML parser hoists
                   back out — leaving a server DOM that no vdom could ever match.
                 -->
-                <TableEmpty v-else-if="items.length === 0" :colspan="4">Your cart is empty</TableEmpty>
+                <TableEmpty v-else-if="items.length === 0" :colspan="4">{{ isBuyNow ? 'This product is no longer available' : 'Your cart is empty' }}</TableEmpty>
                 <template v-else>
                 <TableRow v-for="i in items" :key="i.id">
                   <TableCell>
@@ -428,7 +490,7 @@ const placeOrder = async () => {
               </Alert>
               <!-- The mobile list is not a table, so it must not borrow a table row. -->
               <div v-else-if="items.length === 0" class="py-10 text-center text-sm text-foreground">
-                Your cart is empty
+                {{ isBuyNow ? 'This product is no longer available' : 'Your cart is empty' }}
               </div>
               <template v-else>
               <div v-for="i in items" :key="i.id" class="flex items-center justify-between gap-3">
@@ -522,6 +584,9 @@ const placeOrder = async () => {
               <span v-if="creating">Placing order...</span>
               <span v-else>Confirm & Place Order</span>
             </Button>
+            <p v-if="isBuyNow" class="text-xs text-center text-muted-foreground">
+              Buying this item only. Your cart stays as it is.
+            </p>
           </CardContent>
         </Card>
       </div>

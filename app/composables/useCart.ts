@@ -170,6 +170,17 @@ const addToCart = async ({
     if (error) throw error
   }
 
+  /** Empties the cart once its contents have become an order. */
+  const clearCart = async (): Promise<void> => {
+    if (!user.value) {
+      guestItems.value = []
+    } else {
+      const { error } = await supabase.from('cart_items').delete().eq('user_id', user.value.id)
+      if (error) throw error
+    }
+    await refreshCart()
+  }
+
 const syncGuestToServer = async () => {
   if (!user.value) return
   if (syncing.value) return
@@ -221,6 +232,7 @@ const syncGuestToServer = async () => {
     addToCart,
     updateQty,
     removeFromCart,
+    clearCart,
     requireAuth,
     syncGuestToServer,
     refreshCart,

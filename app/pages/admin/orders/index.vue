@@ -256,7 +256,10 @@ const paymentBadgeClass = (s: PaymentStatus) => {
               <div class="text-xs text-muted-foreground">{{ formatDate(o.created_at) }}</div>
             </div>
           </TableCell>
-          <TableCell>{{ o.user_email || '—' }}</TableCell>
+          <TableCell>
+            <Badge v-if="!o.user_id" variant="outline">Guest</Badge>
+            <template v-else>{{ o.user_email || '—' }}</template>
+          </TableCell>
           <TableCell class="">{{ formatCurrency(o.total) }}</TableCell>
           <TableCell>
             <Badge variant="outline" :class="[statusBadgeClass(o.status), 'capitalize']">{{ o.status === 'awaiting_payment' ? 'Awaiting' : o.status }}</Badge>

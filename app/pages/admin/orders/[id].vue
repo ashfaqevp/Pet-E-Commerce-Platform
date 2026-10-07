@@ -323,7 +323,9 @@ const formatDate = (iso: string | Date | null | undefined) => {
         Status: <span class="capitalize">{{ order?.status }}</span> • Payment: <span class="capitalize">{{ order?.payment_status }}</span>
       </div>
       <div class="text-sm text-muted-foreground">
-        Customer: {{ order?.user_email || '—' }}
+        Customer:
+        <template v-if="order && !order.user_id">Guest · {{ order.shipping_address?.full_name || '—' }} · {{ order.shipping_address?.phone || '—' }}</template>
+        <template v-else>{{ order?.user_email || '—' }}</template>
       </div>
     </div>
     <div class="flex items-center gap-2">

@@ -25,6 +25,23 @@ interface ShippingAddressSnapshot {
   country: string
 }
 
+export interface GuestAddress {
+  full_name: string
+  phone: string
+  address_line_1: string
+  address_line_2?: string | null
+  city: string
+  state: string
+  postal_code?: string | null
+  country?: string
+}
+
+export interface GuestOrderResult {
+  orderId: string
+  total: number
+  items: { product_id: string; product_name: string; unit_price: number; quantity: number }[]
+}
+
 interface OrderInsertRow extends Totals {
   user_id: string
   status: 'awaiting_payment' | 'pending'
@@ -56,12 +73,21 @@ export const useCheckoutOrder = () => {
 
   interface CreateOptions { shippingFee?: number; taxRate?: number }
 
-  const create = async (addressId: string, opts?: CreateOptions, paymentMethod: PaymentMethod = 'online'): Promise<string> => {
+  /**
+   * `itemsOverride` is the Buy Now path: order exactly those lines and leave the
+   * cart alone. Without it the whole cart is ordered.
+   */
+  const create = async (
+    addressId: string,
+    opts?: CreateOptions,
+    paymentMethod: PaymentMethod = 'online',
+    itemsOverride?: CartItemWithProduct[],
+  ): Promise<string> => {
     if (creating.value) throw new Error('ALREADY_CREATING')
     if (!user.value) throw new Error('LOGIN_REQUIRED')
     creating.value = true
     try {
-      const items = await loadCartWithProducts()
+      const items = itemsOverride ?? await loadCartWithProducts()
       if (!items.length) throw new Error('CART_EMPTY')
       const { data: roleRow, error: roleErr } = await supabase
         .from('profiles')
@@ -130,5 +156,29 @@ export const useCheckoutOrder = () => {
     }
   }
 
-  return { create, creating }
+  /**
+   * Guests have no account to write an order under, so the server places it —
+   * cash on delivery only, re-priced there from `products` and `site_config`.
+   */
+  const createGuest = async (
+    address: GuestAddress,
+    items: { product_id: string; quantity: number }[],
+  ): Promise<GuestOrderResult> => {
+    if (creating.value) throw new Error('ALREADY_CREATING')
+    if (!items.length) throw new Error('CART_EMPTY')
+    creating.value = true
+    try {
+      return await $fetch<GuestOrderResult>('/api/orders/guest', {
+        method: 'POST',
+        body: { items, address },
+      })
+    } catch (e) {
+      const err = e as { data?: { statusMessage?: string }; statusMessage?: string }
+      throw new Error(err.data?.statusMessage || err.statusMessage || 'Order failed')
+    } finally {
+      creating.value = false
+    }
+  }
+
+  return { create, createGuest, creating }
 }

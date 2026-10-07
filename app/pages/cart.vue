@@ -158,13 +158,8 @@ const onRemove = async (item: CartItemWithProduct) => {
   }
 }
 
-const goCheckout = () => {
-  if (!supabaseUser.value) {
-    useAuthStore().requireAuth()
-    return
-  }
-  navigateTo('/checkout')
-}
+// Guests check out too — signing in is optional.
+const goCheckout = () => navigateTo('/checkout')
 </script>
 
 
